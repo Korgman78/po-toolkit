@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planning Poker</title>
+<style>
+  :root { --accent: #ec4899; --bg: #0f1117; --card: #1a1c2b; --text: #e8eaf0; --muted: #6b7089; --border: #2a2d3e; --green: #10b981; --blue: #6366f1; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
+  h1 { font-size: 1.86rem; margin-bottom: 0.5rem; font-weight: 800; color: #f8fafc; letter-spacing: -0.03em; }
+  .subtitle { color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem; }
+
+  /* Session bar */
+  .session-bar { display: flex; align-items: center; gap: 0.75rem; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0.5rem 1rem; margin-bottom: 1rem; width: 100%; max-width: 650px; font-size: 0.8rem; flex-wrap: wrap; }
+  .session-bar label { color: var(--muted); white-space: nowrap; }
+  .session-bar input { flex: 1; min-width: 80px; padding: 0.35rem 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--accent); font-family: inherit; font-size: 0.85rem; font-weight: 700; outline: none; text-align: center; letter-spacing: 0.05em; }
+  .session-bar input:focus { border-color: var(--accent); }
+  .session-bar button { padding: 0.35rem 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; font-family: inherit; font-size: 0.75rem; font-weight: 600; transition: all 0.2s; }
+  .session-bar button:hover { border-color: var(--accent); color: var(--accent); }
+  .session-bar .session-status { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+  /* Pseudo bar */
+  .pseudo-bar { display: flex; align-items: center; gap: 0.75rem; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0.5rem 1rem; margin-bottom: 1.5rem; width: 100%; max-width: 650px; font-size: 0.8rem; }
+  .pseudo-bar label { color: var(--muted); white-space: nowrap; }
+  .pseudo-bar input { flex: 1; padding: 0.35rem 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--green); font-family: inherit; font-size: 0.85rem; font-weight: 700; outline: none; letter-spacing: 0.02em; }
+  .pseudo-bar input:focus { border-color: var(--green); }
+  .pseudo-bar .pseudo-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: white; flex-shrink: 0; }
+
+  /* Pseudo modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+  .modal-overlay.hidden { display: none; }
+  .modal { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; max-width: 400px; width: 90%; text-align: center; }
+  .modal h2 { font-size: 1.34rem; margin-bottom: 0.5rem; font-weight: 800; color: #f8fafc; }
+  .modal p { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+  .modal input { width: 100%; padding: 0.75rem 1rem; border-radius: 10px; border: 2px solid var(--border); background: var(--bg); color: var(--text); font-family: inherit; font-size: 1.1rem; font-weight: 700; text-align: center; outline: none; margin-bottom: 1rem; }
+  .modal input:focus { border-color: var(--accent); }
+  .modal button { width: 100%; padding: 0.75rem; border-radius: 10px; border: none; background: var(--accent); color: white; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .modal button:hover { filter: brightness(1.1); }
+
+  .scale-toggle { display: flex; gap: 0.5rem; margin-bottom: 2rem; }
+  .scale-btn { padding: 0.5rem 1.2rem; border-radius: 100px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+  .scale-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .story-input { width: 100%; max-width: 650px; margin-bottom: 2rem; }
+  .story-input textarea { width: 100%; padding: 1rem; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: inherit; font-size: 0.95rem; resize: vertical; min-height: 80px; outline: none; }
+  .story-input textarea:focus { border-color: var(--accent); }
+  .story-input textarea::placeholder { color: var(--muted); }
+  .cards-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; max-width: 700px; margin-bottom: 2rem; }
+  .poker-card { width: 90px; height: 130px; border-radius: 12px; border: 2px solid var(--border); background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; cursor: pointer; transition: all 0.2s; user-select: none; }
+  .poker-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 8px 25px rgba(236,72,153,0.2); }
+  .poker-card.selected { background: var(--accent); border-color: var(--accent); color: white; transform: translateY(-8px); box-shadow: 0 12px 30px rgba(236,72,153,0.3); }
+
+  /* Voters */
+  .voters-section { width: 100%; max-width: 650px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .voters-section h2 { font-size: 1.16rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; font-weight: 800; color: #f8fafc; }
+  .voters-section h2 .voter-count { font-size: 0.75rem; color: var(--muted); font-weight: 500; }
+  .voter-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); transition: all 0.2s; }
+  .voter-row.is-me { border-color: var(--accent); background: rgba(236,72,153,0.05); }
+  .voter-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: white; flex-shrink: 0; }
+  .voter-name { flex: 1; font-weight: 600; font-size: 0.9rem; }
+  .voter-name .me-tag { font-size: 0.65rem; color: var(--accent); font-weight: 700; margin-left: 0.3rem; }
+  .voter-vote { width: 55px; height: 55px; border-radius: 10px; background: var(--card); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 800; transition: all 0.3s; flex-shrink: 0; }
+  .voter-vote.revealed { background: var(--accent); border-color: var(--accent); color: white; }
+  .voter-vote.hidden-vote { background: var(--border); border-color: var(--border); }
+  .voter-vote.hidden-vote::after { content: '?'; color: var(--muted); }
+  .add-voter { background: none; border: 1px dashed var(--border); border-radius: 8px; padding: 0.5rem; width: 100%; color: var(--muted); cursor: pointer; font-family: inherit; font-size: 0.85rem; transition: all 0.2s; }
+  .add-voter:hover { border-color: var(--accent); color: var(--accent); }
+
+  .controls { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; justify-content: center; }
+  button { font-family: inherit; font-size: 0.9rem; font-weight: 600; padding: 0.7rem 1.5rem; border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); }
+
+  .results { width: 100%; max-width: 650px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; display: none; }
+  .results h2 { font-size: 1.16rem; margin-bottom: 1rem; font-weight: 800; color: #f8fafc; }
+  .result-stats { display: flex; gap: 2rem; justify-content: center; margin-bottom: 1rem; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 2rem; font-weight: 800; color: var(--accent); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; }
+  .consensus { text-align: center; padding: 1rem; border-radius: 10px; margin-top: 1rem; font-weight: 700; }
+  .consensus.good { background: rgba(16,185,129,0.15); color: var(--green); }
+  .consensus.bad { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+  .history { width: 100%; max-width: 650px; margin-top: 1.5rem; }
+  .history h2 { font-size: 1.16rem; margin-bottom: 0.75rem; font-weight: 800; color: #f8fafc; }
+  .history-item { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+  .history-item .story-name { font-weight: 600; font-size: 0.9rem; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 1rem; }
+  .history-item .story-result { font-weight: 800; color: var(--accent); font-size: 1.1rem; }
+</style>
+</head>
+<body>
+
+<!-- Pseudo modal -->
+<div class="modal-overlay" id="pseudo-modal">
+  <div class="modal">
+    <h2>&#128075; Bienvenue !</h2>
+    <p>Entrez votre pseudo pour rejoindre la session de Planning Poker.</p>
+    <input type="text" id="pseudo-input" placeholder="Votre pseudo..." autofocus onkeydown="if(event.key==='Enter')confirmPseudo()">
+    <button onclick="confirmPseudo()">Rejoindre</button>
+  </div>
+</div>
+
+<h1>Planning Poker</h1>
+<p class="subtitle">Estimez vos stories en équipe — vote anonyme puis révélation</p>
+
+<div class="session-bar">
+  <div class="session-status" title="Session active"></div>
+  <label>Session :</label>
+  <input type="text" id="session-id" value="" placeholder="session-id" onchange="changeSession(this.value)">
+  <button onclick="newSession()">Nouvelle</button>
+  <button onclick="copySessionLink()">Copier le lien</button>
+</div>
+
+<div class="pseudo-bar">
+  <div class="pseudo-avatar" id="my-avatar"></div>
+  <label>Pseudo :</label>
+  <input type="text" id="my-pseudo" value="" onchange="changePseudo(this.value)">
+</div>
+
+<div class="scale-toggle">
+  <button class="scale-btn active" onclick="setScale('fibonacci', this)">Fibonacci</button>
+  <button class="scale-btn" onclick="setScale('tshirt', this)">T-Shirt</button>
+  <button class="scale-btn" onclick="setScale('linear', this)">Linéaire</button>
+</div>
+
+<div class="story-input">
+  <textarea id="story-text" placeholder="Décrivez la user story à estimer...&#10;Ex: En tant qu'utilisateur, je veux pouvoir exporter mes données en CSV..."></textarea>
+</div>
+
+<div class="cards-grid" id="cards-grid"></div>
+
+<div class="voters-section">
+  <h2>Participants <span class="voter-count" id="voter-count"></span></h2>
+  <div id="voters-list"></div>
+</div>
+
+<div class="controls">
+  <button class="btn-primary" onclick="revealVotes()" id="reveal-btn">Révéler les votes</button>
+  <button class="btn-secondary" onclick="resetRound()">Nouveau vote</button>
+  <button class="btn-secondary" onclick="newStory()">Nouvelle story</button>
+</div>
+
+<div class="results" id="results">
+  <h2>Résultats</h2>
+  <div class="result-stats" id="result-stats"></div>
+  <div class="consensus" id="consensus"></div>
+</div>
+
+<div class="history" id="history-section" style="display:none">
+  <h2>Historique</h2>
+  <div id="history-list"></div>
+</div>
+
+<script>
+const APP_KEY = 'planning-poker';
+const scales = {
+  fibonacci: ['0','1','2','3','5','8','13','21','?','☕'],
+  tshirt: ['XS','S','M','L','XL','XXL','?','☕'],
+  linear: ['1','2','3','4','5','6','7','8','9','10','?','☕'],
+};
+const COLORS = ['#ec4899','#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#d946ef','#f97316','#14b8a6'];
+
+let currentScale = 'fibonacci';
+let voters = []; // { pseudo, vote, color }
+let myPseudo = '';
+let revealed = false;
+let history = [];
+
+// ---- Pseudo system ----
+function getAvatarLetter(name) {
+  return (name || '?')[0].toUpperCase();
+}
+
+function getColor(pseudo) {
+  let hash = 0;
+  for (let i = 0; i < pseudo.length; i++) hash = pseudo.charCodeAt(i) + ((hash << 5) - hash);
+  return COLORS[Math.abs(hash) % COLORS.length];
+}
+
+function confirmPseudo() {
+  const input = document.getElementById('pseudo-input');
+  const name = input.value.trim();
+  if (!name) { input.style.borderColor = '#ef4444'; return; }
+  myPseudo = name;
+  localStorage.setItem(APP_KEY + '-pseudo', myPseudo);
+  document.getElementById('pseudo-modal').classList.add('hidden');
+  document.getElementById('my-pseudo').value = myPseudo;
+  document.getElementById('my-avatar').textContent = getAvatarLetter(myPseudo);
+  document.getElementById('my-avatar').style.background = getColor(myPseudo);
+  joinSession();
+}
+
+function changePseudo(name) {
+  if (!name.trim()) return;
+  const oldPseudo = myPseudo;
+  myPseudo = name.trim();
+  localStorage.setItem(APP_KEY + '-pseudo', myPseudo);
+  document.getElementById('my-avatar').textContent = getAvatarLetter(myPseudo);
+  document.getElementById('my-avatar').style.background = getColor(myPseudo);
+  // Update voter list
+  const existing = voters.find(v => v.pseudo === oldPseudo);
+  if (existing) {
+    existing.pseudo = myPseudo;
+    existing.color = getColor(myPseudo);
+  }
+  renderVoters();
+  saveSession();
+}
+
+function joinSession() {
+  // Add me if not already in the list
+  if (!voters.find(v => v.pseudo === myPseudo)) {
+    voters.push({ pseudo: myPseudo, vote: null, color: getColor(myPseudo) });
+  }
+  renderVoters();
+  saveSession();
+}
+
+// ---- Scale ----
+function setScale(scale, btn) {
+  currentScale = scale;
+  document.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderCards();
+  resetRound();
+}
+
+function renderCards() {
+  const grid = document.getElementById('cards-grid');
+  grid.innerHTML = scales[currentScale].map(val =>
+    `<div class="poker-card" onclick="selectCard(this, '${val}')" data-value="${val}">${val}</div>`
+  ).join('');
+}
+
+function selectCard(el, value) {
+  if (revealed) return;
+  document.querySelectorAll('.poker-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  // Update my vote
+  const me = voters.find(v => v.pseudo === myPseudo);
+  if (me) {
+    me.vote = value;
+    renderVoters();
+    saveSession();
+  }
+}
+
+// ---- Voters ----
+function addVoter() {
+  const name = prompt('Nom du participant :');
+  if (!name || !name.trim()) return;
+  const pseudo = name.trim();
+  if (voters.find(v => v.pseudo === pseudo)) return;
+  voters.push({ pseudo, vote: null, color: getColor(pseudo) });
+  renderVoters();
+  saveSession();
+}
+
+function removeVoter(idx) {
+  if (voters[idx].pseudo === myPseudo) return; // Can't remove yourself
+  voters.splice(idx, 1);
+  renderVoters();
+  saveSession();
+}
+
+function renderVoters() {
+  const list = document.getElementById('voters-list');
+  document.getElementById('voter-count').textContent = `(${voters.length} participant${voters.length > 1 ? 's' : ''})`;
+
+  list.innerHTML = voters.map((v, i) => {
+    const isMe = v.pseudo === myPseudo;
+    const hasVote = v.vote !== null;
+    let voteDisplay = '-';
+    if (revealed && hasVote) voteDisplay = v.vote;
+    else if (hasVote) voteDisplay = '';
+
+    return `
+      <div class="voter-row ${isMe ? 'is-me' : ''}">
+        <div class="voter-avatar" style="background:${v.color}">${getAvatarLetter(v.pseudo)}</div>
+        <span class="voter-name">${escapeHtml(v.pseudo)}${isMe ? '<span class="me-tag">(vous)</span>' : ''}</span>
+        <div class="voter-vote ${revealed && hasVote ? 'revealed' : hasVote ? 'hidden-vote' : ''}">${voteDisplay}</div>
+        ${!isMe ? `<button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.7rem;padding:0.2rem;" onclick="removeVoter(${i})" title="Retirer">✕</button>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  list.innerHTML += `<button class="add-voter" onclick="addVoter()" style="margin-top:0.5rem;">+ Ajouter un participant</button>`;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// ---- Game logic ----
+function revealVotes() {
+  revealed = true;
+  renderVoters();
+
+  const numericVotes = voters
+    .filter(v => v.vote && v.vote !== '?' && v.vote !== '☕')
+    .map(v => {
+      const map = {XS:1,S:2,M:3,L:5,XL:8,XXL:13};
+      return { pseudo: v.pseudo, num: map[v.vote] !== undefined ? map[v.vote] : parseFloat(v.vote) };
+    })
+    .filter(v => !isNaN(v.num));
+
+  const results = document.getElementById('results');
+  results.style.display = 'block';
+
+  if (numericVotes.length === 0) {
+    document.getElementById('result-stats').innerHTML = '<p style="color:var(--muted)">Pas assez de votes numériques</p>';
+    document.getElementById('consensus').innerHTML = '';
+    return;
+  }
+
+  const nums = numericVotes.map(v => v.num);
+  const avg = nums.reduce((a,b) => a+b, 0) / nums.length;
+  const min = Math.min(...nums);
+  const max = Math.max(...nums);
+  const sorted = [...nums].sort((a,b) => a-b);
+  const median = sorted.length % 2 === 0
+    ? (sorted[sorted.length/2-1] + sorted[sorted.length/2]) / 2
+    : sorted[Math.floor(sorted.length/2)];
+
+  document.getElementById('result-stats').innerHTML = `
+    <div class="stat"><div class="stat-value">${avg.toFixed(1)}</div><div class="stat-label">Moyenne</div></div>
+    <div class="stat"><div class="stat-value">${median}</div><div class="stat-label">Médiane</div></div>
+    <div class="stat"><div class="stat-value">${min}</div><div class="stat-label">Min</div></div>
+    <div class="stat"><div class="stat-value">${max}</div><div class="stat-label">Max</div></div>
+  `;
+
+  const spread = max - min;
+  const consensus = document.getElementById('consensus');
+  if (spread <= 2) {
+    consensus.className = 'consensus good';
+    consensus.textContent = `Consensus ! Estimation suggérée : ${Math.round(median)} points`;
+  } else {
+    consensus.className = 'consensus bad';
+    consensus.textContent = `Pas de consensus (écart: ${spread}). Discussion recommandée avant re-vote.`;
+  }
+
+  saveSession();
+}
+
+function resetRound() {
+  revealed = false;
+  voters.forEach(v => v.vote = null);
+  document.querySelectorAll('.poker-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('results').style.display = 'none';
+  renderVoters();
+  saveSession();
+}
+
+function newStory() {
+  const storyText = document.getElementById('story-text').value.trim();
+  if (storyText && revealed) {
+    const votedVoters = voters.filter(v => v.vote && v.vote !== '?' && v.vote !== '☕');
+    if (votedVoters.length > 0) {
+      const votes = votedVoters.map(v => `${v.pseudo}: ${v.vote}`).join(', ');
+      history.push({ story: storyText, result: votes });
+      renderHistory();
+    }
+  }
+  document.getElementById('story-text').value = '';
+  resetRound();
+}
+
+function renderHistory() {
+  if (history.length === 0) return;
+  document.getElementById('history-section').style.display = 'block';
+  document.getElementById('history-list').innerHTML = history.map(h =>
+    `<div class="history-item"><span class="story-name">${escapeHtml(h.story)}</span><span class="story-result">${escapeHtml(h.result)}</span></div>`
+  ).join('');
+}
+
+// ---- Session Management ----
+function generateSessionId() {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+function getSessionId() {
+  const params = new URLSearchParams(window.location.search);
+  const urlSession = params.get('session');
+  if (urlSession) return urlSession;
+  const stored = localStorage.getItem(APP_KEY + '-last-session');
+  return stored || generateSessionId();
+}
+
+function changeSession(newId) {
+  if (!newId.trim()) return;
+  const id = newId.trim().toUpperCase();
+  document.getElementById('session-id').value = id;
+  localStorage.setItem(APP_KEY + '-last-session', id);
+  const url = new URL(window.location);
+  url.searchParams.set('session', id);
+  window.history.replaceState({}, '', url);
+  loadSession();
+}
+
+function newSession() {
+  changeSession(generateSessionId());
+}
+
+function copySessionLink() {
+  const id = document.getElementById('session-id').value;
+  const url = new URL(window.location);
+  url.searchParams.set('session', id);
+  navigator.clipboard.writeText(url.toString()).then(() => {
+    const btn = event.target;
+    btn.textContent = 'Copié !';
+    setTimeout(() => btn.textContent = 'Copier le lien', 2000);
+  });
+}
+
+function getSessionData() {
+  return {
+    voters: voters.map(v => ({ pseudo: v.pseudo, vote: v.vote, color: v.color })),
+    scale: currentScale,
+    story: document.getElementById('story-text').value,
+    history: history,
+    revealed: revealed
+  };
+}
+
+function restoreSessionData(data) {
+  currentScale = data.scale || 'fibonacci';
+  document.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('active'));
+  const scaleNames = ['fibonacci', 'tshirt', 'linear'];
+  const idx = scaleNames.indexOf(currentScale);
+  if (idx >= 0) document.querySelectorAll('.scale-btn')[idx].classList.add('active');
+  renderCards();
+
+  voters = (data.voters || []).map(v => ({
+    pseudo: v.pseudo,
+    vote: v.vote || null,
+    color: v.color || getColor(v.pseudo)
+  }));
+  history = data.history || [];
+  revealed = data.revealed || false;
+  document.getElementById('story-text').value = data.story || '';
+
+  // Make sure I'm in the list
+  if (myPseudo && !voters.find(v => v.pseudo === myPseudo)) {
+    voters.push({ pseudo: myPseudo, vote: null, color: getColor(myPseudo) });
+  }
+
+  renderVoters();
+  renderHistory();
+
+  if (revealed) {
+    revealVotes();
+  }
+}
+
+function resetSessionData() {
+  voters = [];
+  if (myPseudo) {
+    voters.push({ pseudo: myPseudo, vote: null, color: getColor(myPseudo) });
+  }
+  history = [];
+  revealed = false;
+  currentScale = 'fibonacci';
+  renderCards();
+  renderVoters();
+  document.getElementById('story-text').value = '';
+  document.getElementById('results').style.display = 'none';
+}
+
+function saveSession() {
+  const id = document.getElementById('session-id').value;
+  const key = APP_KEY + '-session-' + id;
+  localStorage.setItem(key, JSON.stringify(getSessionData()));
+  localStorage.setItem(APP_KEY + '-last-session', id);
+}
+
+function loadSession() {
+  const id = document.getElementById('session-id').value;
+  const key = APP_KEY + '-session-' + id;
+  const data = localStorage.getItem(key);
+  if (data) {
+    try { restoreSessionData(JSON.parse(data)); } catch(e) { console.warn('Session restore failed', e); }
+  } else {
+    resetSessionData();
+  }
+}
+
+function initSession() {
+  const id = getSessionId();
+  document.getElementById('session-id').value = id;
+  localStorage.setItem(APP_KEY + '-last-session', id);
+  const url = new URL(window.location);
+  url.searchParams.set('session', id);
+  window.history.replaceState({}, '', url);
+  loadSession();
+}
+
+// ---- Init ----
+function init() {
+  // Check for saved pseudo
+  const savedPseudo = localStorage.getItem(APP_KEY + '-pseudo');
+  if (savedPseudo) {
+    myPseudo = savedPseudo;
+    document.getElementById('pseudo-modal').classList.add('hidden');
+    document.getElementById('my-pseudo').value = myPseudo;
+    document.getElementById('my-avatar').textContent = getAvatarLetter(myPseudo);
+    document.getElementById('my-avatar').style.background = getColor(myPseudo);
+  } else {
+    // Focus the modal input
+    setTimeout(() => document.getElementById('pseudo-input').focus(), 100);
+  }
+
+  renderCards();
+  initSession();
+
+  // Auto-save every 5s
+  setInterval(() => { if (voters.length > 0) saveSession(); }, 5000);
+}
+
+init();
+</script>
+</body>
+</html>

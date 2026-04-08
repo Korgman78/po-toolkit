@@ -1,0 +1,7 @@
+.claude/
+.tmp/
+*.tmp.js
+
+# OS / editor noise
+Thumbs.db
+.DS_Store

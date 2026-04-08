@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JSON Validator & UUID Generator</title>
+<style>
+  :root { --accent: #6366f1; --accent2: #a855f7; --bg: #0f1117; --card: #1a1c2b; --text: #e8eaf0; --muted: #6b7089; --border: #2a2d3e; --green: #10b981; --red: #ef4444; --yellow: #f59e0b; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* Layout */
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); }
+  .header h1 { font-size: 1.28rem; letter-spacing: -0.03em; font-weight: 800; color: #f8fafc; }
+  .tabs { display: flex; gap: 0.25rem; }
+  .tab { padding: 0.5rem 1.2rem; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+  .tab:hover { border-color: var(--accent); color: var(--text); }
+  .tab.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+  .panels { flex: 1; display: flex; flex-direction: column; }
+  .panel { flex: 1; display: none; flex-direction: column; padding: 1rem 1.5rem; }
+  .panel.active { display: flex; }
+
+  /* JSON Validator */
+  .json-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1; }
+  .json-col { display: flex; flex-direction: column; }
+  .json-col h3 { font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; color: #f8fafc; font-weight: 800; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between; }
+  textarea { flex: 1; width: 100%; padding: 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: 'Consolas', 'Fira Code', monospace; font-size: 0.85rem; line-height: 1.6; resize: none; outline: none; min-height: 300px; tab-size: 2; }
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: var(--muted); }
+  textarea.valid { border-color: var(--green); }
+  textarea.invalid { border-color: var(--red); }
+  .output-area { flex: 1; width: 100%; padding: 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: 'Consolas', 'Fira Code', monospace; font-size: 0.85rem; line-height: 1.6; overflow: auto; min-height: 300px; white-space: pre-wrap; word-break: break-all; }
+
+  .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+  button { font-family: inherit; font-size: 0.8rem; font-weight: 600; padding: 0.45rem 0.9rem; border-radius: 7px; border: none; cursor: pointer; transition: all 0.2s; }
+  .btn { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .btn-accent { background: var(--accent); color: white; }
+  .btn-accent:hover { background: #4f46e5; }
+
+  .status-bar { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; font-size: 0.8rem; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .status-dot.ok { background: var(--green); }
+  .status-dot.err { background: var(--red); }
+  .status-dot.idle { background: var(--muted); }
+  .status-text { color: var(--muted); }
+  .status-text.ok { color: var(--green); }
+  .status-text.err { color: var(--red); }
+
+  .json-stats { display: flex; gap: 1.5rem; font-size: 0.75rem; color: var(--muted); margin-left: auto; }
+  .json-stats span { font-variant-numeric: tabular-nums; }
+
+  /* UUID Generator */
+  .uuid-section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+  .uuid-section h3 { font-size: 1rem; margin-bottom: 1rem; font-weight: 800; color: #f8fafc; }
+  .uuid-controls { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 1rem; }
+  .uuid-controls label { font-size: 0.8rem; color: var(--muted); }
+  .uuid-controls select, .uuid-controls input[type="number"] { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; color: var(--text); font-family: inherit; font-size: 0.85rem; outline: none; }
+  .uuid-controls select:focus, .uuid-controls input[type="number"]:focus { border-color: var(--accent); }
+  .uuid-display { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; font-family: 'Consolas', 'Fira Code', monospace; font-size: 0.9rem; line-height: 1.8; max-height: 400px; overflow-y: auto; user-select: all; }
+  .uuid-line { display: flex; align-items: center; gap: 0.75rem; padding: 0.2rem 0; }
+  .uuid-line .uuid-text { flex: 1; color: var(--accent); font-weight: 500; letter-spacing: 0.02em; }
+  .uuid-line .copy-one { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.85rem; padding: 0.2rem 0.4rem; border-radius: 4px; }
+  .uuid-line .copy-one:hover { color: var(--accent); background: rgba(99,102,241,0.1); }
+  .uuid-count { font-size: 0.75rem; color: var(--muted); margin-top: 0.5rem; }
+  .separator { width: 1px; height: 20px; background: var(--border); margin: 0 0.25rem; }
+
+  @media (max-width: 768px) {
+    .json-layout { grid-template-columns: 1fr; }
+    .header { flex-direction: column; gap: 0.75rem; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>JSON & UUID Tools</h1>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('json', this)">JSON Validator</button>
+    <button class="tab" onclick="switchTab('uuid', this)">UUID Generator</button>
+  </div>
+</div>
+
+<div class="panels">
+  <!-- JSON Panel -->
+  <div class="panel active" id="panel-json">
+    <div class="toolbar">
+      <button class="btn-accent" onclick="validateJSON()">Valider</button>
+      <button class="btn" onclick="formatJSON()">Formater (Pretty)</button>
+      <button class="btn" onclick="minifyJSON()">Minifier (1 ligne)</button>
+      <button class="btn" onclick="sortKeys()">Trier les clés</button>
+      <div class="separator"></div>
+      <button class="btn" onclick="copyOutput()">Copier le résultat</button>
+      <button class="btn" onclick="clearJSON()">Effacer</button>
+      <div class="separator"></div>
+      <label style="font-size:0.8rem; color:var(--muted);">Indentation :</label>
+      <select id="indent-size" onchange="formatJSON()" style="background:var(--card); border:1px solid var(--border); border-radius:5px; padding:0.2rem 0.4rem; color:var(--text); font-size:0.8rem;">
+        <option value="2" selected>2 espaces</option>
+        <option value="4">4 espaces</option>
+        <option value="tab">Tab</option>
+      </select>
+    </div>
+
+    <div class="json-layout">
+      <div class="json-col">
+        <h3>
+          <span>Entrée</span>
+          <button class="btn" style="font-size:0.7rem; padding:0.2rem 0.5rem;" onclick="pasteJSON()">Coller</button>
+        </h3>
+        <textarea id="json-input" placeholder='Collez votre JSON ici...&#10;&#10;{&#10;  "name": "Mon projet",&#10;  "version": "1.0.0"&#10;}' oninput="liveValidate()"></textarea>
+      </div>
+      <div class="json-col">
+        <h3>
+          <span>Résultat</span>
+          <div class="json-stats" id="json-stats"></div>
+        </h3>
+        <div class="output-area" id="json-output">Le résultat formaté apparaîtra ici...</div>
+      </div>
+    </div>
+
+    <div class="status-bar">
+      <div class="status-dot idle" id="status-dot"></div>
+      <span class="status-text" id="status-text">Entrez du JSON pour commencer</span>
+    </div>
+  </div>
+
+  <!-- UUID Panel -->
+  <div class="panel" id="panel-uuid">
+    <div class="uuid-section">
+      <h3>Générer des UUIDs</h3>
+      <div class="uuid-controls">
+        <label>Version :</label>
+        <select id="uuid-version">
+          <option value="v4" selected>v4 (aléatoire)</option>
+          <option value="v7">v7 (timestamp + aléatoire)</option>
+          <option value="nano">Nano ID (court)</option>
+          <option value="short">Short ID (8 chars)</option>
+        </select>
+        <label>Quantité :</label>
+        <input type="number" id="uuid-count" value="5" min="1" max="100" style="width:60px;">
+        <label>Format :</label>
+        <select id="uuid-format">
+          <option value="lower" selected>minuscules</option>
+          <option value="upper">MAJUSCULES</option>
+          <option value="braces">{avec accolades}</option>
+          <option value="bare">sans tirets</option>
+        </select>
+        <button class="btn-accent" onclick="generateUUIDs()">Générer</button>
+        <button class="btn" onclick="copyAllUUIDs()">Tout copier</button>
+      </div>
+      <div class="uuid-display" id="uuid-display">
+        <div style="color: var(--muted); text-align: center; padding: 2rem;">Cliquez sur Générer pour créer des UUIDs</div>
+      </div>
+      <div class="uuid-count" id="uuid-count-label"></div>
+    </div>
+
+    <div class="uuid-section">
+      <h3>Analyser un UUID</h3>
+      <div class="uuid-controls">
+        <input type="text" id="uuid-analyze-input" placeholder="Collez un UUID pour l'analyser..." style="flex:1; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:0.5rem 0.75rem; color:var(--text); font-family:'Consolas',monospace; font-size:0.9rem; outline:none;" oninput="analyzeUUID(this.value)">
+      </div>
+      <div id="uuid-analysis" style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--muted);"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ Tab switching ============
+function switchTab(tab, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ============ JSON Validator ============
+function getIndent() {
+  const val = document.getElementById('indent-size').value;
+  return val === 'tab' ? '\t' : parseInt(val);
+}
+
+function setStatus(type, message) {
+  const dot = document.getElementById('status-dot');
+  const text = document.getElementById('status-text');
+  dot.className = 'status-dot ' + type;
+  text.className = 'status-text ' + type;
+  text.textContent = message;
+}
+
+function liveValidate() {
+  const input = document.getElementById('json-input');
+  const raw = input.value.trim();
+  if (!raw) {
+    input.classList.remove('valid', 'invalid');
+    setStatus('idle', 'Entrez du JSON pour commencer');
+    return;
+  }
+  try {
+    JSON.parse(raw);
+    input.classList.add('valid');
+    input.classList.remove('invalid');
+    setStatus('ok', 'JSON valide');
+  } catch (e) {
+    input.classList.add('invalid');
+    input.classList.remove('valid');
+    const match = e.message.match(/position (\d+)/);
+    const pos = match ? ` (position ${match[1]})` : '';
+    setStatus('err', `Erreur : ${e.message}`);
+  }
+}
+
+function validateJSON() {
+  const raw = document.getElementById('json-input').value.trim();
+  if (!raw) return;
+  try {
+    const parsed = JSON.parse(raw);
+    const formatted = JSON.stringify(parsed, null, getIndent());
+    document.getElementById('json-output').textContent = formatted;
+    updateStats(parsed, formatted);
+    setStatus('ok', 'JSON valide — formaté avec succès');
+  } catch (e) {
+    document.getElementById('json-output').innerHTML = `<span style="color:var(--red)">Erreur de syntaxe :\n\n${escapeHtml(e.message)}</span>\n\n<span style="color:var(--muted)">Vérifiez :\n• Virgules manquantes ou en trop\n• Guillemets doubles (pas simples)\n• Accolades/crochets non fermés\n• Trailing commas</span>`;
+    setStatus('err', e.message);
+  }
+}
+
+function formatJSON() {
+  const raw = document.getElementById('json-input').value.trim();
+  if (!raw) return;
+  try {
+    const parsed = JSON.parse(raw);
+    const formatted = JSON.stringify(parsed, null, getIndent());
+    document.getElementById('json-input').value = formatted;
+    document.getElementById('json-output').textContent = formatted;
+    updateStats(parsed, formatted);
+    setStatus('ok', 'JSON formaté (pretty print)');
+  } catch (e) {
+    setStatus('err', e.message);
+  }
+}
+
+function minifyJSON() {
+  const raw = document.getElementById('json-input').value.trim();
+  if (!raw) return;
+  try {
+    const parsed = JSON.parse(raw);
+    const minified = JSON.stringify(parsed);
+    document.getElementById('json-input').value = minified;
+    document.getElementById('json-output').textContent = minified;
+    updateStats(parsed, minified);
+    setStatus('ok', `JSON minifié — ${minified.length} caractères`);
+  } catch (e) {
+    setStatus('err', e.message);
+  }
+}
+
+function sortKeys() {
+  const raw = document.getElementById('json-input').value.trim();
+  if (!raw) return;
+  try {
+    const parsed = JSON.parse(raw);
+    const sorted = sortObject(parsed);
+    const formatted = JSON.stringify(sorted, null, getIndent());
+    document.getElementById('json-input').value = formatted;
+    document.getElementById('json-output').textContent = formatted;
+    updateStats(sorted, formatted);
+    setStatus('ok', 'Clés triées alphabétiquement');
+  } catch (e) {
+    setStatus('err', e.message);
+  }
+}
+
+function sortObject(obj) {
+  if (Array.isArray(obj)) return obj.map(sortObject);
+  if (obj && typeof obj === 'object') {
+    return Object.keys(obj).sort().reduce((acc, key) => {
+      acc[key] = sortObject(obj[key]);
+      return acc;
+    }, {});
+  }
+  return obj;
+}
+
+function updateStats(parsed, str) {
+  const stats = document.getElementById('json-stats');
+  const type = Array.isArray(parsed) ? 'Array' : typeof parsed === 'object' ? 'Object' : typeof parsed;
+  const keys = typeof parsed === 'object' && parsed ? Object.keys(parsed).length : 0;
+  const depth = getDepth(parsed);
+  stats.innerHTML = `
+    <span>Type: <strong style="color:var(--text)">${type}</strong></span>
+    <span>${Array.isArray(parsed) ? `${parsed.length} éléments` : `${keys} clés`}</span>
+    <span>Profondeur: ${depth}</span>
+    <span>${str.length} chars</span>
+  `;
+}
+
+function getDepth(obj, current = 0) {
+  if (!obj || typeof obj !== 'object') return current;
+  return Math.max(...Object.values(obj).map(v => getDepth(v, current + 1)), current + 1);
+}
+
+function copyOutput() {
+  const text = document.getElementById('json-output').textContent;
+  navigator.clipboard.writeText(text).then(() => setStatus('ok', 'Résultat copié'));
+}
+
+function clearJSON() {
+  document.getElementById('json-input').value = '';
+  document.getElementById('json-output').textContent = 'Le résultat formaté apparaîtra ici...';
+  document.getElementById('json-input').classList.remove('valid', 'invalid');
+  document.getElementById('json-stats').innerHTML = '';
+  setStatus('idle', 'Entrez du JSON pour commencer');
+}
+
+async function pasteJSON() {
+  try {
+    const text = await navigator.clipboard.readText();
+    document.getElementById('json-input').value = text;
+    liveValidate();
+    validateJSON();
+  } catch(e) {
+    setStatus('err', 'Impossible de lire le presse-papiers');
+  }
+}
+
+function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ============ UUID Generator ============
+function uuidV4() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+function uuidV7() {
+  const now = Date.now();
+  const hex = now.toString(16).padStart(12, '0');
+  const rand = Array.from(crypto.getRandomValues(new Uint8Array(10)))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0,8)}-${hex.slice(8,12)}-7${rand.slice(0,3)}-${(parseInt(rand.slice(3,4),16) & 0x3 | 0x8).toString(16)}${rand.slice(4,7)}-${rand.slice(7,19)}`;
+}
+
+function nanoId(size = 21) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-';
+  const bytes = crypto.getRandomValues(new Uint8Array(size));
+  return Array.from(bytes).map(b => chars[b & 63]).join('');
+}
+
+function shortId() {
+  return Array.from(crypto.getRandomValues(new Uint8Array(4)))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function formatUUID(uuid, format) {
+  switch (format) {
+    case 'upper': return uuid.toUpperCase();
+    case 'braces': return `{${uuid}}`;
+    case 'bare': return uuid.replace(/-/g, '');
+    default: return uuid.toLowerCase();
+  }
+}
+
+function generateUUIDs() {
+  const version = document.getElementById('uuid-version').value;
+  const count = parseInt(document.getElementById('uuid-count').value) || 5;
+  const format = document.getElementById('uuid-format').value;
+  const display = document.getElementById('uuid-display');
+
+  const uuids = [];
+  for (let i = 0; i < Math.min(count, 100); i++) {
+    let id;
+    switch (version) {
+      case 'v4': id = uuidV4(); break;
+      case 'v7': id = uuidV7(); break;
+      case 'nano': id = nanoId(); break;
+      case 'short': id = shortId(); break;
+    }
+    uuids.push(formatUUID(id, format));
+  }
+
+  display.innerHTML = uuids.map(u =>
+    `<div class="uuid-line"><span class="uuid-text">${u}</span><button class="copy-one" onclick="copyOne('${u}')">copier</button></div>`
+  ).join('');
+
+  document.getElementById('uuid-count-label').textContent = `${uuids.length} ${version === 'nano' ? 'Nano IDs' : version === 'short' ? 'Short IDs' : 'UUIDs'} générés`;
+}
+
+function copyOne(uuid) {
+  navigator.clipboard.writeText(uuid).then(() => {
+    const btn = event.target;
+    btn.textContent = '✓';
+    setTimeout(() => btn.textContent = 'copier', 1500);
+  });
+}
+
+function copyAllUUIDs() {
+  const uuids = document.querySelectorAll('.uuid-text');
+  const text = Array.from(uuids).map(u => u.textContent).join('\n');
+  if (text) {
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = event.target;
+      btn.textContent = 'Copié !';
+      setTimeout(() => btn.textContent = 'Tout copier', 1500);
+    });
+  }
+}
+
+function analyzeUUID(input) {
+  const el = document.getElementById('uuid-analysis');
+  const clean = input.trim().replace(/[{}]/g, '');
+
+  if (!clean) { el.innerHTML = ''; return; }
+
+  // Check format
+  const uuidRegex = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(clean)) {
+    el.innerHTML = `<span style="color:var(--red)">Format invalide.</span> Un UUID v4 ressemble à : <code style="color:var(--accent)">550e8400-e29b-41d4-a716-446655440000</code>`;
+    return;
+  }
+
+  const normalized = clean.replace(/-/g, '').toLowerCase();
+  const withDashes = `${normalized.slice(0,8)}-${normalized.slice(8,12)}-${normalized.slice(12,16)}-${normalized.slice(16,20)}-${normalized.slice(20)}`;
+
+  const versionChar = normalized[12];
+  const variantChar = parseInt(normalized[16], 16);
+  let version = 'Inconnue';
+  if (versionChar === '4') version = 'v4 (aléatoire)';
+  else if (versionChar === '7') version = 'v7 (timestamp)';
+  else if (versionChar === '1') version = 'v1 (timestamp MAC)';
+  else if (versionChar === '3') version = 'v3 (MD5)';
+  else if (versionChar === '5') version = 'v5 (SHA-1)';
+
+  let variant = 'Inconnue';
+  if ((variantChar & 0x8) === 0x8) variant = 'RFC 4122';
+  else if ((variantChar & 0xC) === 0) variant = 'NCS';
+
+  let timestamp = '';
+  if (versionChar === '7') {
+    const tsHex = normalized.slice(0, 12);
+    const ts = parseInt(tsHex, 16);
+    timestamp = `<br>Timestamp : <strong style="color:var(--text)">${new Date(ts).toISOString()}</strong>`;
+  }
+
+  el.innerHTML = `
+    <div style="display:grid; grid-template-columns: auto 1fr; gap: 0.3rem 1rem;">
+      <span>Normalisé :</span><strong style="color:var(--accent); font-family:monospace;">${withDashes}</strong>
+      <span>Version :</span><strong style="color:var(--text)">${version}</strong>
+      <span>Variant :</span><strong style="color:var(--text)">${variant}</strong>
+      <span>Bits :</span><strong style="color:var(--text)">${normalized.length * 4} bits (${normalized.length} hex chars)</strong>
+    </div>${timestamp}
+  `;
+}
+
+// Init
+generateUUIDs();
+</script>
+</body>
+</html>

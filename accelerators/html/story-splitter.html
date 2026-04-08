@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Story Splitter - PO Toolkit</title>
+<style>
+  :root { --bg: #0f1117; --card: #1a1c2b; --card2: #202338; --text: #e8eaf0; --muted: #8a90ab; --border: #2a2d3e; --blue: #6366f1; --blue2: #8b5cf6; --green: #10b981; --yellow: #f59e0b; --red: #ef4444; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .app { display: grid; grid-template-columns: 320px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--card); border-right: 1px solid var(--border); padding: 1.5rem; }
+  .sidebar h1 { font-size: 1.38rem; margin-bottom: 0.35rem; font-weight: 800; color: #f8fafc; letter-spacing: -0.03em; }
+  .sidebar p { color: var(--muted); font-size: 0.84rem; line-height: 1.6; }
+  .guide { margin-top: 1.25rem; background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 1rem; }
+  .guide h2 { font-size: 0.92rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #f8fafc; margin-bottom: 0.75rem; }
+  .guide-item { margin-bottom: 0.85rem; }
+  .guide-item strong { display: block; font-size: 0.86rem; margin-bottom: 0.2rem; }
+  .guide-item span { color: var(--muted); font-size: 0.78rem; line-height: 1.5; }
+  .guide-note { margin-top: 1rem; padding: 0.8rem; border-radius: 12px; background: rgba(99,102,241,0.08); color: #c7cdf9; font-size: 0.78rem; line-height: 1.6; }
+
+  .main { padding: 1.5rem; }
+  .header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .header h2 { font-size: 1.56rem; font-weight: 800; color: #f8fafc; letter-spacing: -0.03em; }
+  .header-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  button { font-family: inherit; font-size: 0.84rem; font-weight: 700; border: none; border-radius: 10px; padding: 0.6rem 0.95rem; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: #4f46e5; }
+  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--blue); }
+  .btn-danger { background: transparent; color: var(--red); border: 1px solid rgba(239,68,68,0.5); }
+  .btn-danger:hover { background: rgba(239,68,68,0.12); }
+  .btn-small { padding: 0.35rem 0.6rem; font-size: 0.74rem; border-radius: 8px; }
+
+  .layout { display: grid; grid-template-columns: 1.05fr 1fr; gap: 1rem; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .panel-header { padding: 1rem 1.1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .panel-header h3 { font-size: 1rem; font-weight: 800; color: #f8fafc; }
+  .panel-body { padding: 1rem 1.1rem; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field.full { grid-column: 1 / -1; }
+  .field label { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .field input, .field textarea, .field select { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 0.8rem; outline: none; font-family: inherit; font-size: 0.9rem; }
+  .field textarea { resize: vertical; min-height: 96px; line-height: 1.5; }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--blue); }
+  .hint { color: var(--muted); font-size: 0.75rem; margin-top: 0.25rem; }
+
+  .pattern-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .pattern-card { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 0.85rem; display: flex; gap: 0.7rem; align-items: flex-start; cursor: pointer; }
+  .pattern-card.active { border-color: var(--blue); background: rgba(99,102,241,0.08); }
+  .pattern-card input { margin-top: 0.2rem; accent-color: var(--blue); }
+  .pattern-card strong { display: block; font-size: 0.86rem; margin-bottom: 0.2rem; }
+  .pattern-card span { color: var(--muted); font-size: 0.76rem; line-height: 1.5; }
+
+  .summary { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .summary-card { background: var(--card2); border: 1px solid var(--border); border-radius: 14px; padding: 0.9rem 1rem; min-width: 150px; }
+  .summary-card .label { color: var(--muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .summary-card .value { display: block; font-size: 1.25rem; font-weight: 800; margin-top: 0.25rem; }
+
+  .stories { display: grid; gap: 0.85rem; }
+  .story-card { background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 1rem; }
+  .story-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.8rem; }
+  .story-meta { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .story-badge { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 700; border-radius: 999px; padding: 0.28rem 0.6rem; background: rgba(99,102,241,0.12); color: #c7cdf9; }
+  .story-badge.team { background: rgba(16,185,129,0.12); color: #b7f3dc; }
+  .story-grid { display: grid; grid-template-columns: 1fr 160px; gap: 0.75rem; }
+  .story-grid .field.full { grid-column: 1 / -1; }
+  .empty { padding: 2rem; border: 1px dashed var(--border); border-radius: 16px; text-align: center; color: var(--muted); line-height: 1.7; }
+
+  @media (max-width: 1100px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 720px) {
+    .form-grid, .pattern-grid, .story-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <h1>Story Splitter</h1>
+    <p>Partez d'une feature et obtenez des decoupages actionnables pour le backlog, sans perdre la logique produit.</p>
+
+    <div class="guide">
+      <h2>Patterns utiles</h2>
+      <div class="guide-item">
+        <strong>Workflow</strong>
+        <span>Separera une feature en etapes visibles pour limiter le scope et livrer plus vite.</span>
+      </div>
+      <div class="guide-item">
+        <strong>Front / Back</strong>
+        <span>Le classique pour clarifier l'ordre de construction quand le front et le back ne bougent pas au meme rythme.</span>
+      </div>
+      <div class="guide-item">
+        <strong>Import / Export CSV</strong>
+        <span>Le pattern souvent oublie : exporter, puis importer, avec validations et erreurs si necessaire.</span>
+      </div>
+      <div class="guide-item">
+        <strong>Happy path / Edge cases</strong>
+        <span>Conserver une premiere valeur simple, puis traiter les exceptions et robustesse ensuite.</span>
+      </div>
+      <div class="guide-note">
+        Le but n'est pas de faire des tickets artificiels. Gardez des stories verticales quand c'est possible, puis utilisez les patterns techniques pour rendre le delivery realiste.
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="header">
+      <h2>Feature to Stories</h2>
+      <div class="header-actions">
+        <button class="btn-secondary" id="generate-btn">Generer des suggestions</button>
+        <button class="btn-secondary" id="add-manual-btn">Ajouter une story</button>
+        <button class="btn-secondary" id="export-btn">Exporter CSV</button>
+        <button class="btn-danger" id="reset-btn">Reinitialiser</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-header">
+          <h3>1. Definir la feature</h3>
+          <span class="hint">Le split part toujours de la feature, pas de l'epic.</span>
+        </div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="field full">
+              <label for="feature-title">Feature</label>
+              <input id="feature-title" type="text" placeholder="Ex: Gestion des exports rapports pour les managers">
+            </div>
+            <div class="field">
+              <label for="feature-role">Role / cible</label>
+              <input id="feature-role" type="text" placeholder="Ex: Manager produit">
+            </div>
+            <div class="field">
+              <label for="feature-team">Equipe cible</label>
+              <select id="feature-team">
+                <option value="Cross-team">Cross-team</option>
+                <option value="Front">Front</option>
+                <option value="Back">Back</option>
+                <option value="Full-stack">Full-stack</option>
+                <option value="Data">Data</option>
+                <option value="Platform">Platform</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="feature-outcome">Outcome attendu</label>
+              <textarea id="feature-outcome" placeholder="Ex: Permettre aux managers de recuperer et partager leurs rapports de performance sans passer par un admin."></textarea>
+            </div>
+            <div class="field full">
+              <label for="feature-constraints">Contraintes ou notes</label>
+              <textarea id="feature-constraints" placeholder="Ex: Besoin d'un export CSV, audit trail, permissions manager uniquement, API deja existante en lecture partielle."></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h3>2. Choisir les patterns de split</h3>
+          <span class="hint">Combine plusieurs axes si besoin.</span>
+        </div>
+        <div class="panel-body">
+          <div class="pattern-grid" id="pattern-grid"></div>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel" style="margin-top: 1rem;">
+      <div class="panel-header">
+        <h3>3. Stories proposees</h3>
+        <span class="hint">Edite, supprime ou complete avant export.</span>
+      </div>
+      <div class="panel-body">
+        <div class="summary" id="summary"></div>
+        <div class="stories" id="stories"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const STORAGE_KEY = 'po-toolkit-story-splitter-v1';
+
+const PATTERNS = [
+  { id: 'workflow', name: 'Workflow', desc: 'Decouper la feature en etapes utilisateur successives.' },
+  { id: 'front_back', name: 'Front / Back', desc: 'Separer UI, API, orchestration et exposition si utile.' },
+  { id: 'csv', name: 'Import / Export CSV', desc: 'Ne pas oublier les besoins CSV, souvent backlogues trop tard.' },
+  { id: 'happy_edge', name: 'Happy path / Edge cases', desc: 'Livrer d abord le flux nominal, puis robustesse et erreurs.' },
+  { id: 'rules', name: 'Regles metier', desc: 'Isoler regles, validations et exceptions metier.' },
+  { id: 'roles', name: 'Roles / permissions', desc: 'Decouper par type d utilisateur ou niveau d acces.' },
+  { id: 'data', name: 'Donnees / reporting', desc: 'Separer capture, persistence, historisation et reporting.' },
+  { id: 'non_functional', name: 'NFR / observabilite', desc: 'Ajouter perf, audit, logs ou securite seulement si necessaire.' }
+];
+
+const DEFAULT_SELECTED = ['workflow', 'front_back', 'csv', 'happy_edge'];
+
+const state = {
+  feature: {
+    title: '',
+    role: '',
+    team: 'Cross-team',
+    outcome: '',
+    constraints: ''
+  },
+  selectedPatterns: [...DEFAULT_SELECTED],
+  stories: []
+};
+
+let nextStoryId = 1;
+
+function slugify(text) {
+  return (text || 'story').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function getFeatureLabel() {
+  return state.feature.title.trim() || 'la feature';
+}
+
+function getRoleLabel() {
+  return state.feature.role.trim() || 'l utilisateur cible';
+}
+
+function createStory(overrides = {}) {
+  return {
+    id: overrides.id || `story-${nextStoryId++}`,
+    axis: overrides.axis || 'manual',
+    title: overrides.title || '',
+    team: overrides.team || 'Cross-team',
+    scope: overrides.scope || '',
+    acceptance: overrides.acceptance || '',
+  };
+}
+
+function getPatternStories(patternId) {
+  const feature = getFeatureLabel();
+  const role = getRoleLabel();
+  const baseTeam = state.feature.team || 'Cross-team';
+
+  const factories = {
+    workflow: () => [
+      createStory({
+        axis: 'Workflow',
+        title: `${feature} - saisir les donnees d entree`,
+        team: baseTeam,
+        scope: `Permettre a ${role} de lancer le flux depuis l interface ou le point d entree principal.`,
+        acceptance: 'Le point de depart est visible, actionnable et comprend les champs minimum.'
+      }),
+      createStory({
+        axis: 'Workflow',
+        title: `${feature} - afficher le resultat / confirmation`,
+        team: baseTeam,
+        scope: 'Restituer le resultat utile apres traitement, avec les informations que l utilisateur attend.',
+        acceptance: 'Le resultat est lisible, les statuts sont explicites et le retour utilisateur est clair.'
+      })
+    ],
+    front_back: () => [
+      createStory({
+        axis: 'Front / Back',
+        title: `${feature} - experience front`,
+        team: 'Front',
+        scope: 'Construire l ecran, les composants et les etats visuels pour exposer la feature.',
+        acceptance: 'Le parcours front couvre chargement, succes et erreur avec validations de base.'
+      }),
+      createStory({
+        axis: 'Front / Back',
+        title: `${feature} - service back / API`,
+        team: 'Back',
+        scope: 'Exposer la logique serveur, l endpoint ou le traitement necessaire au support de la feature.',
+        acceptance: 'L API ou le service retourne les donnees attendues et gere les erreurs fonctionnelles.'
+      })
+    ],
+    csv: () => [
+      createStory({
+        axis: 'Import / Export CSV',
+        title: `${feature} - export CSV`,
+        team: 'Back',
+        scope: 'Permettre de telecharger un fichier CSV avec colonnes, format et filtrage attendus.',
+        acceptance: 'Le CSV respecte le format convenu, les colonnes sont stables et les valeurs sont coherentes.'
+      }),
+      createStory({
+        axis: 'Import / Export CSV',
+        title: `${feature} - import CSV`,
+        team: 'Back',
+        scope: 'Permettre de charger un CSV, controler sa structure et remonter les erreurs ligne par ligne.',
+        acceptance: 'Les erreurs de format sont lisibles et les lignes valides sont traitees sans ambiguite.'
+      })
+    ],
+    happy_edge: () => [
+      createStory({
+        axis: 'Happy path / Edge cases',
+        title: `${feature} - happy path`,
+        team: baseTeam,
+        scope: 'Livrer le flux nominal avec les cas standards pour aller vite vers la valeur.',
+        acceptance: 'Le cas nominal de bout en bout fonctionne sans traitement des exceptions complexes.'
+      }),
+      createStory({
+        axis: 'Happy path / Edge cases',
+        title: `${feature} - erreurs et cas limites`,
+        team: baseTeam,
+        scope: 'Couvrir les erreurs utilisateur, donnees manquantes, limites et retours d erreur.',
+        acceptance: 'Les principaux cas limites sont traites avec messages clairs et comportements stables.'
+      })
+    ],
+    rules: () => [
+      createStory({
+        axis: 'Regles metier',
+        title: `${feature} - regles principales`,
+        team: baseTeam,
+        scope: 'Implementer les regles metier coeur qui conditionnent la valeur du flux.',
+        acceptance: 'Les regles coeur sont explicites, testables et couvertes par des cas de validation.'
+      }),
+      createStory({
+        axis: 'Regles metier',
+        title: `${feature} - exceptions et validations`,
+        team: baseTeam,
+        scope: 'Traiter exceptions, cas de rejet, garde-fous et validations complementaires.',
+        acceptance: 'Les validations remontent des messages compréhensibles et empechent les etats invalides.'
+      })
+    ],
+    roles: () => [
+      createStory({
+        axis: 'Roles / permissions',
+        title: `${feature} - acces standard`,
+        team: baseTeam,
+        scope: 'Rendre la feature disponible pour le role principal cible dans le cadre nominal.',
+        acceptance: 'Le role principal voit la feature et peut l utiliser dans les limites prevues.'
+      }),
+      createStory({
+        axis: 'Roles / permissions',
+        title: `${feature} - permissions avancees`,
+        team: baseTeam,
+        scope: 'Ajouter les variantes admin, superviseur ou lecture seule selon le besoin.',
+        acceptance: 'Les acces sont filtres selon les permissions et les actions non autorisees sont bloquees.'
+      })
+    ],
+    data: () => [
+      createStory({
+        axis: 'Donnees / reporting',
+        title: `${feature} - modele et persistence`,
+        team: 'Back',
+        scope: 'Creer ou faire evoluer le modele de donnees, stockage et historisation utiles.',
+        acceptance: 'Les donnees sont correctement stockees, relues et tracees si necessaire.'
+      }),
+      createStory({
+        axis: 'Donnees / reporting',
+        title: `${feature} - reporting et lecture`,
+        team: 'Data',
+        scope: 'Exposer les donnees en lecture, reporting ou agregats utiles a la feature.',
+        acceptance: 'Les vues de lecture ou reporting restituent les bons indicateurs et filtres.'
+      })
+    ],
+    non_functional: () => [
+      createStory({
+        axis: 'NFR / observabilite',
+        title: `${feature} - audit et observabilite`,
+        team: 'Platform',
+        scope: 'Ajouter logs, traces, audit et suivi pour exploiter la feature en production.',
+        acceptance: 'Les evenements importants sont tracés et les incidents sont investigables.'
+      }),
+      createStory({
+        axis: 'NFR / observabilite',
+        title: `${feature} - performance et securite`,
+        team: 'Platform',
+        scope: 'Traiter limites de performance, controle d acces et securisation minimale.',
+        acceptance: 'Les controles de securite essentiels et la perf minimale attendue sont couverts.'
+      })
+    ]
+  };
+
+  return factories[patternId] ? factories[patternId]() : [];
+}
+
+function dedupeStories(stories) {
+  const seen = new Set();
+  return stories.filter(story => {
+    const key = slugify(`${story.axis}-${story.title}`);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function renderPatterns() {
+  const container = document.getElementById('pattern-grid');
+  container.innerHTML = PATTERNS.map(pattern => `
+    <label class="pattern-card ${state.selectedPatterns.includes(pattern.id) ? 'active' : ''}">
+      <input type="checkbox" data-pattern-id="${pattern.id}" ${state.selectedPatterns.includes(pattern.id) ? 'checked' : ''}>
+      <div>
+        <strong>${pattern.name}</strong>
+        <span>${pattern.desc}</span>
+      </div>
+    </label>
+  `).join('');
+}
+
+function renderSummary() {
+  const total = state.stories.length;
+  const byTeam = state.stories.reduce((acc, story) => {
+    acc[story.team] = (acc[story.team] || 0) + 1;
+    return acc;
+  }, {});
+  const mainTeam = Object.entries(byTeam).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+
+  document.getElementById('summary').innerHTML = `
+    <div class="summary-card">
+      <span class="label">Stories</span>
+      <span class="value">${total}</span>
+    </div>
+    <div class="summary-card">
+      <span class="label">Pattern actifs</span>
+      <span class="value">${state.selectedPatterns.length}</span>
+    </div>
+    <div class="summary-card">
+      <span class="label">Equipe dominante</span>
+      <span class="value">${mainTeam}</span>
+    </div>
+  `;
+}
+
+function renderStories() {
+  const container = document.getElementById('stories');
+  if (state.stories.length === 0) {
+    container.innerHTML = `<div class="empty">Aucune story pour le moment.<br>Definis la feature puis genere des suggestions.</div>`;
+    renderSummary();
+    return;
+  }
+
+  container.innerHTML = state.stories.map(story => `
+    <article class="story-card" data-story-id="${story.id}">
+      <div class="story-head">
+        <div class="story-meta">
+          <span class="story-badge">${story.axis}</span>
+          <span class="story-badge team">${story.team}</span>
+        </div>
+        <button class="btn-danger btn-small" data-remove-story="${story.id}">Supprimer</button>
+      </div>
+      <div class="story-grid">
+        <div class="field">
+          <label>Titre de story</label>
+          <input type="text" data-field="title" value="${escapeHtml(story.title)}">
+        </div>
+        <div class="field">
+          <label>Equipe</label>
+          <select data-field="team">
+            ${['Cross-team', 'Front', 'Back', 'Full-stack', 'Data', 'Platform'].map(team => `<option value="${team}" ${story.team === team ? 'selected' : ''}>${team}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field full">
+          <label>Scope</label>
+          <textarea data-field="scope">${escapeHtml(story.scope)}</textarea>
+        </div>
+        <div class="field full">
+          <label>Definition of done / acceptance</label>
+          <textarea data-field="acceptance">${escapeHtml(story.acceptance)}</textarea>
+        </div>
+      </div>
+    </article>
+  `).join('');
+
+  renderSummary();
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    state,
+    nextStoryId
+  }));
+}
+
+function loadState() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed.state) {
+      Object.assign(state.feature, parsed.state.feature || {});
+      state.selectedPatterns = Array.isArray(parsed.state.selectedPatterns) ? parsed.state.selectedPatterns : [...DEFAULT_SELECTED];
+      state.stories = Array.isArray(parsed.state.stories) ? parsed.state.stories : [];
+    }
+    nextStoryId = Number.isFinite(parsed.nextStoryId) ? parsed.nextStoryId : 1;
+  } catch (error) {
+    console.warn('Story splitter state could not be restored', error);
+  }
+}
+
+function syncFormFromState() {
+  document.getElementById('feature-title').value = state.feature.title;
+  document.getElementById('feature-role').value = state.feature.role;
+  document.getElementById('feature-team').value = state.feature.team;
+  document.getElementById('feature-outcome').value = state.feature.outcome;
+  document.getElementById('feature-constraints').value = state.feature.constraints;
+}
+
+function updateFeatureField(field, value) {
+  state.feature[field] = value;
+  saveState();
+}
+
+function regenerateStories() {
+  const generated = state.selectedPatterns.flatMap(patternId => getPatternStories(patternId));
+  state.stories = dedupeStories(generated);
+  renderStories();
+  saveState();
+}
+
+function addManualStory() {
+  state.stories.push(createStory({
+    axis: 'Manual',
+    title: `${getFeatureLabel()} - story complementaire`,
+    team: state.feature.team || 'Cross-team',
+    scope: '',
+    acceptance: ''
+  }));
+  renderStories();
+  saveState();
+}
+
+function removeStory(storyId) {
+  state.stories = state.stories.filter(story => story.id !== storyId);
+  renderStories();
+  saveState();
+}
+
+function updateStory(storyId, field, value) {
+  const story = state.stories.find(entry => entry.id === storyId);
+  if (!story) return;
+  story[field] = value;
+  renderSummary();
+  saveState();
+}
+
+function exportCsv() {
+  const rows = [
+    ['feature', 'axis', 'story_title', 'team', 'scope', 'acceptance']
+  ];
+
+  state.stories.forEach(story => {
+    rows.push([
+      state.feature.title || 'Feature',
+      story.axis,
+      story.title,
+      story.team,
+      story.scope,
+      story.acceptance
+    ]);
+  });
+
+  const csv = rows.map(row => row.map(toCsvCell).join(',')).join('\n');
+  downloadFile(csv, `${slugify(state.feature.title || 'story-splitter')}.csv`, 'text/csv;charset=utf-8;');
+}
+
+function toCsvCell(value) {
+  const normalized = String(value || '').replace(/"/g, '""');
+  return `"${normalized}"`;
+}
+
+function downloadFile(content, fileName, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function resetAll() {
+  if (!confirm('Reinitialiser la feature et les stories generees ?')) return;
+  state.feature = {
+    title: '',
+    role: '',
+    team: 'Cross-team',
+    outcome: '',
+    constraints: ''
+  };
+  state.selectedPatterns = [...DEFAULT_SELECTED];
+  state.stories = [];
+  nextStoryId = 1;
+  syncFormFromState();
+  renderPatterns();
+  renderStories();
+  saveState();
+}
+
+function bindEvents() {
+  document.getElementById('feature-title').addEventListener('input', event => updateFeatureField('title', event.target.value));
+  document.getElementById('feature-role').addEventListener('input', event => updateFeatureField('role', event.target.value));
+  document.getElementById('feature-team').addEventListener('change', event => updateFeatureField('team', event.target.value));
+  document.getElementById('feature-outcome').addEventListener('input', event => updateFeatureField('outcome', event.target.value));
+  document.getElementById('feature-constraints').addEventListener('input', event => updateFeatureField('constraints', event.target.value));
+
+  document.getElementById('pattern-grid').addEventListener('change', event => {
+    const patternId = event.target.dataset.patternId;
+    if (!patternId) return;
+
+    if (event.target.checked) {
+      if (!state.selectedPatterns.includes(patternId)) state.selectedPatterns.push(patternId);
+    } else {
+      state.selectedPatterns = state.selectedPatterns.filter(id => id !== patternId);
+    }
+
+    renderPatterns();
+    saveState();
+  });
+
+  document.getElementById('stories').addEventListener('input', event => {
+    const storyCard = event.target.closest('[data-story-id]');
+    if (!storyCard) return;
+    const storyId = storyCard.dataset.storyId;
+    const field = event.target.dataset.field;
+    if (!field) return;
+    updateStory(storyId, field, event.target.value);
+  });
+
+  document.getElementById('stories').addEventListener('change', event => {
+    const storyCard = event.target.closest('[data-story-id]');
+    if (!storyCard) return;
+    const storyId = storyCard.dataset.storyId;
+    const field = event.target.dataset.field;
+    if (!field) return;
+    updateStory(storyId, field, event.target.value);
+  });
+
+  document.getElementById('stories').addEventListener('click', event => {
+    const removeButton = event.target.closest('[data-remove-story]');
+    if (!removeButton) return;
+    removeStory(removeButton.dataset.removeStory);
+  });
+
+  document.getElementById('generate-btn').addEventListener('click', regenerateStories);
+  document.getElementById('add-manual-btn').addEventListener('click', addManualStory);
+  document.getElementById('export-btn').addEventListener('click', exportCsv);
+  document.getElementById('reset-btn').addEventListener('click', resetAll);
+}
+
+function init() {
+  loadState();
+  syncFormFromState();
+  renderPatterns();
+  renderStories();
+  bindEvents();
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PI Planning Simulator - PO Toolkit</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1c2b;
+    --card2: #202338;
+    --text: #e8eaf0;
+    --heading: #f8fafc;
+    --muted: #8a90ab;
+    --border: #2a2d3e;
+    --blue: #6366f1;
+    --violet: #8b5cf6;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --cyan: #06b6d4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .page { padding: 1.5rem; display: grid; gap: 1rem; }
+  .header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .header h1 { font-size: 1.65rem; font-weight: 800; color: var(--heading); letter-spacing: -0.03em; }
+  .header p { color: var(--muted); font-size: 0.92rem; line-height: 1.6; }
+  .header-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  button { font-family: inherit; font-size: 0.84rem; font-weight: 700; border: none; border-radius: 10px; padding: 0.6rem 0.95rem; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: #4f46e5; }
+  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--blue); }
+  .btn-danger { background: transparent; color: var(--red); border: 1px solid rgba(239,68,68,0.5); }
+  .btn-danger:hover { background: rgba(239,68,68,0.12); }
+  .btn-small { padding: 0.34rem 0.58rem; font-size: 0.73rem; border-radius: 8px; }
+
+  .config-grid, .summary-grid, .board-grid, .item-grid { display: grid; gap: 1rem; }
+  .config-grid { grid-template-columns: 1.15fr 0.85fr; }
+  .summary-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .item-grid { grid-template-columns: 1fr; margin-top: 1rem; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .panel-header { padding: 1rem 1.1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .panel-header h2, .panel-header h3 { font-size: 1.02rem; font-weight: 800; color: var(--heading); letter-spacing: -0.02em; }
+  .panel-body { padding: 1rem 1.1rem; }
+
+  .form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .field input, .field select { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 0.72rem 0.8rem; outline: none; font-family: inherit; font-size: 0.9rem; }
+  .field input:focus, .field select:focus { border-color: var(--blue); }
+  .hint { color: var(--muted); font-size: 0.75rem; }
+
+  .item-section { background: var(--card2); border: 1px solid var(--border); border-radius: 14px; padding: 1rem; display: grid; gap: 0.9rem; }
+  .item-section-head { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; }
+  .item-section-head h3 { font-size: 0.96rem; font-weight: 800; color: var(--heading); }
+  .item-section-head span { color: var(--muted); font-size: 0.78rem; }
+  .item-composer { display: grid; grid-template-columns: 1fr auto; gap: 0.6rem; }
+  .item-composer input { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 0.72rem 0.8rem; outline: none; font-family: inherit; font-size: 0.88rem; }
+  .item-composer input:focus { border-color: var(--blue); }
+  .item-list { display: grid; gap: 0.55rem; }
+  .item-row { display: grid; grid-template-columns: auto 1fr auto; gap: 0.6rem; align-items: center; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 0.7rem; }
+  .item-index { width: 28px; height: 28px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.74rem; font-weight: 800; background: rgba(99,102,241,0.14); color: #c7cdf9; }
+  .item-row input { width: 100%; background: transparent; color: var(--text); border: none; outline: none; font-family: inherit; font-size: 0.88rem; line-height: 1.5; }
+  .item-empty { color: var(--muted); font-size: 0.82rem; line-height: 1.6; border: 1px dashed var(--border); border-radius: 12px; padding: 0.85rem 0.9rem; }
+
+  .summary-card { background: var(--card2); border: 1px solid var(--border); border-radius: 14px; padding: 0.95rem 1rem; }
+  .summary-card .label { color: var(--muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .summary-card .value { display: block; margin-top: 0.3rem; font-size: 1.25rem; font-weight: 800; color: var(--heading); }
+  .summary-card .sub { display: block; margin-top: 0.2rem; color: var(--muted); font-size: 0.76rem; }
+
+  .warning-list { display: grid; gap: 0.65rem; }
+  .warning-item { border: 1px solid rgba(245,158,11,0.35); background: rgba(245,158,11,0.08); color: #ffd69b; border-radius: 12px; padding: 0.8rem 0.9rem; font-size: 0.82rem; line-height: 1.55; }
+  .warning-item.red { border-color: rgba(239,68,68,0.35); background: rgba(239,68,68,0.08); color: #ffb3b3; }
+  .warning-empty { color: #b7f3dc; border: 1px solid rgba(16,185,129,0.35); background: rgba(16,185,129,0.08); border-radius: 12px; padding: 0.8rem 0.9rem; font-size: 0.82rem; }
+
+  .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.85rem; }
+  .toolbar .meta { color: var(--muted); font-size: 0.78rem; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 0.65rem 0.7rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--card2); color: #d6daeb; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; text-align: left; }
+  td { font-size: 0.84rem; }
+  tr:last-child td { border-bottom: none; }
+  td input[type="text"], td input[type="number"], td select { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 0.45rem 0.55rem; outline: none; font-family: inherit; font-size: 0.82rem; }
+  td input:focus, td select:focus { border-color: var(--blue); }
+
+  .chip { display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 999px; padding: 0.28rem 0.6rem; font-size: 0.72rem; font-weight: 800; }
+  .chip.must { background: rgba(239,68,68,0.12); color: #ffb3b3; }
+  .chip.should { background: rgba(245,158,11,0.12); color: #ffd69b; }
+  .chip.ip { background: rgba(6,182,212,0.12); color: #b9f3ff; }
+
+  .board-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); align-items: start; }
+  .lane { background: var(--card); border: 1px solid var(--border); border-radius: 16px; min-height: 260px; display: flex; flex-direction: column; }
+  .lane.ip-lane { border-color: rgba(6,182,212,0.5); box-shadow: 0 0 0 1px rgba(6,182,212,0.16) inset; }
+  .lane-header { padding: 0.95rem 1rem; border-bottom: 1px solid var(--border); }
+  .lane-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.55rem; }
+  .lane-title { font-size: 0.98rem; font-weight: 800; color: var(--heading); }
+  .lane-stats { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 0.78rem; color: var(--muted); }
+  .lane-capacity input { width: 76px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.5rem; font-family: inherit; font-size: 0.8rem; }
+  .lane-progress { height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden; margin-top: 0.55rem; }
+  .lane-progress-bar { height: 100%; background: linear-gradient(90deg, var(--blue), var(--violet)); }
+  .lane-progress-bar.over { background: linear-gradient(90deg, var(--yellow), var(--red)); }
+  .lane-body { padding: 0.8rem; display: grid; gap: 0.75rem; min-height: 180px; }
+  .lane-drop { min-height: 36px; border: 1px dashed transparent; border-radius: 12px; }
+  .lane.drag-over .lane-drop { border-color: var(--blue); background: rgba(99,102,241,0.08); }
+
+  .story-card { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 0.85rem; display: grid; gap: 0.55rem; cursor: grab; }
+  .story-card:active { cursor: grabbing; }
+  .story-card .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.6rem; }
+  .story-card h4 { font-size: 0.86rem; font-weight: 800; color: var(--heading); line-height: 1.45; }
+  .story-card .meta { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .story-card .small { font-size: 0.74rem; color: var(--muted); line-height: 1.5; }
+  .story-card .deps { color: #c7cdf9; }
+  .story-card .small strong { color: var(--heading); }
+  .empty-lane { color: var(--muted); font-size: 0.8rem; padding: 0.8rem; border: 1px dashed var(--border); border-radius: 12px; text-align: center; line-height: 1.6; }
+
+  @media (max-width: 1180px) {
+    .config-grid { grid-template-columns: 1fr; }
+    .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  @media (max-width: 760px) {
+    .summary-grid, .form-grid, .item-composer { grid-template-columns: 1fr; }
+    .item-row { grid-template-columns: auto 1fr; }
+    .item-row button { grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>PI Planning Simulator</h1>
+      <p>Planifiez les US par sprint, gardez un oeil sur la capacite, les priorites Must/Should, les dependances et les risques du PI.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" id="add-story-btn">Ajouter une US</button>
+      <button class="btn-secondary" id="export-btn">Exporter CSV</button>
+      <button class="btn-danger" id="reset-btn">Reinitialiser</button>
+    </div>
+  </div>
+
+  <div class="config-grid">
+    <section class="panel">
+      <div class="panel-header">
+        <h2>Cadre du PI</h2>
+        <span class="hint">Par defaut : 5 sprints avec IP en sprint 5.</span>
+      </div>
+      <div class="panel-body">
+        <div class="form-grid">
+          <div class="field">
+            <label for="pi-name">PI name</label>
+            <input id="pi-name" type="text" placeholder="Ex: PI Q3 - Growth">
+          </div>
+          <div class="field">
+            <label for="sprint-count">Nombre de sprints</label>
+            <input id="sprint-count" type="number" min="2" max="12" step="1">
+          </div>
+          <div class="field">
+            <label for="ip-sprint">Sprint IP</label>
+            <select id="ip-sprint"></select>
+          </div>
+        </div>
+
+        <div class="item-grid">
+          <div class="item-section">
+            <div class="item-section-head">
+              <h3>Objectifs PI</h3>
+              <span>Des outcomes clairs, pas un bloc fourre-tout.</span>
+            </div>
+            <div class="item-composer">
+              <input id="objective-input" type="text" placeholder="Ex: Livrer le reporting manager avec export CSV et telemetry de bout en bout.">
+              <button class="btn-primary" id="add-objective-btn">+ Ajouter</button>
+            </div>
+            <div class="item-list" id="objective-list"></div>
+          </div>
+
+          <div class="item-section">
+            <div class="item-section-head">
+              <h3>Risques / points d'attention</h3>
+              <span>Listez les points a surveiller pendant le PI.</span>
+            </div>
+            <div class="item-composer">
+              <input id="risk-input" type="text" placeholder="Ex: Dependance equipe data sur le schema d'export et le contrat de colonnes.">
+              <button class="btn-primary" id="add-risk-btn">+ Ajouter</button>
+            </div>
+            <div class="item-list" id="risk-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h2>Alertes de plan</h2>
+        <span class="hint">Capacite, dependances, must-have et hygiene du board.</span>
+      </div>
+      <div class="panel-body">
+        <div id="warnings"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="summary-grid" id="summary"></div>
+
+  <section class="panel">
+    <div class="panel-header">
+      <h3>Backlog PI</h3>
+      <span class="hint">Affectez les US a un sprint ou glissez-les sur le board.</span>
+    </div>
+    <div class="panel-body">
+      <div class="toolbar">
+        <span class="meta" id="backlog-meta"></span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:72px;">ID</th>
+              <th>Titre US</th>
+              <th style="width:92px;">SP</th>
+              <th style="width:110px;">Priorite</th>
+              <th style="width:120px;">Squad</th>
+              <th style="width:140px;">Dependances</th>
+              <th style="width:140px;">Sprint cible</th>
+              <th style="width:48px;"></th>
+            </tr>
+          </thead>
+          <tbody id="backlog-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <h3>Board PI</h3>
+      <span class="hint">Glissez les cartes d'un sprint a l'autre pour simuler vos arbitrages.</span>
+    </div>
+    <div class="panel-body">
+      <div class="board-grid" id="board"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const STORAGE_KEY = 'po-toolkit-pi-planning-simulator-v2';
+const CSV_SEPARATOR = ';';
+const CSV_NEWLINE = '\r\n';
+
+const state = {
+  config: {
+    piName: 'PI Planning',
+    sprintCount: 5,
+    ipSprint: 5,
+    objectives: [],
+    risks: []
+  },
+  capacities: [20, 20, 20, 20, 0],
+  stories: []
+};
+
+let nextStoryIndex = 1;
+let dragStoryId = null;
+
+function ensureArray(value) {
+  return Array.isArray(value) ? value.filter(Boolean).map(item => String(item)) : [];
+}
+
+function createDefaultStory() {
+  return {
+    id: `US-${nextStoryIndex++}`,
+    title: `User story ${nextStoryIndex - 1}`,
+    points: 5,
+    priority: 'Must',
+    squad: 'Core',
+    dependsOn: '',
+    sprint: null
+  };
+}
+
+function ensureCapacityLength() {
+  const desired = state.config.sprintCount;
+  const next = [];
+  for (let index = 0; index < desired; index++) {
+    const isIp = index + 1 === state.config.ipSprint;
+    next.push(state.capacities[index] !== undefined ? state.capacities[index] : (isIp ? 0 : 20));
+  }
+  state.capacities = next;
+}
+
+function normalizeConfig() {
+  state.config.sprintCount = Math.max(2, Math.min(12, Number(state.config.sprintCount) || 5));
+  state.config.ipSprint = Math.max(1, Math.min(state.config.sprintCount, Number(state.config.ipSprint) || state.config.sprintCount));
+  state.config.objectives = ensureArray(state.config.objectives);
+  state.config.risks = ensureArray(state.config.risks);
+  ensureCapacityLength();
+  state.stories.forEach(story => {
+    if (story.sprint !== null && story.sprint > state.config.sprintCount) story.sprint = null;
+  });
+}
+
+function getSprintLabel(sprintNumber) {
+  return sprintNumber === state.config.ipSprint ? `Sprint ${sprintNumber} (IP)` : `Sprint ${sprintNumber}`;
+}
+
+function getSprintOptions() {
+  return Array.from({ length: state.config.sprintCount }, (_, index) => index + 1);
+}
+
+function getStoryById(storyId) {
+  return state.stories.find(story => story.id === storyId);
+}
+
+function parseDependencies(story) {
+  return (story.dependsOn || '')
+    .split(',')
+    .map(value => value.trim())
+    .filter(Boolean);
+}
+
+function getUsedCapacity(sprintNumber) {
+  return state.stories
+    .filter(story => story.sprint === sprintNumber)
+    .reduce((sum, story) => sum + (Number(story.points) || 0), 0);
+}
+
+function getWarnings() {
+  const warnings = [];
+
+  if (state.config.objectives.length === 0) {
+    warnings.push({
+      level: 'yellow',
+      text: 'Aucun objectif PI n est renseigne. Formalisez au moins 2 ou 3 outcomes attendus.'
+    });
+  }
+
+  if (state.config.risks.length === 0) {
+    warnings.push({
+      level: 'yellow',
+      text: 'Aucun risque n est renseigne. Pensez aux dependances externes, contrats d API, data et capacite.'
+    });
+  }
+
+  getSprintOptions().forEach(sprintNumber => {
+    const used = getUsedCapacity(sprintNumber);
+    const capacity = Number(state.capacities[sprintNumber - 1]) || 0;
+    if (used > capacity) {
+      warnings.push({
+        level: 'red',
+        text: `${getSprintLabel(sprintNumber)} depasse sa capacite (${used}/${capacity}).`
+      });
+    }
+  });
+
+  state.stories.forEach(story => {
+    if (story.sprint === state.config.ipSprint) {
+      warnings.push({
+        level: 'yellow',
+        text: `${story.id} est planifiee en IP sprint. Verifiez si c'est bien voulu ou si elle doit rester buffer / innovation.`
+      });
+    }
+
+    if (story.priority === 'Must' && story.sprint === null) {
+      warnings.push({
+        level: 'red',
+        text: `${story.id} est Must mais n'est affectee a aucun sprint.`
+      });
+    }
+
+    parseDependencies(story).forEach(depId => {
+      const dependency = getStoryById(depId);
+      if (!dependency) {
+        warnings.push({
+          level: 'yellow',
+          text: `${story.id} depend de ${depId}, mais cette US n'existe pas dans le board.`
+        });
+        return;
+      }
+      if (story.sprint !== null && dependency.sprint === null) {
+        warnings.push({
+          level: 'yellow',
+          text: `${story.id} est planifiee mais sa dependance ${depId} ne l'est pas encore.`
+        });
+      }
+      if (story.sprint !== null && dependency.sprint !== null && dependency.sprint > story.sprint) {
+        warnings.push({
+          level: 'red',
+          text: `${story.id} est planifiee avant sa dependance ${depId}.`
+        });
+      }
+    });
+  });
+
+  const shouldBeforeMust = state.stories.filter(story =>
+    story.priority === 'Should' &&
+    story.sprint !== null &&
+    state.stories.some(other => other.priority === 'Must' && other.sprint === null)
+  );
+
+  shouldBeforeMust.forEach(story => {
+    warnings.push({
+      level: 'yellow',
+      text: `${story.id} est un Should planifie alors qu'il reste encore des Must non planifies.`
+    });
+  });
+
+  return warnings;
+}
+
+function renderWarnings() {
+  const warnings = getWarnings();
+  const container = document.getElementById('warnings');
+  if (warnings.length === 0) {
+    container.innerHTML = `<div class="warning-empty">Plan coherent pour l'instant : aucune alerte bloquante detectee.</div>`;
+    return;
+  }
+
+  container.innerHTML = `<div class="warning-list">${warnings.map(warning => `
+    <div class="warning-item ${warning.level === 'red' ? 'red' : ''}">${warning.text}</div>
+  `).join('')}</div>`;
+}
+
+function renderSummary() {
+  const totalCapacity = state.capacities.reduce((sum, value) => sum + (Number(value) || 0), 0);
+  const totalScope = state.stories.reduce((sum, story) => sum + (Number(story.points) || 0), 0);
+  const mustCount = state.stories.filter(story => story.priority === 'Must').length;
+  const shouldCount = state.stories.filter(story => story.priority === 'Should').length;
+  const planned = state.stories.filter(story => story.sprint !== null).length;
+
+  document.getElementById('summary').innerHTML = `
+    <div class="summary-card">
+      <span class="label">US dans le PI</span>
+      <span class="value">${state.stories.length}</span>
+      <span class="sub">${planned} planifiees</span>
+    </div>
+    <div class="summary-card">
+      <span class="label">Capacite totale</span>
+      <span class="value">${totalCapacity}</span>
+      <span class="sub">${totalScope} points de scope</span>
+    </div>
+    <div class="summary-card">
+      <span class="label">Must vs Should</span>
+      <span class="value">${mustCount} / ${shouldCount}</span>
+      <span class="sub">Must / Should</span>
+    </div>
+    <div class="summary-card">
+      <span class="label">IP Sprint</span>
+      <span class="value">S${state.config.ipSprint}</span>
+      <span class="sub">${getUsedCapacity(state.config.ipSprint)} points affectes</span>
+    </div>
+    <div class="summary-card">
+      <span class="label">Objectifs / Risques</span>
+      <span class="value">${state.config.objectives.length} / ${state.config.risks.length}</span>
+      <span class="sub">Items suivis pendant le PI</span>
+    </div>
+  `;
+}
+
+function renderItemList(kind, containerId) {
+  const items = kind === 'objectives' ? state.config.objectives : state.config.risks;
+  const emptyText = kind === 'objectives'
+    ? 'Ajoutez les outcomes attendus du PI pour garder le board oriente valeur.'
+    : 'Ajoutez les principaux risques ou points d attention pour faciliter les arbitrages.';
+
+  document.getElementById(containerId).innerHTML = items.length === 0
+    ? `<div class="item-empty">${emptyText}</div>`
+    : items.map((item, index) => `
+        <div class="item-row" data-item-kind="${kind}" data-item-index="${index}">
+          <span class="item-index">${index + 1}</span>
+          <input type="text" value="${escapeHtml(item)}" data-item-input="true">
+          <button class="btn-danger btn-small" data-remove-item="${kind}:${index}">Supprimer</button>
+        </div>
+      `).join('');
+}
+
+function renderBacklog() {
+  document.getElementById('backlog-meta').textContent = `${state.stories.length} US a arbitrer dans ${state.config.sprintCount} sprints.`;
+
+  document.getElementById('backlog-body').innerHTML = state.stories.map(story => `
+    <tr data-story-id="${story.id}">
+      <td><strong>${story.id}</strong></td>
+      <td><input type="text" data-field="title" value="${escapeHtml(story.title)}"></td>
+      <td><input type="number" data-field="points" min="1" max="100" step="1" value="${story.points}"></td>
+      <td>
+        <select data-field="priority">
+          <option value="Must" ${story.priority === 'Must' ? 'selected' : ''}>Must</option>
+          <option value="Should" ${story.priority === 'Should' ? 'selected' : ''}>Should</option>
+        </select>
+      </td>
+      <td><input type="text" data-field="squad" value="${escapeHtml(story.squad)}"></td>
+      <td><input type="text" data-field="dependsOn" value="${escapeHtml(story.dependsOn)}" placeholder="US-1, US-3"></td>
+      <td>
+        <select data-field="sprint">
+          <option value="">Backlog</option>
+          ${getSprintOptions().map(sprintNumber => `<option value="${sprintNumber}" ${story.sprint === sprintNumber ? 'selected' : ''}>${getSprintLabel(sprintNumber)}</option>`).join('')}
+        </select>
+      </td>
+      <td><button class="btn-danger btn-small" data-remove-story="${story.id}">x</button></td>
+    </tr>
+  `).join('');
+}
+
+function renderBoard() {
+  const columns = [{ id: 'backlog', title: 'Backlog', isBacklog: true }, ...getSprintOptions().map(sprintNumber => ({
+    id: sprintNumber,
+    title: getSprintLabel(sprintNumber),
+    isIp: sprintNumber === state.config.ipSprint
+  }))];
+
+  document.getElementById('board').innerHTML = columns.map(column => {
+    const stories = column.isBacklog
+      ? state.stories.filter(story => story.sprint === null)
+      : state.stories.filter(story => story.sprint === column.id);
+
+    const used = column.isBacklog ? 0 : getUsedCapacity(column.id);
+    const capacity = column.isBacklog ? null : (Number(state.capacities[column.id - 1]) || 0);
+    const ratio = !column.isBacklog && capacity > 0 ? Math.min((used / capacity) * 100, 100) : 0;
+    const isOver = !column.isBacklog && used > capacity;
+
+    return `
+      <section class="lane ${column.isIp ? 'ip-lane' : ''}" data-drop-sprint="${column.isBacklog ? '' : column.id}">
+        <div class="lane-header">
+          <div class="lane-top">
+            <div class="lane-title">${column.title}</div>
+            ${column.isIp ? '<span class="chip ip">IP</span>' : ''}
+          </div>
+          ${column.isBacklog ? `
+            <div class="lane-stats"><span>${stories.length} US non planifiees</span></div>
+          ` : `
+            <div class="lane-stats">
+              <span>${used} / ${capacity} pts</span>
+              <label class="lane-capacity">Cap. <input type="number" min="0" max="200" step="1" value="${capacity}" data-capacity-sprint="${column.id}"></label>
+            </div>
+            <div class="lane-progress"><div class="lane-progress-bar ${isOver ? 'over' : ''}" style="width:${ratio}%"></div></div>
+          `}
+        </div>
+        <div class="lane-body ${dragStoryId ? 'drag-ready' : ''}">
+          <div class="lane-drop">
+            ${stories.length === 0 ? `<div class="empty-lane">${column.isBacklog ? 'Aucune US en backlog.' : 'Aucune US affectee.'}</div>` : stories.map(renderStoryCard).join('')}
+          </div>
+        </div>
+      </section>
+    `;
+  }).join('');
+}
+
+function renderStoryCard(story) {
+  const deps = parseDependencies(story);
+  return `
+    <article class="story-card" draggable="true" data-story-card="${story.id}">
+      <div class="top">
+        <h4>${story.id} - ${escapeHtml(story.title)}</h4>
+        <span class="chip ${story.priority === 'Must' ? 'must' : 'should'}">${story.priority}</span>
+      </div>
+      <div class="meta">
+        <span class="chip">${story.points} SP</span>
+        <span class="chip">${escapeHtml(story.squad || 'Core')}</span>
+      </div>
+      <div class="small ${deps.length > 0 ? 'deps' : ''}">
+        <strong>Depends on:</strong> ${deps.length > 0 ? deps.join(', ') : 'none'}
+      </div>
+    </article>
+  `;
+}
+
+function renderAll() {
+  normalizeConfig();
+  syncConfigToDom();
+  renderItemList('objectives', 'objective-list');
+  renderItemList('risks', 'risk-list');
+  renderWarnings();
+  renderSummary();
+  renderBacklog();
+  renderBoard();
+  saveState();
+}
+
+function syncConfigToDom() {
+  document.getElementById('pi-name').value = state.config.piName;
+  document.getElementById('sprint-count').value = state.config.sprintCount;
+
+  document.getElementById('ip-sprint').innerHTML = getSprintOptions().map(sprintNumber =>
+    `<option value="${sprintNumber}" ${sprintNumber === state.config.ipSprint ? 'selected' : ''}>Sprint ${sprintNumber}</option>`
+  ).join('');
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    state,
+    nextStoryIndex
+  }));
+}
+
+function loadState() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed.state) {
+      Object.assign(state.config, parsed.state.config || {});
+      state.config.objectives = ensureArray(parsed.state.config?.objectives);
+      state.config.risks = ensureArray(parsed.state.config?.risks);
+      state.capacities = Array.isArray(parsed.state.capacities) ? parsed.state.capacities : state.capacities;
+      state.stories = Array.isArray(parsed.state.stories) ? parsed.state.stories : state.stories;
+    }
+    nextStoryIndex = Number.isFinite(parsed.nextStoryIndex) ? parsed.nextStoryIndex : nextStoryIndex;
+  } catch (error) {
+    console.warn('PI planning state could not be restored', error);
+  }
+}
+
+function addStory() {
+  state.stories.push(createDefaultStory());
+  renderAll();
+}
+
+function addListItem(kind) {
+  const input = document.getElementById(kind === 'objectives' ? 'objective-input' : 'risk-input');
+  const value = input.value.trim();
+  if (!value) return;
+  state.config[kind].push(value);
+  input.value = '';
+  renderAll();
+}
+
+function updateListItem(kind, index, value) {
+  if (!state.config[kind] || state.config[kind][index] === undefined) return;
+  state.config[kind][index] = value;
+  saveState();
+}
+
+function removeListItem(kind, index) {
+  if (!state.config[kind]) return;
+  state.config[kind].splice(index, 1);
+  renderAll();
+}
+
+function removeStory(storyId) {
+  state.stories = state.stories.filter(story => story.id !== storyId);
+  renderAll();
+}
+
+function updateStory(storyId, field, value) {
+  const story = getStoryById(storyId);
+  if (!story) return;
+
+  if (field === 'points') story.points = Math.max(1, Number(value) || 1);
+  else if (field === 'sprint') story.sprint = value === '' ? null : Number(value);
+  else story[field] = value;
+
+  renderAll();
+}
+
+function updateConfig(field, value) {
+  if (field === 'sprintCount' || field === 'ipSprint') state.config[field] = Number(value);
+  else state.config[field] = value;
+  renderAll();
+}
+
+function updateCapacity(sprintNumber, value) {
+  state.capacities[sprintNumber - 1] = Math.max(0, Number(value) || 0);
+  renderAll();
+}
+
+function handleDrop(targetSprint) {
+  const story = getStoryById(dragStoryId);
+  if (!story) return;
+  story.sprint = targetSprint === '' ? null : Number(targetSprint);
+  dragStoryId = null;
+  renderAll();
+}
+
+function buildSection(title, rows) {
+  return [[title], ...rows];
+}
+
+function exportCsv() {
+  const warnings = getWarnings();
+  const sections = [
+    buildSection('PI Summary', [
+      ['pi_name', state.config.piName],
+      ['sprint_count', state.config.sprintCount],
+      ['ip_sprint', getSprintLabel(state.config.ipSprint)],
+      ['total_capacity', state.capacities.reduce((sum, value) => sum + (Number(value) || 0), 0)],
+      ['total_scope', state.stories.reduce((sum, story) => sum + (Number(story.points) || 0), 0)],
+      ['planned_stories', state.stories.filter(story => story.sprint !== null).length]
+    ]),
+    buildSection('PI Objectives', [
+      ['index', 'objective'],
+      ...(state.config.objectives.length > 0
+        ? state.config.objectives.map((item, index) => [index + 1, item])
+        : [['', 'No objective captured']])
+    ]),
+    buildSection('PI Risks', [
+      ['index', 'risk'],
+      ...(state.config.risks.length > 0
+        ? state.config.risks.map((item, index) => [index + 1, item])
+        : [['', 'No risk captured']])
+    ]),
+    buildSection('Sprint Capacities', [
+      ['sprint', 'label', 'capacity', 'used', 'remaining', 'is_ip_sprint'],
+      ...getSprintOptions().map(sprintNumber => {
+        const capacity = Number(state.capacities[sprintNumber - 1]) || 0;
+        const used = getUsedCapacity(sprintNumber);
+        return [
+          sprintNumber,
+          getSprintLabel(sprintNumber),
+          capacity,
+          used,
+          capacity - used,
+          sprintNumber === state.config.ipSprint ? 'yes' : 'no'
+        ];
+      })
+    ]),
+    buildSection('Stories', [
+      ['story_id', 'title', 'points', 'priority', 'squad', 'depends_on', 'sprint', 'sprint_label', 'status'],
+      ...state.stories
+        .slice()
+        .sort((a, b) => (a.sprint ?? 999) - (b.sprint ?? 999) || a.id.localeCompare(b.id))
+        .map(story => [
+          story.id,
+          story.title,
+          story.points,
+          story.priority,
+          story.squad,
+          story.dependsOn,
+          story.sprint === null ? '' : story.sprint,
+          story.sprint === null ? 'Backlog' : getSprintLabel(story.sprint),
+          story.sprint === null ? 'Unplanned' : 'Planned'
+        ])
+    ]),
+    buildSection('Warnings Snapshot', [
+      ['level', 'message'],
+      ...(warnings.length > 0
+        ? warnings.map(warning => [warning.level, warning.text])
+        : [['ok', 'No warning detected']])
+    ])
+  ];
+
+  const content = '\uFEFF' + sections.map(formatCsvSection).join(CSV_NEWLINE + CSV_NEWLINE);
+  downloadFile(content, `${slugify(state.config.piName || 'pi-planning')}-board.csv`, 'text/csv;charset=utf-8;');
+}
+
+function toCsvCell(value) {
+  return `"${String(value || '').replace(/"/g, '""')}"`;
+}
+
+function formatCsvSection(rows) {
+  return rows.map(row => row.map(toCsvCell).join(CSV_SEPARATOR)).join(CSV_NEWLINE);
+}
+
+function downloadFile(content, fileName, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+    link.remove();
+  }, 0);
+}
+
+function slugify(text) {
+  return (text || 'pi-planning').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function resetAll() {
+  if (!confirm('Reinitialiser la simulation PI ?')) return;
+  state.config = {
+    piName: 'PI Planning',
+    sprintCount: 5,
+    ipSprint: 5,
+    objectives: [],
+    risks: []
+  };
+  state.capacities = [20, 20, 20, 20, 0];
+  state.stories = [];
+  nextStoryIndex = 1;
+  renderAll();
+}
+
+function bindEvents() {
+  document.getElementById('pi-name').addEventListener('input', event => updateConfig('piName', event.target.value));
+  document.getElementById('sprint-count').addEventListener('change', event => updateConfig('sprintCount', event.target.value));
+  document.getElementById('ip-sprint').addEventListener('change', event => updateConfig('ipSprint', event.target.value));
+
+  document.getElementById('add-objective-btn').addEventListener('click', () => addListItem('objectives'));
+  document.getElementById('add-risk-btn').addEventListener('click', () => addListItem('risks'));
+  document.getElementById('objective-input').addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      addListItem('objectives');
+    }
+  });
+  document.getElementById('risk-input').addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      addListItem('risks');
+    }
+  });
+  document.getElementById('objective-list').addEventListener('input', event => {
+    const row = event.target.closest('[data-item-kind]');
+    if (!row || !event.target.dataset.itemInput) return;
+    updateListItem('objectives', Number(row.dataset.itemIndex), event.target.value);
+  });
+  document.getElementById('risk-list').addEventListener('input', event => {
+    const row = event.target.closest('[data-item-kind]');
+    if (!row || !event.target.dataset.itemInput) return;
+    updateListItem('risks', Number(row.dataset.itemIndex), event.target.value);
+  });
+  document.getElementById('objective-list').addEventListener('click', event => {
+    const button = event.target.closest('[data-remove-item]');
+    if (!button) return;
+    const [, index] = button.dataset.removeItem.split(':');
+    removeListItem('objectives', Number(index));
+  });
+  document.getElementById('risk-list').addEventListener('click', event => {
+    const button = event.target.closest('[data-remove-item]');
+    if (!button) return;
+    const [, index] = button.dataset.removeItem.split(':');
+    removeListItem('risks', Number(index));
+  });
+
+  document.getElementById('add-story-btn').addEventListener('click', addStory);
+  document.getElementById('export-btn').addEventListener('click', exportCsv);
+  document.getElementById('reset-btn').addEventListener('click', resetAll);
+
+  document.getElementById('backlog-body').addEventListener('input', event => {
+    const row = event.target.closest('[data-story-id]');
+    if (!row) return;
+    updateStory(row.dataset.storyId, event.target.dataset.field, event.target.value);
+  });
+
+  document.getElementById('backlog-body').addEventListener('change', event => {
+    const row = event.target.closest('[data-story-id]');
+    if (!row) return;
+    updateStory(row.dataset.storyId, event.target.dataset.field, event.target.value);
+  });
+
+  document.getElementById('backlog-body').addEventListener('click', event => {
+    const button = event.target.closest('[data-remove-story]');
+    if (!button) return;
+    removeStory(button.dataset.removeStory);
+  });
+
+  document.getElementById('board').addEventListener('input', event => {
+    const sprint = event.target.dataset.capacitySprint;
+    if (!sprint) return;
+    updateCapacity(Number(sprint), event.target.value);
+  });
+
+  document.getElementById('board').addEventListener('dragstart', event => {
+    const card = event.target.closest('[data-story-card]');
+    if (!card) return;
+    dragStoryId = card.dataset.storyCard;
+    event.dataTransfer.effectAllowed = 'move';
+  });
+
+  document.getElementById('board').addEventListener('dragend', () => {
+    dragStoryId = null;
+    document.querySelectorAll('.lane').forEach(lane => lane.classList.remove('drag-over'));
+  });
+
+  document.getElementById('board').addEventListener('dragover', event => {
+    const lane = event.target.closest('[data-drop-sprint]');
+    if (!lane) return;
+    event.preventDefault();
+    lane.classList.add('drag-over');
+  });
+
+  document.getElementById('board').addEventListener('dragleave', event => {
+    const lane = event.target.closest('[data-drop-sprint]');
+    if (!lane) return;
+    lane.classList.remove('drag-over');
+  });
+
+  document.getElementById('board').addEventListener('drop', event => {
+    const lane = event.target.closest('[data-drop-sprint]');
+    if (!lane) return;
+    event.preventDefault();
+    lane.classList.remove('drag-over');
+    handleDrop(lane.dataset.dropSprint);
+  });
+}
+
+function init() {
+  loadState();
+  if (state.stories.length === 0) {
+    state.config.objectives = [
+      'Livrer un premier parcours reporting manager complet et exploitable',
+      'Securiser les dependances front/back sur les exports CSV',
+      'Garder un buffer reel sur le sprint IP'
+    ];
+    state.config.risks = [
+      'Contrat de colonnes CSV encore mouvant entre produit, back et data'
+    ];
+    state.stories = [
+      { id: 'US-1', title: 'Exporter les rapports manager en CSV', points: 8, priority: 'Must', squad: 'Back', dependsOn: '', sprint: 1 },
+      { id: 'US-2', title: 'UI de lancement export et statut de generation', points: 5, priority: 'Must', squad: 'Front', dependsOn: 'US-1', sprint: 2 },
+      { id: 'US-3', title: 'Filtrer les colonnes et options de format CSV', points: 3, priority: 'Should', squad: 'Full-stack', dependsOn: 'US-1, US-2', sprint: 3 }
+    ];
+    nextStoryIndex = 4;
+  }
+  normalizeConfig();
+  bindEvents();
+  renderAll();
+}
+
+init();
+</script>
+</body>
+</html>

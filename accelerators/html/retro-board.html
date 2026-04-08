@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retro Board — PO Toolkit</title>
+<style>
+  :root { --bg: #0f1117; --card: #1a1c2b; --text: #e8eaf0; --muted: #6b7089; --border: #2a2d3e; --green: #10b981; --red: #ef4444; --blue: #6366f1; --yellow: #f59e0b; --pink: #ec4899; --cyan: #06b6d4; --orange: #f97316; --purple: #a855f7; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 1.5rem; }
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem; }
+  h1 { font-size: 1.56rem; font-weight: 800; color: #f8fafc; letter-spacing: -0.03em; }
+  .header-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  button { font-family: inherit; font-size: 0.85rem; font-weight: 600; padding: 0.5rem 1rem; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--blue); }
+  .btn-small { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
+
+  /* Top bars */
+  .top-bars { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .bar { display: flex; align-items: center; gap: 0.6rem; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0.45rem 0.9rem; font-size: 0.8rem; }
+  .bar label { color: var(--muted); white-space: nowrap; }
+  .bar input { flex: 1; min-width: 60px; padding: 0.3rem 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); font-family: inherit; font-size: 0.82rem; font-weight: 700; outline: none; }
+  .bar input:focus { border-color: var(--blue); }
+  .session-bar { flex: 1; min-width: 280px; }
+  .session-bar input { color: var(--blue); text-align: center; letter-spacing: 0.05em; }
+  .pseudo-bar input { color: var(--green); }
+  .bar button { padding: 0.3rem 0.65rem; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; font-family: inherit; font-size: 0.72rem; font-weight: 600; }
+  .bar button:hover { border-color: var(--blue); color: var(--blue); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+  .avatar { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800; color: white; flex-shrink: 0; }
+
+  /* Toggle */
+  .toggle-wrap { display: flex; align-items: center; gap: 0.4rem; }
+  .toggle-wrap label { font-size: 0.78rem; color: var(--muted); }
+  .toggle { position: relative; width: 36px; height: 20px; cursor: pointer; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle span { position: absolute; inset: 0; background: var(--border); border-radius: 20px; transition: 0.3s; }
+  .toggle span::before { content:''; position: absolute; width: 14px; height: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+  .toggle input:checked + span { background: var(--blue); }
+  .toggle input:checked + span::before { transform: translateX(16px); }
+
+  /* Modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+  .modal-overlay.hidden { display: none; }
+  .modal { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; max-width: 380px; width: 90%; text-align: center; }
+  .modal h2 { font-size: 1.24rem; margin-bottom: 0.4rem; font-weight: 800; color: #f8fafc; }
+  .modal p { color: var(--muted); font-size: 0.82rem; margin-bottom: 1.2rem; }
+  .modal input { width: 100%; padding: 0.7rem 1rem; border-radius: 10px; border: 2px solid var(--border); background: var(--bg); color: var(--text); font-family: inherit; font-size: 1rem; font-weight: 700; text-align: center; outline: none; margin-bottom: 0.8rem; }
+  .modal input:focus { border-color: var(--blue); }
+  .modal .mbtn { width: 100%; padding: 0.7rem; border-radius: 10px; border: none; background: var(--blue); color: white; font-family: inherit; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
+  .modal .mbtn:hover { filter: brightness(1.1); }
+
+  .sprint-input { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; }
+  .sprint-input input { padding: 0.4rem 0.65rem; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: inherit; font-size: 0.85rem; outline: none; width: 240px; }
+  .sprint-input input:focus { border-color: var(--blue); }
+
+  /* Template bar */
+  .template-bar { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap; align-items: center; }
+  .tbtn { padding: 0.4rem 0.8rem; border-radius: 100px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 0.75rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+  .tbtn:hover { border-color: var(--blue); color: var(--blue); }
+  .tbtn.active { background: var(--blue); border-color: var(--blue); color: white; }
+
+  /* === COLUMN BOARD (Classic, 4L) === */
+  .board { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+  .column { background: var(--card); border-radius: 14px; border: 1px solid var(--border); overflow: hidden; min-height: 350px; display: flex; flex-direction: column; }
+  .column-header { padding: 0.85rem 1.1rem; font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid; }
+  .column-header .count { font-size: 0.72rem; background: rgba(255,255,255,0.08); padding: 0.1rem 0.45rem; border-radius: 100px; font-weight: 600; }
+  .col-green .column-header { border-color: var(--green); color: var(--green); }
+  .col-pink .column-header { border-color: var(--pink); color: var(--pink); }
+  .col-blue .column-header { border-color: var(--blue); color: var(--blue); }
+  .col-yellow .column-header { border-color: var(--yellow); color: var(--yellow); }
+  .col-cyan .column-header { border-color: var(--cyan); color: var(--cyan); }
+  .col-orange .column-header { border-color: var(--orange); color: var(--orange); }
+  .col-red .column-header { border-color: var(--red); color: var(--red); }
+  .col-purple .column-header { border-color: var(--purple); color: var(--purple); }
+  .column-body { padding: 0.6rem; flex: 1; overflow-y: auto; }
+  .add-area { padding: 0.5rem 0.6rem; border-top: 1px solid var(--border); }
+  .add-area textarea { width: 100%; padding: 0.45rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: inherit; font-size: 0.82rem; resize: none; outline: none; min-height: 50px; }
+  .add-area textarea:focus { border-color: var(--blue); }
+  .add-area textarea::placeholder { color: var(--muted); }
+
+  /* Cards */
+  .rcard { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 0.65rem; margin-bottom: 0.4rem; transition: all 0.2s; }
+  .rcard:hover { border-color: var(--blue); }
+  .rcard .txt { font-size: 0.82rem; line-height: 1.5; margin-bottom: 0.4rem; word-break: break-word; }
+  .rcard .meta { display: flex; align-items: center; justify-content: space-between; }
+  .rcard .author { display: flex; align-items: center; gap: 0.25rem; font-size: 0.68rem; color: var(--muted); }
+  .rcard .author .ma { width: 14px; height: 14px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.45rem; font-weight: 800; color: white; }
+  .vbtn { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.5rem; border-radius: 6px; background: var(--card); border: 1px solid var(--border); color: var(--muted); cursor: pointer; font-family: inherit; font-size: 0.75rem; font-weight: 600; }
+  .vbtn:hover { border-color: var(--blue); color: var(--blue); }
+  .vbtn.voted { background: var(--blue); border-color: var(--blue); color: white; }
+  .del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.75rem; padding: 0.15rem; }
+  .del:hover { color: var(--red); }
+
+  /* =============================================
+     SPEED BOAT — Full visual layout
+     ============================================= */
+  .sb-scene { position: relative; width: 100%; min-height: 720px; border-radius: 20px; overflow: hidden; background: linear-gradient(180deg, #0c1929 0%, #132f4c 30%, #1a4971 50%, #0e3558 70%, #0a1e33 100%); border: 1px solid rgba(99,102,241,0.2); }
+
+  /* Sky */
+  .sb-sky { position: absolute; top: 0; left: 0; right: 0; height: 35%; pointer-events: none; }
+  .sb-sun { position: absolute; top: 6%; right: 10%; width: 70px; height: 70px; background: radial-gradient(circle, #fbbf24 25%, rgba(251,191,36,0.4) 50%, rgba(251,191,36,0.1) 70%, transparent 80%); border-radius: 50%; box-shadow: 0 0 40px rgba(251,191,36,0.3); }
+  .sb-cloud { position: absolute; font-size: 2rem; opacity: 0.3; filter: blur(0.5px); }
+
+  /* Water line */
+  .sb-water { position: absolute; top: 45%; left: 0; right: 0; bottom: 0; pointer-events: none; }
+  .sb-wave { position: absolute; top: 0; left: 0; right: 0; height: 20px; overflow: hidden; }
+  .sb-wave svg { width: 200%; animation: waveMove 8s linear infinite; }
+  @keyframes waveMove { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .sb-underwater { position: absolute; top: 20px; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(6,182,212,0.08) 0%, rgba(10,30,51,0.5) 100%); }
+
+  /* Zones */
+  .sb-zone { position: absolute; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.4rem; z-index: 10; }
+  .sb-zone-label { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.25rem 0.7rem; border-radius: 100px; display: inline-flex; align-items: center; gap: 0.3rem; width: fit-content; backdrop-filter: blur(8px); }
+  .sb-zone .cards-container { display: flex; flex-direction: column; gap: 0.35rem; max-height: 200px; overflow-y: auto; min-width: 220px; max-width: 280px; }
+  .sb-zone .add-mini { font-size: 0.72rem; padding: 0.3rem; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.15); background: rgba(255,255,255,0.03); color: var(--muted); cursor: pointer; font-family: inherit; text-align: center; }
+  .sb-zone .add-mini:hover { border-color: var(--blue); color: var(--blue); }
+
+  /* Zone positions */
+  .sb-zone-island { top: 5%; right: 3%; width: 30%; }
+  .sb-zone-wind { top: 5%; left: 3%; width: 28%; }
+  .sb-zone-anchor { bottom: 3%; left: 3%; width: 28%; }
+  .sb-zone-rock { bottom: 3%; right: 3%; width: 30%; }
+
+  /* Zone colors */
+  .sb-lbl-island { background: rgba(16,185,129,0.2); color: var(--green); }
+  .sb-lbl-wind { background: rgba(6,182,212,0.2); color: var(--cyan); }
+  .sb-lbl-anchor { background: rgba(249,115,22,0.2); color: var(--orange); }
+  .sb-lbl-rock { background: rgba(239,68,68,0.2); color: var(--red); }
+
+  /* Speed boat card */
+  .sb-card { background: rgba(26,28,43,0.85); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 0.5rem 0.6rem; backdrop-filter: blur(6px); }
+  .sb-card .txt { font-size: 0.78rem; line-height: 1.4; margin-bottom: 0.3rem; }
+  .sb-card .meta { display: flex; align-items: center; justify-content: space-between; }
+
+  /* Central boat SVG */
+  .sb-boat-container { position: absolute; top: 28%; left: 50%; transform: translate(-50%, -50%); z-index: 5; pointer-events: none; text-align: center; }
+  .sb-boat-label { font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.15em; margin-top: 0.5rem; }
+
+  /* Input modal for speed boat */
+  .sb-input-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 200; backdrop-filter: blur(2px); }
+  .sb-input-modal.open { display: flex; }
+  .sb-input-box { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; max-width: 400px; width: 90%; }
+  .sb-input-box h3 { font-size: 1rem; margin-bottom: 0.75rem; }
+  .sb-input-box textarea { width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: inherit; font-size: 0.85rem; resize: none; outline: none; min-height: 80px; margin-bottom: 0.75rem; }
+  .sb-input-box textarea:focus { border-color: var(--blue); }
+  .sb-input-box .sb-input-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+
+  /* =============================================
+     STARFISH — Radial layout
+     ============================================= */
+  .sf-container { position: relative; width: 100%; max-width: 900px; margin: 0 auto; min-height: 700px; }
+
+  /* Central starfish */
+  .sf-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 5; text-align: center; }
+  .sf-center-label { font-size: 0.7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 0.3rem; }
+
+  /* 5 arms */
+  .sf-arm { position: absolute; width: 240px; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; z-index: 10; }
+  .sf-arm-label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.3rem 0.8rem; border-radius: 100px; display: inline-flex; align-items: center; gap: 0.3rem; }
+  .sf-arm .cards-container { display: flex; flex-direction: column; gap: 0.3rem; width: 100%; max-height: 180px; overflow-y: auto; }
+  .sf-arm .add-mini { font-size: 0.72rem; padding: 0.3rem; border-radius: 6px; border: 1px dashed var(--border); background: var(--card); color: var(--muted); cursor: pointer; font-family: inherit; text-align: center; width: 100%; }
+  .sf-arm .add-mini:hover { border-color: var(--blue); color: var(--blue); }
+  .sf-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.6rem; }
+  .sf-card .txt { font-size: 0.78rem; line-height: 1.4; margin-bottom: 0.3rem; }
+  .sf-card .meta { display: flex; align-items: center; justify-content: space-between; }
+
+  /* Arm positions — pentagon layout */
+  .sf-arm-0 { top: 0; left: 50%; transform: translateX(-50%); } /* top center: Keep */
+  .sf-arm-1 { top: 22%; right: 0; } /* top right: More */
+  .sf-arm-2 { bottom: 8%; right: 5%; } /* bottom right: Less */
+  .sf-arm-3 { bottom: 8%; left: 5%; } /* bottom left: Stop */
+  .sf-arm-4 { top: 22%; left: 0; } /* top left: Start */
+
+  /* Arm colors */
+  .sf-lbl-keep { background: rgba(16,185,129,0.15); color: var(--green); }
+  .sf-lbl-more { background: rgba(99,102,241,0.15); color: var(--blue); }
+  .sf-lbl-less { background: rgba(249,115,22,0.15); color: var(--orange); }
+  .sf-lbl-stop { background: rgba(239,68,68,0.15); color: var(--red); }
+  .sf-lbl-start { background: rgba(168,85,247,0.15); color: var(--purple); }
+
+  /* Line from center to arm */
+  .sf-line { position: absolute; z-index: 2; pointer-events: none; }
+
+  /* Export modal */
+  .export-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 100; }
+  .export-modal.open { display: flex; }
+  .export-content { background: var(--card); border-radius: 16px; padding: 2rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
+  .export-content h2 { margin-bottom: 1rem; }
+  .export-content pre { background: var(--bg); padding: 1rem; border-radius: 8px; font-size: 0.8rem; white-space: pre-wrap; line-height: 1.6; }
+  .export-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+
+  @media (max-width: 768px) {
+    .sb-zone { position: relative !important; width: 100% !important; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important; }
+    .sb-scene { min-height: auto; display: flex; flex-direction: column; gap: 1rem; padding: 1rem; }
+    .sb-boat-container, .sb-sky, .sb-water { display: none; }
+    .sb-zone .cards-container { max-width: 100%; }
+    .sf-container { min-height: auto; display: flex; flex-direction: column; gap: 1rem; position: relative; }
+    .sf-arm { position: relative !important; width: 100% !important; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important; transform: none !important; }
+    .sf-center, .sf-line { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Pseudo modal -->
+<div class="modal-overlay" id="pseudo-modal">
+  <div class="modal">
+    <h2>Bienvenue !</h2>
+    <p>Entrez votre pseudo pour rejoindre la rétrospective.</p>
+    <input type="text" id="pseudo-input" placeholder="Votre pseudo..." autofocus onkeydown="if(event.key==='Enter')confirmPseudo()">
+    <button class="mbtn" onclick="confirmPseudo()">Rejoindre</button>
+  </div>
+</div>
+
+<!-- Speed Boat add card modal -->
+<div class="sb-input-modal" id="sb-input-modal">
+  <div class="sb-input-box">
+    <h3 id="sb-input-title">Ajouter un item</h3>
+    <textarea id="sb-input-text" placeholder="Votre item..." onkeydown="if(event.ctrlKey && event.key==='Enter')sbAddConfirm()"></textarea>
+    <div class="sb-input-actions">
+      <button class="btn-secondary" onclick="sbAddCancel()">Annuler</button>
+      <button class="btn-primary" onclick="sbAddConfirm()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<header>
+  <h1>Retro Board</h1>
+  <div class="header-actions">
+    <button class="btn-secondary" onclick="exportRetro()">Exporter</button>
+    <button class="btn-secondary" onclick="clearAll()">Tout effacer</button>
+  </div>
+</header>
+
+<div class="top-bars">
+  <div class="bar session-bar">
+    <div class="dot"></div>
+    <label>Session :</label>
+    <input type="text" id="session-id" value="" placeholder="ID" onchange="changeSession(this.value)">
+    <button onclick="newSession()">Nouvelle</button>
+    <button onclick="copySessionLink()">Copier le lien</button>
+  </div>
+  <div class="bar pseudo-bar">
+    <div class="avatar" id="my-avatar" style="background:var(--blue)">?</div>
+    <label>Pseudo :</label>
+    <input type="text" id="my-pseudo" value="" onchange="changePseudo(this.value)">
+  </div>
+  <div class="bar">
+    <div class="toggle-wrap">
+      <label>Anonyme</label>
+      <label class="toggle"><input type="checkbox" id="anon-cb" onchange="toggleAnon()"><span></span></label>
+    </div>
+  </div>
+</div>
+
+<div class="sprint-input">
+  <span style="color:var(--muted);font-size:0.82rem;">Sprint :</span>
+  <input type="text" id="sprint-name" placeholder="Sprint 12 — 01/04 au 12/04">
+</div>
+
+<div class="template-bar">
+  <span style="color:var(--muted);font-size:0.78rem;margin-right:0.3rem;">Format :</span>
+  <button class="tbtn active" onclick="setTpl('classic',this)">Classique</button>
+  <button class="tbtn" onclick="setTpl('4l',this)">4L</button>
+  <button class="tbtn" onclick="setTpl('starfish',this)">⭐ Starfish</button>
+  <button class="tbtn" onclick="setTpl('speedboat',this)">⛵ Speed Boat</button>
+</div>
+
+<div id="board-container"></div>
+
+<div class="export-modal" id="export-modal">
+  <div class="export-content">
+    <h2>Export Rétrospective</h2>
+    <pre id="export-text"></pre>
+    <div class="export-actions">
+      <button class="btn-primary" onclick="copyExport()">Copier</button>
+      <button class="btn-secondary" onclick="closeExport()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const APP_KEY = 'retro-board';
+const COLORS = ['#ec4899','#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#d946ef','#f97316','#14b8a6'];
+
+const TPL = {
+  classic: {
+    type: 'columns',
+    cols: [
+      { id:'good', title:'Ce qui a bien marché', cls:'col-green', emoji:'✅' },
+      { id:'improve', title:'À améliorer', cls:'col-pink', emoji:'⚡' },
+      { id:'action', title:'Actions', cls:'col-blue', emoji:'🎯' },
+    ]
+  },
+  '4l': {
+    type: 'columns',
+    cols: [
+      { id:'liked', title:'Liked', cls:'col-green', emoji:'💚' },
+      { id:'learned', title:'Learned', cls:'col-blue', emoji:'💡' },
+      { id:'lacked', title:'Lacked', cls:'col-pink', emoji:'💔' },
+      { id:'longed', title:'Longed for', cls:'col-yellow', emoji:'⭐' },
+    ]
+  },
+  starfish: {
+    type: 'starfish',
+    cols: [
+      { id:'keep', title:'Keep doing', cls:'keep', emoji:'✅', color:'var(--green)' },
+      { id:'more', title:'More of', cls:'more', emoji:'➕', color:'var(--blue)' },
+      { id:'less', title:'Less of', cls:'less', emoji:'➖', color:'var(--orange)' },
+      { id:'stop', title:'Stop doing', cls:'stop', emoji:'🛑', color:'var(--red)' },
+      { id:'start', title:'Start doing', cls:'start', emoji:'🚀', color:'var(--purple)' },
+    ]
+  },
+  speedboat: {
+    type: 'speedboat',
+    cols: [
+      { id:'island', title:'Notre objectif', cls:'island', emoji:'🏝️', color:'var(--green)' },
+      { id:'wind', title:'Ce qui nous propulse', cls:'wind', emoji:'💨', color:'var(--cyan)' },
+      { id:'anchor', title:'Ce qui nous ralentit', cls:'anchor', emoji:'⚓', color:'var(--orange)' },
+      { id:'rock', title:'Les risques', cls:'rock', emoji:'🪨', color:'var(--red)' },
+    ]
+  }
+};
+
+let currentTpl = 'classic';
+let columns = {};
+let myPseudo = '';
+let isAnon = false;
+let sbAddTarget = null; // for speedboat modal
+
+// ---- Utils ----
+function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+function avatarLetter(n) { return (n||'?')[0].toUpperCase(); }
+function getColor(p) { let h=0; for(let i=0;i<p.length;i++) h=p.charCodeAt(i)+((h<<5)-h); return COLORS[Math.abs(h)%COLORS.length]; }
+
+function confirmPseudo() {
+  const v = document.getElementById('pseudo-input').value.trim();
+  if(!v) { document.getElementById('pseudo-input').style.borderColor='var(--red)'; return; }
+  myPseudo = v;
+  localStorage.setItem(APP_KEY+'-pseudo', myPseudo);
+  document.getElementById('pseudo-modal').classList.add('hidden');
+  document.getElementById('my-pseudo').value = myPseudo;
+  document.getElementById('my-avatar').textContent = avatarLetter(myPseudo);
+  document.getElementById('my-avatar').style.background = getColor(myPseudo);
+}
+function changePseudo(v) {
+  if(!v.trim()) return;
+  myPseudo = v.trim();
+  localStorage.setItem(APP_KEY+'-pseudo', myPseudo);
+  document.getElementById('my-avatar').textContent = avatarLetter(myPseudo);
+  document.getElementById('my-avatar').style.background = getColor(myPseudo);
+  render();
+}
+function toggleAnon() { isAnon = document.getElementById('anon-cb').checked; render(); save(); }
+
+// ---- Template ----
+function setTpl(name, btn) {
+  if(btn) { document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+  currentTpl = name;
+  columns = {};
+  TPL[name].cols.forEach(c => { columns[c.id] = { ...c, cards: [] }; });
+  render(); save();
+}
+
+// ---- Card rendering helper ----
+function cardHTML(colId, card, i, cls) {
+  const ac = card.author ? getColor(card.author) : '#6b7089';
+  const showA = !isAnon && card.author;
+  return `<div class="${cls}">
+    <div class="txt">${esc(card.text)}</div>
+    <div class="meta">
+      <div style="display:flex;align-items:center;gap:0.4rem;">
+        <button class="vbtn ${card.voted?'voted':''}" onclick="vote('${colId}',${i})">▲ ${card.votes}</button>
+        ${showA ? `<span class="author"><span class="ma" style="background:${ac}">${avatarLetter(card.author)}</span>${esc(card.author)}</span>` : (isAnon ? '<span class="author">👤</span>' : '')}
+      </div>
+      <button class="del" onclick="delCard('${colId}',${i})">✕</button>
+    </div>
+  </div>`;
+}
+
+// ---- RENDER ----
+function render() {
+  const tpl = TPL[currentTpl];
+  if (tpl.type === 'columns') renderColumns();
+  else if (tpl.type === 'speedboat') renderSpeedBoat();
+  else if (tpl.type === 'starfish') renderStarfish();
+}
+
+// ---- Columns (Classic, 4L) ----
+function renderColumns() {
+  const container = document.getElementById('board-container');
+  container.innerHTML = `<div class="board">${Object.values(columns).map(col => `
+    <div class="column ${col.cls}">
+      <div class="column-header"><span>${col.emoji} ${col.title}</span><span class="count">${col.cards.length}</span></div>
+      <div class="column-body">${col.cards.sort((a,b)=>b.votes-a.votes).map((c,i) => cardHTML(col.id, c, i, 'rcard')).join('')}</div>
+      <div class="add-area">
+        <textarea id="in-${col.id}" placeholder="Ajouter..." onkeydown="if(event.ctrlKey&&event.key==='Enter')addCard('${col.id}')"></textarea>
+        <button class="btn-primary btn-small" style="width:100%;margin-top:0.3rem;" onclick="addCard('${col.id}')">Ajouter</button>
+      </div>
+    </div>
+  `).join('')}</div>`;
+}
+
+// ---- SPEED BOAT ----
+function renderSpeedBoat() {
+  const container = document.getElementById('board-container');
+  const c = columns;
+
+  container.innerHTML = `
+  <div class="sb-scene">
+    <!-- Sky -->
+    <div class="sb-sky">
+      <div class="sb-sun"></div>
+      <div class="sb-cloud" style="top:10%;left:6%;font-size:2.5rem;">☁️</div>
+      <div class="sb-cloud" style="top:4%;left:28%;font-size:3rem;opacity:0.2;">☁️</div>
+      <div class="sb-cloud" style="top:14%;left:50%;font-size:1.8rem;">☁️</div>
+      <div class="sb-cloud" style="top:8%;left:72%;font-size:1.5rem;opacity:0.15;">☁️</div>
+    </div>
+
+    <!-- Water -->
+    <div class="sb-water">
+      <div class="sb-wave">
+        <svg viewBox="0 0 1200 20" preserveAspectRatio="none" style="height:20px;display:block;">
+          <path d="M0,10 Q30,0 60,10 Q90,20 120,10 Q150,0 180,10 Q210,20 240,10 Q270,0 300,10 Q330,20 360,10 Q390,0 420,10 Q450,20 480,10 Q510,0 540,10 Q570,20 600,10 Q630,0 660,10 Q690,20 720,10 Q750,0 780,10 Q810,20 840,10 Q870,0 900,10 Q930,20 960,10 Q990,0 1020,10 Q1050,20 1080,10 Q1110,0 1140,10 Q1170,20 1200,10" fill="none" stroke="rgba(6,182,212,0.25)" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="sb-underwater"></div>
+    </div>
+
+    <!-- Central Boat SVG — Large -->
+    <div class="sb-boat-container">
+      <svg width="300" height="220" viewBox="0 0 300 220">
+        <defs>
+          <linearGradient id="hull-g" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4a5568"/>
+            <stop offset="100%" stop-color="#2d3748"/>
+          </linearGradient>
+          <linearGradient id="sail1-g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="rgba(99,102,241,0.6)"/>
+            <stop offset="100%" stop-color="rgba(99,102,241,0.2)"/>
+          </linearGradient>
+          <linearGradient id="sail2-g" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(236,72,153,0.5)"/>
+            <stop offset="100%" stop-color="rgba(236,72,153,0.15)"/>
+          </linearGradient>
+        </defs>
+        <!-- Water reflection -->
+        <ellipse cx="150" cy="195" rx="130" ry="12" fill="rgba(6,182,212,0.06)"/>
+        <!-- Hull -->
+        <path d="M40,140 Q45,180 150,185 Q255,180 260,140 Z" fill="url(#hull-g)" stroke="#718096" stroke-width="2"/>
+        <!-- Hull stripe -->
+        <path d="M55,155 Q60,175 150,178 Q240,175 245,155" fill="none" stroke="rgba(239,68,68,0.4)" stroke-width="2.5"/>
+        <!-- Deck -->
+        <rect x="70" y="128" width="160" height="18" rx="5" fill="#2d3748" stroke="#4a5568" stroke-width="1"/>
+        <!-- Cabin -->
+        <rect x="95" y="110" width="60" height="22" rx="4" fill="#2d3748" stroke="#4a5568" stroke-width="1"/>
+        <rect x="100" y="114" width="12" height="10" rx="2" fill="rgba(251,191,36,0.35)"/>
+        <rect x="118" y="114" width="12" height="10" rx="2" fill="rgba(251,191,36,0.35)"/>
+        <rect x="136" y="114" width="12" height="10" rx="2" fill="rgba(251,191,36,0.35)"/>
+        <!-- Mast -->
+        <line x1="150" y1="20" x2="150" y2="128" stroke="#a0aec0" stroke-width="3.5"/>
+        <!-- Crow's nest -->
+        <rect x="143" y="28" width="14" height="6" rx="2" fill="#4a5568" stroke="#718096" stroke-width="1"/>
+        <!-- Main sail (right) -->
+        <path d="M154,32 L230,110 L154,115 Z" fill="url(#sail1-g)" stroke="rgba(99,102,241,0.5)" stroke-width="1.5"/>
+        <!-- Sail seams -->
+        <line x1="154" y1="55" x2="205" y2="88" stroke="rgba(99,102,241,0.2)" stroke-width="0.8"/>
+        <line x1="154" y1="78" x2="190" y2="100" stroke="rgba(99,102,241,0.2)" stroke-width="0.8"/>
+        <!-- Jib sail (left) -->
+        <path d="M146,38 L75,110 L146,115 Z" fill="url(#sail2-g)" stroke="rgba(236,72,153,0.4)" stroke-width="1.5"/>
+        <line x1="146" y1="60" x2="100" y2="93" stroke="rgba(236,72,153,0.15)" stroke-width="0.8"/>
+        <!-- Flag -->
+        <path d="M150,20 L172,12 L150,4" fill="#10b981" opacity="0.9" stroke="#10b981" stroke-width="0.5"/>
+        <!-- Bowsprit -->
+        <line x1="260" y1="140" x2="285" y2="132" stroke="#a0aec0" stroke-width="2"/>
+        <!-- Portholes -->
+        <circle cx="100" cy="150" r="5" fill="rgba(251,191,36,0.3)" stroke="#718096" stroke-width="1"/>
+        <circle cx="125" cy="152" r="5" fill="rgba(251,191,36,0.3)" stroke="#718096" stroke-width="1"/>
+        <circle cx="150" cy="153" r="5" fill="rgba(251,191,36,0.3)" stroke="#718096" stroke-width="1"/>
+        <circle cx="175" cy="152" r="5" fill="rgba(251,191,36,0.3)" stroke="#718096" stroke-width="1"/>
+        <circle cx="200" cy="150" r="5" fill="rgba(251,191,36,0.3)" stroke="#718096" stroke-width="1"/>
+        <!-- Railing -->
+        <line x1="75" y1="128" x2="230" y2="128" stroke="#718096" stroke-width="1" opacity="0.5"/>
+        <line x1="85" y1="128" x2="85" y2="135" stroke="#718096" stroke-width="1" opacity="0.3"/>
+        <line x1="115" y1="128" x2="115" y2="135" stroke="#718096" stroke-width="1" opacity="0.3"/>
+        <line x1="175" y1="128" x2="175" y2="135" stroke="#718096" stroke-width="1" opacity="0.3"/>
+        <line x1="205" y1="128" x2="205" y2="135" stroke="#718096" stroke-width="1" opacity="0.3"/>
+      </svg>
+      <div class="sb-boat-label">⛵ Notre équipe</div>
+    </div>
+
+    <!-- ISLAND zone (top right) -->
+    <div class="sb-zone sb-zone-island">
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">
+        <svg width="100" height="90" viewBox="0 0 100 90">
+          <!-- Sand island -->
+          <ellipse cx="50" cy="75" rx="45" ry="12" fill="#d4a574" opacity="0.8"/>
+          <ellipse cx="50" cy="73" rx="40" ry="9" fill="#e8c89e" opacity="0.5"/>
+          <!-- Palm trunk -->
+          <path d="M50,72 Q48,50 52,20" fill="none" stroke="#92400e" stroke-width="4" stroke-linecap="round"/>
+          <path d="M50,72 Q55,55 48,28" fill="none" stroke="#7c3410" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+          <!-- Palm leaves -->
+          <path d="M52,22 Q72,10 85,18" fill="none" stroke="#22c55e" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M52,22 Q75,15 82,30" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round"/>
+          <path d="M52,22 Q35,5 18,14" fill="none" stroke="#22c55e" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M52,22 Q30,10 15,25" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round"/>
+          <path d="M52,22 Q55,5 60,2" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M52,22 Q62,12 78,8" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Coconuts -->
+          <circle cx="50" cy="25" r="3" fill="#92400e" opacity="0.7"/>
+          <circle cx="55" cy="23" r="2.5" fill="#7c3410" opacity="0.6"/>
+          <!-- Small bush -->
+          <circle cx="30" cy="68" r="6" fill="#22c55e" opacity="0.5"/>
+          <circle cx="70" cy="70" r="5" fill="#16a34a" opacity="0.4"/>
+          <!-- Flag on island -->
+          <line x1="65" y1="72" x2="65" y2="55" stroke="#a0aec0" stroke-width="1.5"/>
+          <path d="M65,55 L78,60 L65,65" fill="#10b981" opacity="0.7"/>
+        </svg>
+        <span class="sb-zone-label sb-lbl-island">🏝️ ${c.island ? c.island.title : 'Objectif'}</span>
+      </div>
+      <div class="cards-container">${renderSBCards('island')}</div>
+      <button class="add-mini" onclick="sbAddOpen('island')">+ Ajouter un objectif</button>
+    </div>
+
+    <!-- WIND zone (top left) -->
+    <div class="sb-zone sb-zone-wind">
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">
+        <svg width="90" height="70" viewBox="0 0 90 70">
+          <!-- Wind gusts -->
+          <path d="M5,15 Q20,5 40,15 Q60,25 80,12" fill="none" stroke="rgba(6,182,212,0.8)" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M80,12 Q85,10 88,6" fill="none" stroke="rgba(6,182,212,0.6)" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M10,30 Q28,20 50,30 Q68,40 85,28" fill="none" stroke="rgba(6,182,212,0.6)" stroke-width="3" stroke-linecap="round"/>
+          <path d="M85,28 Q88,26 86,22" fill="none" stroke="rgba(6,182,212,0.4)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M5,45 Q22,35 42,45 Q62,55 78,43" fill="none" stroke="rgba(6,182,212,0.4)" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M15,58 Q32,50 50,58 Q65,64 75,56" fill="none" stroke="rgba(6,182,212,0.25)" stroke-width="2" stroke-linecap="round"/>
+          <!-- Swirls -->
+          <circle cx="82" cy="8" r="4" fill="none" stroke="rgba(6,182,212,0.5)" stroke-width="1.5"/>
+          <circle cx="78" cy="4" r="2.5" fill="none" stroke="rgba(6,182,212,0.3)" stroke-width="1"/>
+          <!-- Speed lines -->
+          <line x1="2" y1="20" x2="15" y2="20" stroke="rgba(6,182,212,0.3)" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="5" y1="38" x2="18" y2="38" stroke="rgba(6,182,212,0.2)" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="8" y1="52" x2="20" y2="52" stroke="rgba(6,182,212,0.15)" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+        <span class="sb-zone-label sb-lbl-wind">💨 ${c.wind ? c.wind.title : 'Vent'}</span>
+      </div>
+      <div class="cards-container">${renderSBCards('wind')}</div>
+      <button class="add-mini" onclick="sbAddOpen('wind')">+ Ajouter un vent</button>
+    </div>
+
+    <!-- ANCHOR zone (bottom left) -->
+    <div class="sb-zone sb-zone-anchor">
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">
+        <svg width="80" height="95" viewBox="0 0 80 95">
+          <!-- Chain links -->
+          <ellipse cx="40" cy="6" rx="6" ry="4" fill="none" stroke="rgba(249,115,22,0.4)" stroke-width="2"/>
+          <ellipse cx="40" cy="14" rx="5" ry="4" fill="none" stroke="rgba(249,115,22,0.4)" stroke-width="2"/>
+          <!-- Ring -->
+          <circle cx="40" cy="26" r="10" fill="none" stroke="rgba(249,115,22,0.8)" stroke-width="3"/>
+          <circle cx="40" cy="26" r="6" fill="none" stroke="rgba(249,115,22,0.3)" stroke-width="1"/>
+          <!-- Crossbar -->
+          <line x1="18" y1="50" x2="62" y2="50" stroke="rgba(249,115,22,0.7)" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- Shaft -->
+          <line x1="40" y1="36" x2="40" y2="78" stroke="rgba(249,115,22,0.8)" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- Crown (bottom arc) -->
+          <path d="M12,62 Q12,88 40,90 Q68,88 68,62" fill="none" stroke="rgba(249,115,22,0.8)" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- Flukes (pointed ends) -->
+          <path d="M12,62 L4,55 L18,58" fill="rgba(249,115,22,0.5)" stroke="rgba(249,115,22,0.7)" stroke-width="1.5"/>
+          <path d="M68,62 L76,55 L62,58" fill="rgba(249,115,22,0.5)" stroke="rgba(249,115,22,0.7)" stroke-width="1.5"/>
+          <!-- Detail lines -->
+          <line x1="26" y1="72" x2="40" y2="78" stroke="rgba(249,115,22,0.3)" stroke-width="1"/>
+          <line x1="54" y1="72" x2="40" y2="78" stroke="rgba(249,115,22,0.3)" stroke-width="1"/>
+        </svg>
+        <span class="sb-zone-label sb-lbl-anchor">⚓ ${c.anchor ? c.anchor.title : 'Ancres'}</span>
+      </div>
+      <div class="cards-container">${renderSBCards('anchor')}</div>
+      <button class="add-mini" onclick="sbAddOpen('anchor')">+ Ajouter une ancre</button>
+    </div>
+
+    <!-- ROCK zone (bottom right) -->
+    <div class="sb-zone sb-zone-rock">
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">
+        <svg width="100" height="80" viewBox="0 0 100 80">
+          <!-- Back rock -->
+          <path d="M55,75 L62,35 L70,50 L78,22 L88,42 L95,75 Z" fill="rgba(239,68,68,0.2)" stroke="rgba(239,68,68,0.4)" stroke-width="1.5"/>
+          <path d="M62,35 L66,45 L70,50" fill="none" stroke="rgba(239,68,68,0.2)" stroke-width="0.8"/>
+          <!-- Main rock -->
+          <path d="M5,75 L15,32 L28,52 L38,15 L52,38 L62,28 L72,48 L80,75 Z" fill="rgba(239,68,68,0.3)" stroke="rgba(239,68,68,0.6)" stroke-width="2"/>
+          <!-- Rock texture -->
+          <path d="M15,32 L22,48 L28,52" fill="none" stroke="rgba(239,68,68,0.2)" stroke-width="1"/>
+          <path d="M38,15 L42,35 L52,38" fill="none" stroke="rgba(239,68,68,0.2)" stroke-width="1"/>
+          <path d="M62,28 L58,45" fill="none" stroke="rgba(239,68,68,0.15)" stroke-width="1"/>
+          <!-- Small rock -->
+          <path d="M82,75 L86,55 L92,60 L96,75 Z" fill="rgba(239,68,68,0.15)" stroke="rgba(239,68,68,0.3)" stroke-width="1"/>
+          <!-- Warning sign -->
+          <line x1="38" y1="15" x2="38" y2="5" stroke="rgba(239,68,68,0.6)" stroke-width="1.5"/>
+          <polygon points="38,2 42,8 34,8" fill="rgba(239,68,68,0.7)" stroke="rgba(239,68,68,0.9)" stroke-width="0.8"/>
+          <text x="38" y="7.5" font-size="4" fill="white" text-anchor="middle" font-weight="bold">!</text>
+          <!-- Cracks -->
+          <path d="M30,50 L35,55 L32,62" fill="none" stroke="rgba(239,68,68,0.2)" stroke-width="0.8"/>
+          <path d="M55,45 L58,52 L54,58" fill="none" stroke="rgba(239,68,68,0.15)" stroke-width="0.8"/>
+          <!-- Water splash around rocks -->
+          <path d="M2,75 Q5,72 10,75" fill="none" stroke="rgba(6,182,212,0.2)" stroke-width="1"/>
+          <path d="M75,75 Q80,72 85,75" fill="none" stroke="rgba(6,182,212,0.2)" stroke-width="1"/>
+        </svg>
+        <span class="sb-zone-label sb-lbl-rock">🪨 ${c.rock ? c.rock.title : 'Risques'}</span>
+      </div>
+      <div class="cards-container">${renderSBCards('rock')}</div>
+      <button class="add-mini" onclick="sbAddOpen('rock')">+ Ajouter un risque</button>
+    </div>
+  </div>`;
+}
+
+function renderSBCards(colId) {
+  if (!columns[colId]) return '';
+  return columns[colId].cards.sort((a,b)=>b.votes-a.votes).map((c,i) => cardHTML(colId, c, i, 'sb-card')).join('');
+}
+
+function sbAddOpen(colId) {
+  sbAddTarget = colId;
+  const col = columns[colId];
+  document.getElementById('sb-input-title').textContent = `${col.emoji} ${col.title}`;
+  document.getElementById('sb-input-text').value = '';
+  document.getElementById('sb-input-modal').classList.add('open');
+  setTimeout(() => document.getElementById('sb-input-text').focus(), 100);
+}
+function sbAddCancel() { document.getElementById('sb-input-modal').classList.remove('open'); sbAddTarget = null; }
+function sbAddConfirm() {
+  const txt = document.getElementById('sb-input-text').value.trim();
+  if (!txt || !sbAddTarget) return;
+  columns[sbAddTarget].cards.push({ text: txt, votes: 0, voted: false, author: myPseudo || 'Anonyme' });
+  document.getElementById('sb-input-modal').classList.remove('open');
+  sbAddTarget = null;
+  render(); save();
+}
+
+// ---- STARFISH ----
+function renderStarfish() {
+  const container = document.getElementById('board-container');
+  const cols = Object.values(columns);
+  const armOrder = ['keep','more','less','stop','start'];
+
+  container.innerHTML = `
+  <div class="sf-container">
+    <!-- Central starfish SVG -->
+    <div class="sf-center">
+      <svg width="220" height="220" viewBox="0 0 220 220">
+        <defs>
+          <radialGradient id="sfg" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.7"/>
+            <stop offset="60%" stop-color="#f59e0b" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#d97706" stop-opacity="0.1"/>
+          </radialGradient>
+          <filter id="sf-glow">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <!-- Glow background -->
+        <circle cx="110" cy="110" r="90" fill="rgba(251,191,36,0.05)"/>
+        <!-- 5-pointed star body -->
+        <polygon points="110,12 128,72 192,72 140,108 158,170 110,135 62,170 80,108 28,72 92,72"
+                 fill="url(#sfg)" stroke="#fbbf24" stroke-width="2.5" stroke-linejoin="round" filter="url(#sf-glow)"/>
+        <!-- Inner star detail -->
+        <polygon points="110,38 120,78 155,78 128,98 138,138 110,118 82,138 92,98 65,78 100,78"
+                 fill="rgba(251,191,36,0.12)" stroke="rgba(251,191,36,0.25)" stroke-width="1"/>
+        <!-- Texture dots on arms -->
+        <circle cx="110" cy="30" r="2" fill="rgba(217,119,6,0.3)"/>
+        <circle cx="170" cy="80" r="2" fill="rgba(217,119,6,0.3)"/>
+        <circle cx="148" cy="150" r="2" fill="rgba(217,119,6,0.3)"/>
+        <circle cx="72" cy="150" r="2" fill="rgba(217,119,6,0.3)"/>
+        <circle cx="50" cy="80" r="2" fill="rgba(217,119,6,0.3)"/>
+        <circle cx="130" cy="55" r="1.5" fill="rgba(217,119,6,0.2)"/>
+        <circle cx="155" cy="95" r="1.5" fill="rgba(217,119,6,0.2)"/>
+        <circle cx="135" cy="130" r="1.5" fill="rgba(217,119,6,0.2)"/>
+        <circle cx="85" cy="130" r="1.5" fill="rgba(217,119,6,0.2)"/>
+        <circle cx="90" cy="55" r="1.5" fill="rgba(217,119,6,0.2)"/>
+        <circle cx="65" cy="95" r="1.5" fill="rgba(217,119,6,0.2)"/>
+        <!-- Face -->
+        <circle cx="98" cy="88" r="4" fill="#92400e" opacity="0.5"/>
+        <circle cx="122" cy="88" r="4" fill="#92400e" opacity="0.5"/>
+        <circle cx="99" cy="87" r="1.5" fill="white" opacity="0.4"/>
+        <circle cx="123" cy="87" r="1.5" fill="white" opacity="0.4"/>
+        <path d="M100,100 Q110,112 120,100" fill="none" stroke="#92400e" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+        <!-- Cheeks -->
+        <circle cx="90" cy="98" r="5" fill="rgba(236,72,153,0.12)"/>
+        <circle cx="130" cy="98" r="5" fill="rgba(236,72,153,0.12)"/>
+      </svg>
+      <div class="sf-center-label">Rétrospective Starfish</div>
+    </div>
+
+    <!-- 5 Arms -->
+    ${armOrder.map((armId, i) => {
+      const col = columns[armId];
+      if (!col) return '';
+      return `
+      <div class="sf-arm sf-arm-${i}">
+        <span class="sf-arm-label sf-lbl-${col.cls}">${col.emoji} ${col.title} (${col.cards.length})</span>
+        <div class="cards-container">${col.cards.sort((a,b)=>b.votes-a.votes).map((c,ci) => cardHTML(col.id, c, ci, 'sf-card')).join('')}</div>
+        <button class="add-mini" onclick="sbAddOpen('${col.id}')">+ Ajouter</button>
+      </div>`;
+    }).join('')}
+
+    <!-- Lines from center to arms (SVG overlay) -->
+    <svg class="sf-line" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;" viewBox="0 0 900 700">
+      <line x1="450" y1="350" x2="450" y2="80" stroke="var(--green)" stroke-width="1.5" opacity="0.15"/>
+      <line x1="450" y1="350" x2="780" y2="200" stroke="var(--blue)" stroke-width="1.5" opacity="0.15"/>
+      <line x1="450" y1="350" x2="720" y2="560" stroke="var(--orange)" stroke-width="1.5" opacity="0.15"/>
+      <line x1="450" y1="350" x2="180" y2="560" stroke="var(--red)" stroke-width="1.5" opacity="0.15"/>
+      <line x1="450" y1="350" x2="120" y2="200" stroke="var(--purple)" stroke-width="1.5" opacity="0.15"/>
+    </svg>
+  </div>`;
+}
+
+// ---- Card actions ----
+function addCard(colId) {
+  const input = document.getElementById(`in-${colId}`);
+  const txt = input.value.trim();
+  if (!txt) return;
+  columns[colId].cards.push({ text: txt, votes: 0, voted: false, author: myPseudo || 'Anonyme' });
+  input.value = '';
+  render(); save();
+}
+
+function delCard(colId, i) {
+  columns[colId].cards.splice(i, 1);
+  render(); save();
+}
+
+function vote(colId, i) {
+  const card = columns[colId].cards[i];
+  if (card.voted) { card.votes--; card.voted = false; }
+  else { card.votes++; card.voted = true; }
+  render(); save();
+}
+
+function clearAll() {
+  if (!confirm('Effacer toutes les cartes ?')) return;
+  Object.values(columns).forEach(col => col.cards = []);
+  render(); save();
+}
+
+// ---- Export ----
+function exportRetro() {
+  const sprint = document.getElementById('sprint-name').value || 'Rétrospective';
+  const tplName = { classic:'Classique', '4l':'4L', starfish:'Starfish ⭐', speedboat:'Speed Boat ⛵' }[currentTpl];
+  let text = `RÉTROSPECTIVE — ${sprint}\nFormat : ${tplName}\n${'='.repeat(50)}\n\n`;
+  for (const col of Object.values(columns)) {
+    text += `${col.emoji} ${col.title.toUpperCase()} (${col.cards.length})\n${'-'.repeat(40)}\n`;
+    [...col.cards].sort((a,b)=>b.votes-a.votes).forEach((c,i) => {
+      const auth = !isAnon && c.author ? ` [${c.author}]` : '';
+      text += `  ${i+1}. ${c.text}${c.votes>0 ? ` (${c.votes} vote${c.votes>1?'s':''})` : ''}${auth}\n`;
+    });
+    text += '\n';
+  }
+    text += `Généré le ${new Date().toLocaleDateString('fr-FR')} — PO Toolkit`;
+  document.getElementById('export-text').textContent = text;
+  document.getElementById('export-modal').classList.add('open');
+}
+function copyExport() {
+  navigator.clipboard.writeText(document.getElementById('export-text').textContent).then(() => {
+    event.target.textContent = 'Copié !';
+    setTimeout(() => event.target.textContent = 'Copier', 2000);
+  });
+}
+function closeExport() { document.getElementById('export-modal').classList.remove('open'); }
+
+// ---- Session ----
+function genId() { return Math.random().toString(36).substring(2,8).toUpperCase(); }
+function getSessionId() {
+  const p = new URLSearchParams(window.location.search).get('session');
+  if (p) return p;
+  return localStorage.getItem(APP_KEY+'-last-session') || genId();
+}
+function changeSession(v) {
+  if(!v.trim()) return;
+  const id = v.trim().toUpperCase();
+  document.getElementById('session-id').value = id;
+  localStorage.setItem(APP_KEY+'-last-session', id);
+  const u = new URL(window.location); u.searchParams.set('session', id);
+  window.history.replaceState({}, '', u);
+  load();
+}
+function newSession() { changeSession(genId()); }
+function copySessionLink() {
+  const u = new URL(window.location);
+  u.searchParams.set('session', document.getElementById('session-id').value);
+  navigator.clipboard.writeText(u.toString()).then(() => {
+    event.target.textContent = 'Copié !';
+    setTimeout(() => event.target.textContent = 'Copier le lien', 2000);
+  });
+}
+function save() {
+  const id = document.getElementById('session-id').value;
+  localStorage.setItem(APP_KEY+'-session-'+id, JSON.stringify({
+    tpl: currentTpl, columns, sprint: document.getElementById('sprint-name').value, anon: isAnon
+  }));
+  localStorage.setItem(APP_KEY+'-last-session', id);
+}
+function load() {
+  const id = document.getElementById('session-id').value;
+  const raw = localStorage.getItem(APP_KEY+'-session-'+id);
+  if (raw) {
+    try {
+      const d = JSON.parse(raw);
+      currentTpl = d.tpl || 'classic';
+      columns = d.columns || {};
+      isAnon = d.anon || false;
+      document.getElementById('anon-cb').checked = isAnon;
+      document.getElementById('sprint-name').value = d.sprint || '';
+      document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('active'));
+      const names = ['classic','4l','starfish','speedboat'];
+      const idx = names.indexOf(currentTpl);
+      if (idx >= 0) document.querySelectorAll('.tbtn')[idx].classList.add('active');
+      render();
+    } catch(e) { console.warn(e); setTpl('classic'); }
+  } else { setTpl('classic'); }
+}
+function initSession() {
+  const id = getSessionId();
+  document.getElementById('session-id').value = id;
+  localStorage.setItem(APP_KEY+'-last-session', id);
+  const u = new URL(window.location); u.searchParams.set('session', id);
+  window.history.replaceState({}, '', u);
+  load();
+}
+
+// ---- Init ----
+function init() {
+  const saved = localStorage.getItem(APP_KEY+'-pseudo');
+  if (saved) {
+    myPseudo = saved;
+    document.getElementById('pseudo-modal').classList.add('hidden');
+    document.getElementById('my-pseudo').value = myPseudo;
+    document.getElementById('my-avatar').textContent = avatarLetter(myPseudo);
+    document.getElementById('my-avatar').style.background = getColor(myPseudo);
+  } else {
+    setTimeout(() => document.getElementById('pseudo-input').focus(), 100);
+  }
+  initSession();
+}
+init();
+</script>
+</body>
+</html>

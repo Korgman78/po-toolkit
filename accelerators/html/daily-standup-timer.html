@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Standup Timer</title>
+<style>
+  :root { --accent: #6366f1; --bg: #0f1117; --card: #1a1c2b; --text: #e8eaf0; --muted: #6b7089; --border: #2a2d3e; --green: #10b981; --red: #ef4444; --yellow: #f59e0b; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
+  h1 { font-size: 1.85rem; margin-bottom: 0.5rem; letter-spacing: -0.03em; font-weight: 800; color: #f8fafc; }
+  .subtitle { color: var(--muted); margin-bottom: 2rem; font-size: 0.9rem; }
+  .timer-display { font-size: 6rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.04em; margin: 1rem 0; transition: color 0.3s; }
+  .timer-display.warning { color: var(--yellow); }
+  .timer-display.danger { color: var(--red); animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity: 0.7; } }
+  .progress-ring { width: 280px; height: 280px; position: relative; margin: 1rem auto; }
+  .progress-ring svg { transform: rotate(-90deg); }
+  .progress-ring circle { fill: none; stroke-width: 8; }
+  .progress-ring .bg { stroke: var(--border); }
+  .progress-ring .fg { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke 0.3s; }
+  .progress-ring .fg.warning { stroke: var(--yellow); }
+  .progress-ring .fg.danger { stroke: var(--red); }
+  .timer-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .person-label { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 0.25rem; }
+  .person-time { font-size: 2.5rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .controls { display: flex; gap: 1rem; margin: 1.5rem 0; }
+  button { font-family: inherit; font-size: 0.9rem; font-weight: 600; padding: 0.7rem 1.5rem; border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #4f46e5; transform: translateY(-1px); }
+  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); }
+  .btn-danger { background: var(--red); color: white; }
+  .btn-next { background: var(--green); color: white; font-size: 1rem; padding: 0.8rem 2rem; }
+  .btn-next:hover { background: #059669; }
+  .team-setup { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; width: 100%; max-width: 500px; margin-top: 1rem; }
+  .team-setup h2 { font-size: 1.24rem; margin-bottom: 1rem; font-weight: 800; color: #f8fafc; }
+  .input-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+  input { font-family: inherit; font-size: 0.9rem; padding: 0.6rem 1rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); flex: 1; outline: none; }
+  input:focus { border-color: var(--accent); }
+  .member-list { list-style: none; margin: 1rem 0; }
+  .member-list li { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.75rem; border-radius: 8px; margin-bottom: 0.3rem; background: var(--bg); }
+  .member-list li .name { font-weight: 600; }
+  .member-list li .remove { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1.2rem; padding: 0.2rem 0.5rem; }
+  .summary { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; width: 100%; max-width: 500px; margin-top: 1.5rem; }
+  .summary h2 { margin-bottom: 1rem; font-size: 1.24rem; font-weight: 800; color: #f8fafc; }
+  .summary-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row .time { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .summary-row .over { color: var(--red); }
+  .total-time { font-size: 1.3rem; font-weight: 800; color: var(--accent); text-align: center; margin-top: 1rem; }
+  .settings-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; color: var(--muted); font-size: 0.85rem; }
+
+  .session-bar { display: flex; align-items: center; gap: 0.75rem; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0.5rem 1rem; margin-bottom: 1.5rem; width: 100%; max-width: 500px; font-size: 0.8rem; }
+  .session-bar label { color: var(--muted); white-space: nowrap; }
+  .session-bar input { flex: 1; padding: 0.35rem 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--accent); font-family: inherit; font-size: 0.85rem; font-weight: 700; outline: none; text-align: center; letter-spacing: 0.05em; }
+  .session-bar input:focus { border-color: var(--accent); }
+  .session-bar button { padding: 0.35rem 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; font-family: inherit; font-size: 0.75rem; font-weight: 600; transition: all 0.2s; }
+  .session-bar button:hover { border-color: var(--accent); color: var(--accent); }
+  .session-bar .session-status { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+  .settings-row input[type="number"] { width: 70px; flex: none; text-align: center; }
+  #app-timer { display: none; text-align: center; }
+  #app-summary { display: none; }
+</style>
+</head>
+<body>
+<h1>Daily Standup Timer</h1>
+<p class="subtitle">Gardez vos daily standups dans les temps — 15 minutes max</p>
+
+<div class="session-bar">
+  <div class="session-status" title="Session active"></div>
+  <label>Session :</label>
+  <input type="text" id="session-id" value="" placeholder="session-id" onchange="changeSession(this.value)">
+  <button onclick="newSession()">Nouvelle</button>
+  <button onclick="copySessionLink()">Copier le lien</button>
+</div>
+
+
+<div id="app-setup">
+  <div class="team-setup">
+    <h2>Equipe</h2>
+    <div class="settings-row">
+      <label>Temps par personne :</label>
+      <input type="number" id="time-per-person" value="90" min="30" max="300" step="15">
+      <span>secondes</span>
+    </div>
+    <div class="input-row">
+      <input type="text" id="member-input" placeholder="Nom du membre..." onkeydown="if(event.key==='Enter')addMember()">
+      <button class="btn-primary" onclick="addMember()">+ Ajouter</button>
+    </div>
+    <ul class="member-list" id="member-list"></ul>
+    <button class="btn-primary" style="width:100%; margin-top:1rem; padding: 1rem;" onclick="startStandup()" id="start-btn" disabled>Demarrer le Daily</button>
+  </div>
+</div>
+
+<div id="app-timer">
+  <div class="progress-ring">
+    <svg width="280" height="280">
+      <circle class="bg" cx="140" cy="140" r="130"></circle>
+      <circle class="fg" id="progress-circle" cx="140" cy="140" r="130"></circle>
+    </svg>
+    <div class="timer-center">
+      <div class="person-label" id="current-person"></div>
+      <div class="person-time" id="person-time">1:30</div>
+    </div>
+  </div>
+  <div class="timer-display" id="total-timer">15:00</div>
+  <div style="color: var(--muted); margin-bottom: 1rem;" id="counter-label">Personne 1/4</div>
+  <div class="controls">
+    <button class="btn-secondary" onclick="togglePause()" id="pause-btn">Pause</button>
+    <button class="btn-next" onclick="nextPerson()" id="next-btn">Suivant &#8594;</button>
+    <button class="btn-secondary" onclick="endStandup()">Terminer</button>
+  </div>
+</div>
+
+<div id="app-summary">
+  <div class="summary">
+    <h2>Recap du Daily</h2>
+    <div id="summary-list"></div>
+    <div class="total-time" id="total-time-summary"></div>
+    <button class="btn-primary" style="width:100%; margin-top:1.5rem;" onclick="resetApp()">Nouveau Daily</button>
+  </div>
+</div>
+
+<script>
+const APP_KEY = 'daily-timer';
+let members = [];
+let currentIdx = 0;
+let personSeconds = 0;
+let totalSeconds = 0;
+let maxPersonSeconds = 90;
+let running = false;
+let paused = false;
+let timerInterval = null;
+let personTimes = [];
+const circumference = 2 * Math.PI * 130;
+
+// ---- Session functions ----
+function getSessionData() {
+  return { members: members, timePerPerson: document.getElementById('time-per-person').value };
+}
+function restoreSessionData(data) {
+  members = data.members || [];
+  document.getElementById('time-per-person').value = data.timePerPerson || 90;
+  renderMembers();
+}
+function resetSessionData() {
+  members = [];
+  document.getElementById('time-per-person').value = 90;
+  renderMembers();
+}
+
+
+// ---- Session Management ----
+function generateSessionId() {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+function getSessionId() {
+  const params = new URLSearchParams(window.location.search);
+  const urlSession = params.get('session');
+  if (urlSession) return urlSession;
+  const stored = localStorage.getItem(APP_KEY + '-last-session');
+  return stored || generateSessionId();
+}
+
+function changeSession(newId) {
+  if (!newId.trim()) return;
+  const id = newId.trim().toUpperCase();
+  document.getElementById('session-id').value = id;
+  localStorage.setItem(APP_KEY + '-last-session', id);
+  // Update URL without reload
+  const url = new URL(window.location);
+  url.searchParams.set('session', id);
+  window.history.replaceState({}, '', url);
+  loadSession();
+}
+
+function newSession() {
+  changeSession(generateSessionId());
+}
+
+function copySessionLink() {
+  const id = document.getElementById('session-id').value;
+  const url = new URL(window.location);
+  url.searchParams.set('session', id);
+  navigator.clipboard.writeText(url.toString()).then(() => {
+    const btn = event.target;
+    btn.textContent = 'Copié !';
+    setTimeout(() => btn.textContent = 'Copier le lien', 2000);
+  });
+}
+
+function saveSession() {
+  const id = document.getElementById('session-id').value;
+  const key = APP_KEY + '-session-' + id;
+  localStorage.setItem(key, JSON.stringify(getSessionData()));
+  localStorage.setItem(APP_KEY + '-last-session', id);
+}
+
+function loadSession() {
+  const id = document.getElementById('session-id').value;
+  const key = APP_KEY + '-session-' + id;
+  const data = localStorage.getItem(key);
+  if (data) {
+    try { restoreSessionData(JSON.parse(data)); } catch(e) { console.warn('Session restore failed', e); }
+  } else {
+    resetSessionData();
+  }
+}
+
+function initSession() {
+  const id = getSessionId();
+  document.getElementById('session-id').value = id;
+  localStorage.setItem(APP_KEY + '-last-session', id);
+  const url = new URL(window.location);
+  url.searchParams.set('session', id);
+  window.history.replaceState({}, '', url);
+  loadSession();
+}
+
+
+function addMember() {
+  const input = document.getElementById('member-input');
+  const name = input.value.trim();
+  if (!name) return;
+  members.push(name);
+  input.value = '';
+  input.focus();
+  renderMembers();
+}
+
+function removeMember(idx) {
+  members.splice(idx, 1);
+  renderMembers();
+}
+
+function renderMembers() {
+  const list = document.getElementById('member-list');
+  list.innerHTML = members.map((m, i) =>
+    `<li><span class="name">${m}</span><button class="remove" onclick="removeMember(${i})">x</button></li>`
+  ).join('');
+  document.getElementById('start-btn').disabled = members.length === 0;
+  saveSession();
+}
+
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+function startStandup() {
+  maxPersonSeconds = parseInt(document.getElementById('time-per-person').value) || 90;
+  shuffleArray(members);
+  personTimes = members.map(() => 0);
+  currentIdx = 0;
+  personSeconds = 0;
+  totalSeconds = 0;
+  running = true;
+  paused = false;
+
+  document.getElementById('app-setup').style.display = 'none';
+  document.getElementById('app-timer').style.display = 'block';
+  document.getElementById('app-summary').style.display = 'none';
+
+  const circle = document.getElementById('progress-circle');
+  circle.style.strokeDasharray = circumference;
+  circle.style.strokeDashoffset = 0;
+
+  updateDisplay();
+  timerInterval = setInterval(tick, 1000);
+}
+
+function tick() {
+  if (paused) return;
+  personSeconds++;
+  totalSeconds++;
+  personTimes[currentIdx] = personSeconds;
+  updateDisplay();
+}
+
+function updateDisplay() {
+  const personLeft = Math.max(0, maxPersonSeconds - personSeconds);
+  const mins = Math.floor(personLeft / 60);
+  const secs = personLeft % 60;
+  document.getElementById('person-time').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+  document.getElementById('current-person').textContent = members[currentIdx];
+  document.getElementById('counter-label').textContent = `Personne ${currentIdx + 1}/${members.length}`;
+
+  const totalMins = Math.floor(totalSeconds / 60);
+  const totalSecs = totalSeconds % 60;
+  const totalDisplay = document.getElementById('total-timer');
+  totalDisplay.textContent = `${totalMins}:${totalSecs.toString().padStart(2, '0')}`;
+
+  // Progress ring
+  const circle = document.getElementById('progress-circle');
+  const progress = Math.min(personSeconds / maxPersonSeconds, 1);
+  circle.style.strokeDashoffset = circumference * (1 - progress);
+
+  // Warning states
+  const ratio = personSeconds / maxPersonSeconds;
+  circle.classList.remove('warning', 'danger');
+  totalDisplay.classList.remove('warning', 'danger');
+  if (ratio >= 1) {
+    circle.classList.add('danger');
+    totalDisplay.classList.add('danger');
+  } else if (ratio >= 0.75) {
+    circle.classList.add('warning');
+    totalDisplay.classList.add('warning');
+  }
+}
+
+function nextPerson() {
+  if (currentIdx < members.length - 1) {
+    currentIdx++;
+    personSeconds = 0;
+    updateDisplay();
+  } else {
+    endStandup();
+  }
+}
+
+function togglePause() {
+  paused = !paused;
+  document.getElementById('pause-btn').textContent = paused ? 'Reprendre' : 'Pause';
+}
+
+function endStandup() {
+  running = false;
+  clearInterval(timerInterval);
+  document.getElementById('app-timer').style.display = 'none';
+  document.getElementById('app-summary').style.display = 'block';
+
+  let html = '';
+  for (let i = 0; i < members.length; i++) {
+    const t = personTimes[i] || 0;
+    const m = Math.floor(t / 60);
+    const s = t % 60;
+    const over = t > maxPersonSeconds ? ' over' : '';
+    html += `<div class="summary-row"><span>${members[i]}</span><span class="time${over}">${m}:${s.toString().padStart(2, '0')}</span></div>`;
+  }
+  document.getElementById('summary-list').innerHTML = html;
+
+  const tm = Math.floor(totalSeconds / 60);
+  const ts = totalSeconds % 60;
+  const color = totalSeconds > 900 ? 'var(--red)' : 'var(--green)';
+  document.getElementById('total-time-summary').innerHTML = `<span style="color:${color}">Total : ${tm}:${ts.toString().padStart(2, '0')}</span>`;
+}
+
+function resetApp() {
+  members = [];
+  document.getElementById('app-setup').style.display = 'block';
+  document.getElementById('app-summary').style.display = 'none';
+  renderMembers();
+}
+
+// Init
+initSession();
+</script>
+</body>
+</html>
