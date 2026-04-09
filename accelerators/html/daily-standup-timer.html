@@ -350,8 +350,21 @@ function endStandup() {
 }
 
 function resetApp() {
-  members = [];
+  // Keep team members for the current session to avoid retyping names.
+  running = false;
+  paused = false;
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  currentIdx = 0;
+  personSeconds = 0;
+  totalSeconds = 0;
+  personTimes = [];
+  document.getElementById('pause-btn').textContent = 'Pause';
+
   document.getElementById('app-setup').style.display = 'block';
+  document.getElementById('app-timer').style.display = 'none';
   document.getElementById('app-summary').style.display = 'none';
   renderMembers();
 }
