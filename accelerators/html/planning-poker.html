@@ -37,6 +37,13 @@
   .modal input:focus { border-color: var(--accent); }
   .modal button { width: 100%; padding: 0.75rem; border-radius: 10px; border: none; background: var(--accent); color: white; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
   .modal button:hover { filter: brightness(1.1); }
+  #export-modal .modal { max-width: 760px; text-align: left; }
+  #session-export-text { width: 100%; min-height: 340px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.82rem; line-height: 1.5; padding: 1rem; resize: vertical; outline: none; }
+  #session-export-text:focus { border-color: var(--accent); }
+  .export-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem; }
+  .export-actions button { width: auto; padding: 0.6rem 1rem; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); font-size: 0.84rem; font-weight: 700; }
+  .export-actions button:hover { border-color: var(--accent); filter: none; }
+  .export-actions .btn-copy { background: var(--accent); border-color: var(--accent); color: white; }
 
   .scale-toggle { display: flex; gap: 0.5rem; margin-bottom: 2rem; }
   .scale-btn { padding: 0.5rem 1.2rem; border-radius: 100px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
@@ -102,6 +109,18 @@
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="export-modal" onclick="if(event.target === this) closeSessionExport()">
+  <div class="modal">
+    <h2>Export session (texte)</h2>
+    <p>Copiez ce recap et partagez-le directement dans Slack, Teams ou votre ticket.</p>
+    <textarea id="session-export-text" readonly></textarea>
+    <div class="export-actions">
+      <button onclick="closeSessionExport()">Fermer</button>
+      <button class="btn-copy" onclick="copySessionExportText(this)">Copier</button>
+    </div>
+  </div>
+</div>
+
 <h1>Planning Poker</h1>
 <p class="subtitle">Estimez vos stories en équipe — vote anonyme puis révélation</p>
 
@@ -139,7 +158,9 @@
 <div class="controls">
   <button class="btn-primary" onclick="revealVotes()" id="reveal-btn">Révéler les votes</button>
   <button class="btn-secondary" onclick="resetRound()">Nouveau vote</button>
-  <button class="btn-secondary" onclick="newStory()">Nouvelle story</button>
+  <button class="btn-secondary" onclick="newStoryEnhanced()">Nouvelle story</button>
+  <button class="btn-secondary" onclick="openSessionExport()">Exporter session</button>
+  <button class="btn-secondary" onclick="clearSession()">Nettoyer session</button>
 </div>
 
 <div class="results" id="results">
@@ -295,19 +316,41 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+function normalizeVoteToNumber(vote) {
+  if (vote === null || vote === undefined) return null;
+  const value = String(vote).trim();
+  if (!value || value === '?' || value === 'â˜•' || value === '☕') return null;
+  const map = { XS: 1, S: 2, M: 3, L: 5, XL: 8, XXL: 13 };
+  if (map[value] !== undefined) return map[value];
+  const parsed = parseFloat(value);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function getNumericVotesFromVoters(votersList) {
+  return votersList
+    .map(v => ({ pseudo: v.pseudo, num: normalizeVoteToNumber(v.vote), rawVote: v.vote }))
+    .filter(v => v.num !== null);
+}
+
+function computeStatsFromNumericVotes(numericVotes) {
+  if (!numericVotes.length) return null;
+  const nums = numericVotes.map(v => v.num);
+  const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
+  const min = Math.min(...nums);
+  const max = Math.max(...nums);
+  const sorted = [...nums].sort((a, b) => a - b);
+  const median = sorted.length % 2 === 0
+    ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+    : sorted[Math.floor(sorted.length / 2)];
+  return { avg, min, max, median, spread: max - min };
+}
+
 // ---- Game logic ----
 function revealVotes() {
   revealed = true;
   renderVoters();
 
-  const numericVotes = voters
-    .filter(v => v.vote && v.vote !== '?' && v.vote !== '☕')
-    .map(v => {
-      const map = {XS:1,S:2,M:3,L:5,XL:8,XXL:13};
-      return { pseudo: v.pseudo, num: map[v.vote] !== undefined ? map[v.vote] : parseFloat(v.vote) };
-    })
-    .filter(v => !isNaN(v.num));
-
+  const numericVotes = getNumericVotesFromVoters(voters);
   const results = document.getElementById('results');
   results.style.display = 'block';
 
@@ -317,14 +360,11 @@ function revealVotes() {
     return;
   }
 
-  const nums = numericVotes.map(v => v.num);
-  const avg = nums.reduce((a,b) => a+b, 0) / nums.length;
-  const min = Math.min(...nums);
-  const max = Math.max(...nums);
-  const sorted = [...nums].sort((a,b) => a-b);
-  const median = sorted.length % 2 === 0
-    ? (sorted[sorted.length/2-1] + sorted[sorted.length/2]) / 2
-    : sorted[Math.floor(sorted.length/2)];
+  const stats = computeStatsFromNumericVotes(numericVotes);
+  const avg = stats.avg;
+  const min = stats.min;
+  const max = stats.max;
+  const median = stats.median;
 
   document.getElementById('result-stats').innerHTML = `
     <div class="stat"><div class="stat-value">${avg.toFixed(1)}</div><div class="stat-label">Moyenne</div></div>
@@ -333,7 +373,7 @@ function revealVotes() {
     <div class="stat"><div class="stat-value">${max}</div><div class="stat-label">Max</div></div>
   `;
 
-  const spread = max - min;
+  const spread = stats.spread;
   const consensus = document.getElementById('consensus');
   if (spread <= 2) {
     consensus.className = 'consensus good';
@@ -370,11 +410,135 @@ function newStory() {
 }
 
 function renderHistory() {
-  if (history.length === 0) return;
+  if (history.length === 0) {
+    document.getElementById('history-section').style.display = 'none';
+    document.getElementById('history-list').innerHTML = '';
+    return;
+  }
   document.getElementById('history-section').style.display = 'block';
   document.getElementById('history-list').innerHTML = history.map(h =>
     `<div class="history-item"><span class="story-name">${escapeHtml(h.story)}</span><span class="story-result">${escapeHtml(h.result)}</span></div>`
   ).join('');
+}
+
+function newStoryEnhanced() {
+  const storyText = document.getElementById('story-text').value.trim();
+  if (storyText && revealed) {
+    const votedVoters = voters.filter(v => normalizeVoteToNumber(v.vote) !== null);
+    if (votedVoters.length > 0) {
+      const votes = votedVoters.map(v => `${v.pseudo}: ${v.vote}`).join(', ');
+      history.push({
+        story: storyText,
+        result: votes,
+        scale: currentScale,
+        createdAt: new Date().toISOString(),
+        votes: votedVoters.map(v => ({ pseudo: v.pseudo, vote: v.vote, num: normalizeVoteToNumber(v.vote) })),
+      });
+      renderHistory();
+    }
+  }
+  document.getElementById('story-text').value = '';
+  resetRound();
+}
+
+function formatDateTime(isoDate) {
+  if (!isoDate) return '-';
+  const d = new Date(isoDate);
+  if (Number.isNaN(d.getTime())) return '-';
+  return d.toLocaleString('fr-FR');
+}
+
+function getCurrentStoryRecap() {
+  const story = document.getElementById('story-text').value.trim() || '(aucune)';
+  const numericVotes = getNumericVotesFromVoters(voters);
+  const stats = computeStatsFromNumericVotes(numericVotes);
+  const allVotes = voters.map(v => `${v.pseudo}: ${v.vote ?? '-'}`).join('\n');
+  const statsBlock = stats
+    ? [
+      `Moyenne: ${stats.avg.toFixed(2)}`,
+      `Mediane: ${stats.median}`,
+      `Min/Max: ${stats.min} / ${stats.max}`,
+      `Ecart: ${stats.spread}`,
+    ].join('\n')
+    : 'Pas assez de votes numeriques.';
+  return [
+    '--- Story en cours ---',
+    `Story: ${story}`,
+    `Scale: ${currentScale}`,
+    `Votes reveles: ${revealed ? 'oui' : 'non'}`,
+    '',
+    'Votes participants:',
+    allVotes || '(aucun participant)',
+    '',
+    'Stats:',
+    statsBlock,
+  ].join('\n');
+}
+
+function buildSessionExportText() {
+  const sessionId = document.getElementById('session-id').value || '-';
+  const generatedAt = new Date().toLocaleString('fr-FR');
+  const participants = voters.map(v => `- ${v.pseudo}`).join('\n') || '-';
+  const historyBlock = history.length
+    ? history.map((item, index) => {
+      const votesText = Array.isArray(item.votes) && item.votes.length
+        ? item.votes.map(v => `${v.pseudo}: ${v.vote}`).join(' | ')
+        : (item.result || '-');
+      return [
+        `#${index + 1} | ${item.story || '(sans titre)'}`,
+        `  Date: ${formatDateTime(item.createdAt)}`,
+        `  Scale: ${item.scale || '-'}`,
+        `  Votes: ${votesText}`,
+      ].join('\n');
+    }).join('\n\n')
+    : 'Aucune story finalisee dans cette session.';
+
+  return [
+    'PLANNING POKER - EXPORT SESSION',
+    '================================',
+    `Session ID: ${sessionId}`,
+    `Genere le: ${generatedAt}`,
+    '',
+    'Participants',
+    '------------',
+    participants,
+    '',
+    'Historique des stories',
+    '----------------------',
+    historyBlock,
+    '',
+    getCurrentStoryRecap(),
+  ].join('\n');
+}
+
+function openSessionExport() {
+  const textarea = document.getElementById('session-export-text');
+  textarea.value = buildSessionExportText();
+  document.getElementById('export-modal').classList.remove('hidden');
+  textarea.focus();
+  textarea.select();
+}
+
+function closeSessionExport() {
+  document.getElementById('export-modal').classList.add('hidden');
+}
+
+function copySessionExportText(btn) {
+  const text = document.getElementById('session-export-text').value;
+  navigator.clipboard.writeText(text).then(() => {
+    const initial = btn.textContent;
+    btn.textContent = 'Copie';
+    setTimeout(() => { btn.textContent = initial; }, 1400);
+  });
+}
+
+function clearSession() {
+  const ok = window.confirm('Nettoyer cette session ? Cela efface votes, story courante et historique.');
+  if (!ok) return;
+  const id = document.getElementById('session-id').value;
+  localStorage.removeItem(APP_KEY + '-session-' + id);
+  resetSessionData();
+  saveSession();
 }
 
 // ---- Session Management ----
@@ -468,6 +632,11 @@ function resetSessionData() {
   renderVoters();
   document.getElementById('story-text').value = '';
   document.getElementById('results').style.display = 'none';
+  document.getElementById('result-stats').innerHTML = '';
+  document.getElementById('consensus').textContent = '';
+  document.getElementById('history-section').style.display = 'none';
+  document.getElementById('history-list').innerHTML = '';
+  closeSessionExport();
 }
 
 function saveSession() {
@@ -515,6 +684,9 @@ function init() {
 
   renderCards();
   initSession();
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeSessionExport();
+  });
 
   // Auto-save every 5s
   setInterval(() => { if (voters.length > 0) saveSession(); }, 5000);
