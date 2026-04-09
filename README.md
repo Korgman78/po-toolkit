@@ -7,6 +7,17 @@ Le guide de reference du Product Owner — outils, methodes et accelerateurs.
 1. Ouvrir `site/index.html` dans votre navigateur
 2. C'est tout. Zero installation, zero serveur, tout fonctionne en local.
 
+## Hebergement (GitHub Pages)
+
+Le repo est configure pour deploiement automatique via GitHub Actions:
+- Workflow: `.github/workflows/deploy-pages.yml`
+- Declenchement: chaque push sur `main`
+- URL cible (repo actuel): `https://korgman78.github.io/po-toolkit/`
+
+Activation a faire une seule fois dans GitHub:
+1. `Settings` -> `Pages`
+2. `Build and deployment` -> `Source = GitHub Actions`
+
 ## Contenu
 
 ### Site Web (guide principal)
