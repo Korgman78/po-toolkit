@@ -1288,7 +1288,6 @@ function init() {
   const initialSession = getSessionFromUrl() || localStorage.getItem(LAST_SESSION_KEY) || 'atelier-archi';
   document.getElementById('modal-session').value = initialSession;
   loadSession(initialSession);
-  if (state.nodes.length === 0) seedExample();
 }
 
 init();
