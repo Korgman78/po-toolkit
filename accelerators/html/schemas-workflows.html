@@ -26,7 +26,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
   button, input, textarea, select { font-family: inherit; }
-  .app { min-height: 100vh; display: grid; grid-template-columns: 300px 1fr 300px; }
+  .app { min-height: 100vh; display: grid; grid-template-columns: 300px 1fr 24px 300px; }
   .sidebar, .inspector { background: var(--card); border-right: 1px solid var(--border); padding: 1.1rem; display: grid; gap: 1rem; align-content: start; }
   .inspector { border-right: none; border-left: 1px solid var(--border); }
   .sidebar h1 { font-size: 1.45rem; font-weight: 800; color: var(--heading); letter-spacing: -0.03em; }
@@ -86,8 +86,8 @@
   .workspace-top { padding: 1rem 1.1rem; border-bottom: 1px solid var(--border); background: rgba(15,17,23,0.95); position: sticky; top: 0; z-index: 2; }
   .workspace-top h2 { font-size: 1.18rem; font-weight: 800; color: var(--heading); }
   .workspace-top .sub { color: var(--muted); font-size: 0.8rem; }
-  .board-wrap { padding: 1rem; overflow: auto; }
-  .canvas-shell { min-width: 1200px; min-height: 780px; position: relative; border: 1px solid var(--border); border-radius: 20px; background:
+  .board-wrap { padding: 0; overflow: hidden; position: relative; }
+  .canvas-shell { width: 4000px; height: 3000px; position: relative; cursor: grab; border: 1px solid var(--border); border-radius: 20px; background:
       linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px),
       radial-gradient(circle at top left, rgba(99,102,241,0.18), transparent 34%),
@@ -96,9 +96,10 @@
     background-size: 28px 28px, 28px 28px, auto, auto, auto;
     overflow: hidden;
   }
-  #links-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: auto; }
-  #link-label-layer { position: absolute; inset: 0; pointer-events: auto; }
-  #canvas { position: absolute; inset: 0; }
+  #links-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  #link-label-layer { position: absolute; inset: 0; pointer-events: none; }
+  #canvas { position: absolute; inset: 0; pointer-events: none; }
+  .node { pointer-events: auto; cursor: grab; }
   .empty-state {
     position: absolute;
     inset: 0;
@@ -138,39 +139,6 @@
   .node .subtitle { font-size: 0.74rem; color: var(--muted); line-height: 1.5; }
   .node .footer { display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; font-size: 0.7rem; color: var(--muted); }
   .node .meta-tag { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 999px; padding: 0.2rem 0.45rem; }
-  .node.browser { padding-top: 1.35rem; }
-  .node.browser::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 28px;
-    border-radius: 18px 18px 10px 10px;
-    background:
-      radial-gradient(circle at 16px 14px, rgba(255,255,255,0.35) 0 2px, transparent 3px),
-      radial-gradient(circle at 28px 14px, rgba(255,255,255,0.22) 0 2px, transparent 3px),
-      radial-gradient(circle at 40px 14px, rgba(255,255,255,0.16) 0 2px, transparent 3px),
-      linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    z-index: 0;
-  }
-  .node.mobile { width: 150px; min-height: 132px; border-radius: 24px; padding-top: 1rem; }
-  .node.mobile::before { content: ""; position: absolute; top: 10px; left: 50%; width: 42px; height: 6px; transform: translateX(-50%); border-radius: 999px; background: rgba(255,255,255,0.12); }
-  .node.cylinder { padding-top: 1.1rem; padding-bottom: 1rem; }
-  .node.queue::before, .node.queue::after {
-    content: "";
-    position: absolute;
-    left: 20px;
-    right: 20px;
-    height: 10px;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.16);
-    background: rgba(255,255,255,0.04);
-  }
-  .node.queue::before { top: 12px; }
-  .node.queue::after { top: 28px; }
-  .node.edge { clip-path: polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%); border-radius: 0; padding-left: 1rem; padding-right: 1rem; }
   .node-actions { display: flex; align-items: center; gap: 0.45rem; margin-top: 0.1rem; flex-wrap: wrap; }
   .node-action-btn {
     border-radius: 999px;
@@ -182,27 +150,14 @@
     font-weight: 800;
   }
   .node-action-btn:hover { transform: translateY(-1px); border-color: rgba(99,102,241,0.45); }
-  .node.cylinder::before, .node.cylinder::after {
-    content: "";
-    position: absolute;
-    left: 14px;
-    right: 14px;
-    height: 12px;
-    border: 1px solid rgba(255,255,255,0.18);
-    border-radius: 999px;
-    pointer-events: none;
-  }
-  .node.cylinder::before { top: 10px; background: rgba(255,255,255,0.06); }
-  .node.cylinder::after { bottom: 10px; background: transparent; }
-  .node.front_manager { border-color: rgba(99,102,241,0.35); }
-  .node.front_client { border-color: rgba(20,184,166,0.35); }
-  .node.java_service { border-color: rgba(34,197,94,0.35); }
-  .node.worker { border-color: rgba(139,92,246,0.35); }
-  .node.kafka_topic { border-color: rgba(245,158,11,0.38); }
-  .node.postgres_db { border-color: rgba(6,182,212,0.38); }
-  .node.external_api { border-color: rgba(100,116,139,0.45); }
-  .node.auth_service { border-color: rgba(239,68,68,0.35); }
-  .node.cache { border-color: rgba(236,72,153,0.35); }
+  .node[data-cat="fronts"] { background: linear-gradient(180deg, rgba(99,102,241,0.14), rgba(99,102,241,0.04)); border-color: rgba(99,102,241,0.35); }
+  .node[data-cat="edge_access"] { background: linear-gradient(180deg, rgba(239,68,68,0.12), rgba(239,68,68,0.04)); border-color: rgba(239,68,68,0.3); }
+  .node[data-cat="services"] { background: linear-gradient(180deg, rgba(34,197,94,0.12), rgba(34,197,94,0.04)); border-color: rgba(34,197,94,0.3); }
+  .node[data-cat="integration"] { background: linear-gradient(180deg, rgba(245,158,11,0.12), rgba(245,158,11,0.04)); border-color: rgba(245,158,11,0.3); }
+  .node[data-cat="data"] { background: linear-gradient(180deg, rgba(6,182,212,0.12), rgba(6,182,212,0.04)); border-color: rgba(6,182,212,0.3); }
+  .node[data-cat="platform"] { background: linear-gradient(180deg, rgba(139,92,246,0.12), rgba(139,92,246,0.04)); border-color: rgba(139,92,246,0.3); }
+  .node[data-cat="external"] { background: linear-gradient(180deg, rgba(100,116,139,0.12), rgba(100,116,139,0.05)); border-color: rgba(100,116,139,0.35); }
+  .node[data-cat="custom"] { background: linear-gradient(180deg, rgba(100,116,139,0.1), rgba(100,116,139,0.04)); border-color: rgba(100,116,139,0.25); }
 
   .inspector .field { display: grid; gap: 0.35rem; }
   .inspector label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
@@ -223,10 +178,35 @@
     white-space: nowrap;
     box-shadow: 0 8px 16px rgba(0,0,0,0.18);
     cursor: pointer;
+    pointer-events: auto;
   }
   .link-label.active { border-color: rgba(99,102,241,0.55); box-shadow: 0 0 0 2px rgba(99,102,241,0.2), 0 8px 16px rgba(0,0,0,0.18); }
-  .link-handle { fill: #f8fafc; stroke: #6366f1; stroke-width: 2; cursor: grab; }
-  .link-hit { fill: none; stroke: transparent; stroke-width: 16; cursor: pointer; }
+  .link-hit { fill: none; stroke: transparent; stroke-width: 16; cursor: pointer; pointer-events: all; }
+  .link-type-popup {
+    position: fixed;
+    z-index: 100;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 0.4rem;
+    display: none;
+    gap: 0.15rem;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+    min-width: 155px;
+  }
+  .link-type-popup button {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.4rem 0.65rem; border-radius: 8px;
+    background: transparent; color: var(--text);
+    font-size: 0.78rem; text-align: left;
+  }
+  .link-type-popup button:hover { background: rgba(255,255,255,0.08); }
+  .link-type-popup button.active { background: rgba(99,102,241,0.15); color: var(--heading); }
+  .type-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .inspector .panel h2 { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+  .inspector .panel h2::after { content: '\25BE'; font-size: 0.85rem; color: var(--muted); transition: transform 0.2s; }
+  .inspector .panel.collapsed h2::after { transform: rotate(-90deg); }
+  .inspector .panel.collapsed > *:not(h2) { display: none !important; }
   .help-list { display: grid; gap: 0.55rem; }
   .help-list div { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem; font-size: 0.78rem; line-height: 1.55; color: var(--muted); }
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.72); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
@@ -237,9 +217,42 @@
   .modal .field { display: grid; gap: 0.35rem; }
   .modal label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
 
-  @media (max-width: 1180px) {
-    .app { grid-template-columns: 1fr; }
-    .sidebar, .inspector { border: none; border-bottom: 1px solid var(--border); }
+  .inspector.hidden { display: none; }
+  .inspector-handle {
+    background: var(--card2);
+    border: none;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 0.85rem;
+    user-select: none;
+    padding: 0;
+    width: 24px;
+    min-width: 24px;
+  }
+  .inspector-handle:hover { color: var(--heading); background: var(--card); }
+  .app.inspector-off { grid-template-columns: 300px 1fr 24px; }
+  .zoom-group { display: flex; gap: 0.3rem; align-items: center; }
+  .zoom-group .btn-secondary { min-width: 32px; text-align: center; padding: 0.4rem 0.5rem; }
+  @media (max-width: 1400px) {
+    .app { grid-template-columns: 260px 1fr 24px 260px; }
+    .app.inspector-off { grid-template-columns: 260px 1fr 24px; }
+  }
+  @media (max-width: 1080px) {
+    .app { grid-template-columns: 240px 1fr 24px; }
+    .app.inspector-off { grid-template-columns: 240px 1fr 24px; }
+    .inspector { display: none; }
+    .sidebar { max-height: 100vh; overflow-y: auto; }
+  }
+  @media (max-width: 768px) {
+    .app, .app.inspector-off { grid-template-columns: 1fr; }
+    .sidebar { border: none; border-bottom: 1px solid var(--border); max-height: 45vh; overflow-y: auto; }
+    .inspector-handle { display: none; }
+    .inspector { display: none; }
   }
 </style>
 </head>
@@ -247,7 +260,7 @@
 <div class="modal-overlay hidden" id="session-modal">
   <div class="modal">
     <h2>Rejoindre une session</h2>
-    <p>Choisissez un pseudo et une session pour garder un contexte d atelier propre, partageable et persistant localement.</p>
+    <p>Choisissez un pseudo et une session pour garder un contexte d'atelier propre, partageable et persistant localement.</p>
     <div class="field">
       <label for="modal-pseudo">Pseudo</label>
       <input id="modal-pseudo" type="text" placeholder="Ex: Raphael">
@@ -264,7 +277,7 @@
   <aside class="sidebar">
     <div>
       <h1>Schemas & Workflows</h1>
-      <p>Modelez rapidement une petite archi ou un workflow produit avec une palette de modules propres, pensee pour des ateliers PO / delivery.</p>
+      <p>Modélisez rapidement une petite archi ou un workflow produit avec une palette de modules propres, pensée pour des ateliers PO / delivery.</p>
     </div>
 
     <section class="panel">
@@ -294,7 +307,7 @@
 
     <section class="panel">
       <h2>Liaisons rapides</h2>
-      <p class="hint">Selectionnez un bloc puis utilisez ses points de liaison pour choisir directement le type de flux a tracer.</p>
+      <p class="hint">Sélectionnez un bloc puis utilisez le bouton « + Lien » pour tracer une liaison vers un autre bloc.</p>
     </section>
   </aside>
 
@@ -303,9 +316,14 @@
       <div class="toolbar" style="justify-content: space-between;">
         <div>
           <h2>Canvas de session</h2>
-          <div class="sub" id="session-status">Selectionnez un module puis posez-le sur le canvas.</div>
+          <div class="sub" id="session-status">Sélectionnez un module puis posez-le sur le canvas.</div>
         </div>
         <div class="toolbar">
+          <div class="zoom-group">
+            <button class="btn-secondary" id="zoom-out-btn" title="Zoom -">-</button>
+            <span class="sub" id="zoom-label">100%</span>
+            <button class="btn-secondary" id="zoom-in-btn" title="Zoom +">+</button>
+          </div>
           <button class="btn-secondary" id="connect-btn">Annuler la liaison</button>
           <button class="btn-secondary" id="seed-btn">Exemple</button>
           <button class="btn-danger" id="clear-btn">Vider le canvas</button>
@@ -315,24 +333,18 @@
 
     <div class="board-wrap">
       <div class="canvas-shell" id="canvas-shell">
-        <svg id="links-layer" viewBox="0 0 1200 780" preserveAspectRatio="none">
-          <defs>
-            <marker id="arrow-head" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-              <path d="M 0 0 L 12 6 L 0 12 z" fill="#94a3b8"></path>
-            </marker>
-          </defs>
-        </svg>
+        <svg id="links-layer"></svg>
         <div id="link-label-layer"></div>
         <div id="canvas"></div>
         <div class="empty-state" id="empty-state">Ajoutez vos premiers modules depuis la palette pour construire une archi ou un workflow de session.</div>
       </div>
     </div>
   </main>
-
-  <aside class="inspector">
+  <div class="inspector-handle" id="toggle-inspector-btn">&#9654;</div>
+  <aside class="inspector" id="inspector-panel">
     <section class="panel">
-      <h2>Edition du module</h2>
-      <div id="selection-empty" class="hint">Selectionnez un module pour modifier son libelle, ses notes ou lancer une liaison.</div>
+      <h2>Édition du module</h2>
+      <div id="selection-empty" class="hint">Sélectionnez un module pour modifier son libellé, ses notes ou lancer une liaison.</div>
       <div id="selection-form" style="display:none; gap:0.8rem;">
         <div class="pill" id="selection-type"></div>
         <div class="field" id="custom-type-field" style="display:none;">
@@ -345,22 +357,11 @@
         </div>
         <div class="field">
           <label for="node-subtitle">Sous-texte</label>
-          <textarea id="node-subtitle" placeholder="Ex: API Spring Boot exposee au front gestionnaire..."></textarea>
+          <textarea id="node-subtitle" placeholder="Ex : API Spring Boot exposée au front gestionnaire..."></textarea>
         </div>
         <div class="field" id="custom-footer-field" style="display:none;">
           <label for="node-footer-text">Tag bas</label>
-          <input id="node-footer-text" type="text" placeholder="Ex: Integration">
-        </div>
-        <div class="field" id="custom-shape-field" style="display:none;">
-          <label for="node-custom-shape">Forme</label>
-          <select id="node-custom-shape">
-            <option value="service">Service</option>
-            <option value="browser">Front web</option>
-            <option value="mobile">Mobile</option>
-            <option value="edge">Gateway / edge</option>
-            <option value="queue">Queue</option>
-            <option value="cylinder">Data / topic</option>
-          </select>
+          <input id="node-footer-text" type="text" placeholder="Ex : Intégration">
         </div>
         <div class="field" id="custom-color-field" style="display:none;">
           <label for="node-custom-color">Couleur</label>
@@ -385,19 +386,12 @@
 
     <section class="panel">
       <h2>Liaisons</h2>
-      <div id="selected-link-empty" class="hint">Cliquez sur une liaison du canvas pour modifier son type ou sa forme.</div>
+      <div id="selected-link-empty" class="hint">Cliquez sur une liaison du canvas pour modifier son type.</div>
       <div id="selected-link-form" style="display:none; gap:0.8rem;">
         <div class="pill" id="selected-link-title"></div>
         <div class="field">
           <label for="link-type-select">Type de lien</label>
           <select id="link-type-select"></select>
-        </div>
-        <div class="field">
-          <label for="link-shape-select">Forme</label>
-          <select id="link-shape-select">
-            <option value="straight">Ligne</option>
-            <option value="manual">Manuelle</option>
-          </select>
         </div>
       </div>
       <div class="link-list" id="link-list"></div>
@@ -406,67 +400,70 @@
     <section class="panel">
       <h2>Bonnes pratiques</h2>
       <div class="help-list">
-        <div>Gardez le front, les APIs, les topics et la data lisibles au premier coup d'oeil.</div>
-        <div>Utilisez les liaisons pour montrer les dependances, pas pour dessiner tous les details techniques.</div>
-        <div>Une session = un schema partageable. Exportez le JSON pour le rejouer ou l'amender en atelier.</div>
+        <div>Gardez le front, les APIs, les topics et la data lisibles au premier coup d'œil.</div>
+        <div>Utilisez les liaisons pour montrer les dépendances, pas pour dessiner tous les détails techniques.</div>
+        <div>Une session = un schéma partageable. Exportez le JSON pour le rejouer ou l'amender en atelier.</div>
       </div>
     </section>
   </aside>
 </div>
+<div id="link-type-popup" class="link-type-popup"></div>
 
 <script>
 const APP_KEY = 'po-toolkit-schema-workflows';
 const STORAGE_PREFIX = `${APP_KEY}:session:`;
 const LAST_SESSION_KEY = `${APP_KEY}:last-session`;
 const PSEUDO_KEY = `${APP_KEY}:pseudo`;
-const CATEGORY_ORDER = ['all', 'experience', 'edge_access', 'services', 'integration', 'data', 'platform', 'external', 'custom'];
+const CATEGORY_ORDER = ['all', 'fronts', 'edge_access', 'services', 'integration', 'data', 'platform', 'external', 'custom'];
 const CATEGORY_LABELS = {
   all: 'Tout',
-  experience: 'Experiences',
+  fronts: 'Fronts',
   edge_access: 'Edge & Access',
   services: 'Services',
-  integration: 'Integration',
+  integration: 'Intégration',
   data: 'Data',
   platform: 'Platform',
   external: 'Externes',
   custom: 'Custom'
 };
 const LINK_TYPES = [
-  { id: 'sync_api', label: 'HTTP / API', icon: 'API', color: '#6366f1', dash: '', width: 2.6 },
-  { id: 'event', label: 'Event / PubSub', icon: 'EVT', color: '#f59e0b', dash: '7 6', width: 2.6 },
-  { id: 'write', label: 'Write flow', icon: 'OUT', color: '#22c55e', dash: '', width: 2.6 },
-  { id: 'read', label: 'Read flow', icon: 'IN', color: '#06b6d4', dash: '10 6', width: 2.2 },
-  { id: 'auth', label: 'Auth / IAM', icon: 'IAM', color: '#ef4444', dash: '3 5', width: 2.2 },
-  { id: 'batch', label: 'Batch / ETL', icon: 'JOB', color: '#8b5cf6', dash: '2 6', width: 2.2 },
-  { id: 'notification', label: 'Notification', icon: 'MSG', color: '#ec4899', dash: '9 4 2 4', width: 2.2 }
+  { id: 'none', label: '', color: '#64748b', dash: '', width: 1.8 },
+  { id: 'http', label: 'HTTP / API', color: '#6366f1', dash: '', width: 2.4 },
+  { id: 'event', label: 'Event / Kafka', color: '#f59e0b', dash: '7 6', width: 2.4 },
+  { id: 'read', label: 'Lecture', color: '#06b6d4', dash: '10 6', width: 2.2 },
+  { id: 'write', label: 'Ecriture', color: '#22c55e', dash: '', width: 2.4 },
+  { id: 'auth', label: 'Auth / IAM', color: '#ef4444', dash: '3 5', width: 2.2 },
+  { id: 'batch', label: 'Batch / ETL', color: '#8b5cf6', dash: '2 6', width: 2.2 },
+  { id: 'webhook', label: 'Webhook', color: '#fb923c', dash: '7 6', width: 2.2 },
+  { id: 'notif', label: 'Notification', color: '#ec4899', dash: '9 4 2 4', width: 2.2 }
 ];
 const TEMPLATES = [
-  { type: 'front_manager', category: 'experience', icon: '&#128188;', name: 'Front gestionnaire', desc: 'Back-office, portail ops ou BO manager.', color: 'var(--blue)', subtitle: 'UI interne / admin', shape: 'browser' },
-  { type: 'front_client', category: 'experience', icon: '&#128100;', name: 'Front client', desc: 'App client, portail selfcare ou espace utilisateur.', color: 'var(--teal)', subtitle: 'Web app client', shape: 'browser' },
-  { type: 'mobile_app', category: 'experience', icon: '&#128241;', name: 'App mobile', desc: 'Application mobile iOS / Android.', color: 'var(--teal)', subtitle: 'Mobile experience', shape: 'mobile', width: 150, height: 132 },
-  { type: 'partner_portal', category: 'experience', icon: '&#129309;', name: 'Portail partenaire', desc: 'Espace partenaires, marchands ou brokers.', color: 'var(--blue)', subtitle: 'Portal / B2B', shape: 'browser' },
-  { type: 'public_site', category: 'experience', icon: '&#127760;', name: 'Site public', desc: 'Landing, CMS ou portail vitrine.', color: 'var(--teal)', subtitle: 'Public website', shape: 'browser' },
-  { type: 'api_gateway', category: 'edge_access', icon: '&#128682;', name: 'API Gateway', desc: 'Point d entree securise pour les APIs.', color: 'var(--red)', subtitle: 'Ingress / gateway', shape: 'edge' },
-  { type: 'bff', category: 'edge_access', icon: '&#129518;', name: 'BFF', desc: 'Backend for frontend dedie a une experience.', color: 'var(--blue)', subtitle: 'Backend for frontend', shape: 'service' },
-  { type: 'auth_service', category: 'edge_access', icon: '&#128274;', name: 'Auth / IAM', desc: 'SSO, tokens, RBAC, federation.', color: 'var(--red)', subtitle: 'Identity / auth', shape: 'service' },
-  { type: 'feature_flags', category: 'edge_access', icon: '&#127987;', name: 'Feature flags', desc: 'Flags, rollout, toggles et experimentation.', color: 'var(--purple)', subtitle: 'Rollout / flags', shape: 'service' },
+  { type: 'front_manager', category: 'fronts', icon: '&#128188;', name: 'Front gestionnaire', desc: 'Back-office, portail ops ou BO manager.', color: 'var(--blue)', subtitle: 'UI interne / admin', shape: 'browser' },
+  { type: 'front_client', category: 'fronts', icon: '&#128100;', name: 'Front client', desc: 'App client, portail selfcare ou espace utilisateur.', color: 'var(--teal)', subtitle: 'Web app client', shape: 'browser' },
+  { type: 'mobile_app', category: 'fronts', icon: '&#128241;', name: 'App mobile', desc: 'Application mobile iOS / Android.', color: 'var(--teal)', subtitle: 'Mobile experience', shape: 'mobile' },
+  { type: 'partner_portal', category: 'fronts', icon: '&#129309;', name: 'Portail partenaire', desc: 'Espace partenaires, marchands ou brokers.', color: 'var(--blue)', subtitle: 'Portal / B2B', shape: 'browser' },
+  { type: 'public_site', category: 'fronts', icon: '&#127760;', name: 'Site public', desc: 'Landing, CMS ou portail vitrine.', color: 'var(--teal)', subtitle: 'Public website', shape: 'browser' },
+  { type: 'api_gateway', category: 'edge_access', icon: '&#128682;', name: 'API Gateway', desc: 'Point d\'entrée sécurisé pour les APIs.', color: 'var(--red)', subtitle: 'Ingress / gateway', shape: 'edge' },
+  { type: 'bff', category: 'edge_access', icon: '&#129518;', name: 'BFF', desc: 'Backend for frontend dédié à une expérience.', color: 'var(--blue)', subtitle: 'Backend for frontend', shape: 'service' },
+  { type: 'auth_service', category: 'edge_access', icon: '&#128274;', name: 'Auth / IAM', desc: 'SSO, tokens, RBAC, fédération.', color: 'var(--red)', subtitle: 'Identity / auth', shape: 'service' },
+  { type: 'feature_flags', category: 'edge_access', icon: '&#127987;', name: 'Feature flags', desc: 'Flags, rollout, toggles et expérimentation.', color: 'var(--purple)', subtitle: 'Rollout / flags', shape: 'service' },
   { type: 'cdn_edge', category: 'edge_access', icon: '&#9729;', name: 'CDN / Edge', desc: 'Caching, edge delivery, WAF.', color: 'var(--slate)', subtitle: 'Edge platform', shape: 'edge' },
-  { type: 'java_service', category: 'services', icon: '&#9881;', name: 'Microservice Java', desc: 'Service metier type Spring Boot.', color: 'var(--green)', subtitle: 'Business service', shape: 'service' },
+  { type: 'java_service', category: 'services', icon: '&#9881;', name: 'Microservice Java', desc: 'Service métier type Spring Boot.', color: 'var(--green)', subtitle: 'Business service', shape: 'service' },
   { type: 'node_service', category: 'services', icon: '&#11036;', name: 'Service Node.js', desc: 'API ou orchestration JavaScript / TypeScript.', color: 'var(--green)', subtitle: 'Node / TS service', shape: 'service' },
   { type: 'python_service', category: 'services', icon: '&#128013;', name: 'Service Python', desc: 'ML, automation ou service data.', color: 'var(--green)', subtitle: 'Python service', shape: 'service' },
   { type: 'worker', category: 'services', icon: '&#9203;', name: 'Worker', desc: 'Consommateur asynchrone ou traitement de fond.', color: 'var(--purple)', subtitle: 'Async worker', shape: 'service' },
-  { type: 'batch_job', category: 'services', icon: '&#128197;', name: 'Batch job', desc: 'Job planifie ou recalcul periodique.', color: 'var(--purple)', subtitle: 'Scheduled batch', shape: 'service' },
-  { type: 'serverless_fn', category: 'services', icon: '&#9889;', name: 'Function', desc: 'Lambda, cloud function ou traitement ephemere.', color: 'var(--purple)', subtitle: 'Serverless', shape: 'service' },
+  { type: 'batch_job', category: 'services', icon: '&#128197;', name: 'Batch job', desc: 'Job planifié ou recalcul périodique.', color: 'var(--purple)', subtitle: 'Scheduled batch', shape: 'service' },
+  { type: 'serverless_fn', category: 'services', icon: '&#9889;', name: 'Function', desc: 'Lambda, cloud function ou traitement éphémère.', color: 'var(--purple)', subtitle: 'Serverless', shape: 'service' },
   { type: 'notification_service', category: 'services', icon: '&#128276;', name: 'Notification service', desc: 'Emails, SMS, push ou inbox.', color: 'var(--pink)', subtitle: 'Messaging service', shape: 'service' },
   { type: 'search_service', category: 'services', icon: '&#128269;', name: 'Search service', desc: 'Recherche, indexation, suggestion.', color: 'var(--green)', subtitle: 'Search / query', shape: 'service' },
   { type: 'scheduler', category: 'services', icon: '&#9200;', name: 'Scheduler / orchestrateur', desc: 'Pilotage des jobs et des workflows.', color: 'var(--purple)', subtitle: 'Orchestration', shape: 'service' },
-  { type: 'kafka_topic', category: 'integration', icon: '&#128250;', name: 'Topic Kafka', desc: 'Evenements ou integration decouplee.', color: 'var(--orange)', subtitle: 'Event stream', shape: 'cylinder' },
-  { type: 'event_bus', category: 'integration', icon: '&#128257;', name: 'Event bus', desc: 'Bus d evenements ou backbone d integration.', color: 'var(--orange)', subtitle: 'Event backbone', shape: 'cylinder' },
+  { type: 'kafka_topic', category: 'integration', icon: '&#128250;', name: 'Topic Kafka', desc: 'Événements ou intégration découplée.', color: 'var(--orange)', subtitle: 'Event stream', shape: 'cylinder' },
+  { type: 'event_bus', category: 'integration', icon: '&#128257;', name: 'Event bus', desc: 'Bus d\'événements ou backbone d\'intégration.', color: 'var(--orange)', subtitle: 'Event backbone', shape: 'cylinder' },
   { type: 'queue', category: 'integration', icon: '&#128228;', name: 'Queue', desc: 'File de messages ou commandes asynchrones.', color: 'var(--orange)', subtitle: 'Message queue', shape: 'queue' },
   { type: 'webhook', category: 'integration', icon: '&#129513;', name: 'Webhook', desc: 'Callback entrant ou sortant.', color: 'var(--orange)', subtitle: 'Webhook integration', shape: 'service' },
   { type: 'external_api', category: 'external', icon: '&#127760;', name: 'API externe', desc: 'Provider tiers, CRM, ERP, PSP, etc.', color: 'var(--slate)', subtitle: 'Third-party API', shape: 'service' },
   { type: 'payment_provider', category: 'external', icon: '&#128179;', name: 'PSP / paiement', desc: 'Prestataire de paiement ou facturation.', color: 'var(--slate)', subtitle: 'Payment provider', shape: 'service' },
-  { type: 'email_provider', category: 'external', icon: '&#9993;', name: 'Email provider', desc: 'Service d envoi email / marketing.', color: 'var(--slate)', subtitle: 'Email provider', shape: 'service' },
+  { type: 'email_provider', category: 'external', icon: '&#9993;', name: 'Email provider', desc: 'Service d\'envoi email / marketing.', color: 'var(--slate)', subtitle: 'Email provider', shape: 'service' },
   { type: 'legacy_system', category: 'external', icon: '&#128187;', name: 'Legacy system', desc: 'SI historique ou monolithe externe.', color: 'var(--slate)', subtitle: 'Legacy / core', shape: 'service' },
   { type: 'postgres_db', category: 'data', icon: '&#128190;', name: 'Base Postgres', desc: 'Stockage relationnel transactionnel.', color: 'var(--cyan)', subtitle: 'Transactional DB', shape: 'cylinder' },
   { type: 'mysql_db', category: 'data', icon: '&#128190;', name: 'Base MySQL', desc: 'Base relationnelle alternative.', color: 'var(--cyan)', subtitle: 'Relational DB', shape: 'cylinder' },
@@ -475,9 +472,9 @@ const TEMPLATES = [
   { type: 'data_warehouse', category: 'data', icon: '&#128202;', name: 'Data warehouse', desc: 'Tables analytiques ou BI.', color: 'var(--cyan)', subtitle: 'Analytics storage', shape: 'cylinder' },
   { type: 'search_index', category: 'data', icon: '&#128270;', name: 'Search index', desc: 'Index Elastic / OpenSearch.', color: 'var(--cyan)', subtitle: 'Index / query', shape: 'cylinder' },
   { type: 'monitoring', category: 'platform', icon: '&#128200;', name: 'Observability', desc: 'Logs, traces, metrics et alertes.', color: 'var(--purple)', subtitle: 'Logs / traces / metrics', shape: 'service' },
-  { type: 'config_service', category: 'platform', icon: '&#9881;', name: 'Config service', desc: 'Configuration centralisee et secrets non sensibles.', color: 'var(--purple)', subtitle: 'Runtime config', shape: 'service' },
-  { type: 'vault', category: 'platform', icon: '&#128273;', name: 'Secrets vault', desc: 'Coffre a secrets ou KMS.', color: 'var(--purple)', subtitle: 'Secrets / KMS', shape: 'service' },
-  { type: 'custom_block', category: 'custom', icon: '&#10022;', name: 'Bloc custom', desc: 'Bloc libre a renommer pour vos composants specifiques.', color: 'var(--slate)', subtitle: 'Custom module', shape: 'service' }
+  { type: 'config_service', category: 'platform', icon: '&#9881;', name: 'Config service', desc: 'Configuration centralisée et secrets non sensibles.', color: 'var(--purple)', subtitle: 'Runtime config', shape: 'service' },
+  { type: 'vault', category: 'platform', icon: '&#128273;', name: 'Secrets vault', desc: 'Coffre à secrets ou KMS.', color: 'var(--purple)', subtitle: 'Secrets / KMS', shape: 'service' },
+  { type: 'custom_block', category: 'custom', icon: '&#10022;', name: 'Bloc custom', desc: 'Bloc libre à renommer pour vos composants spécifiques.', color: 'var(--slate)', subtitle: 'Custom module', shape: 'service' }
 ];
 
 const state = {
@@ -489,12 +486,12 @@ const state = {
   selectedNodeId: null,
   selectedLinkId: null,
   connectSourceId: null,
-  pendingLinkShape: 'straight',
   nextNodeId: 1
 };
 
 let dragState = null;
-let linkHandleDrag = null;
+let panState = null;
+let panX = 0, panY = 0;
 
 function getTemplate(type) { return TEMPLATES.find(template => template.type === type); }
 function getLinkType(typeId) { return LINK_TYPES.find(linkType => linkType.id === typeId) || LINK_TYPES[0]; }
@@ -519,13 +516,9 @@ function normalizeNode(node) {
 }
 
 function normalizeLink(link) {
-  return {
-    ...link,
-    type: link.type || 'sync_api',
-    shape: link.shape || 'straight',
-    bendX: Number.isFinite(link.bendX) ? link.bendX : null,
-    bendY: Number.isFinite(link.bendY) ? link.bendY : null
-  };
+  const typeMap = { sync_api: 'http', notification: 'notif' };
+  const type = typeMap[link.type] || link.type || 'none';
+  return { ...link, type };
 }
 
 function updateSessionUrl() {
@@ -554,18 +547,11 @@ function createNode(type, x, y) {
 }
 
 function createLink(from, to) {
-  const source = getNode(from);
-  const target = getNode(to);
-  const defaultBendX = ((source?.x || 0) + (target?.x || 0) + (source?.width || 0)) / 2;
-  const defaultBendY = ((source?.y || 0) + (target?.y || 0)) / 2 - 40;
   return {
     id: `link-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     from,
     to,
-    type: 'sync_api',
-    shape: state.pendingLinkShape || 'straight',
-    bendX: defaultBendX,
-    bendY: defaultBendY,
+    type: 'none',
     owner: state.pseudo || 'PO'
   };
 }
@@ -590,13 +576,13 @@ function seedExample() {
   state.nodes[6].label = 'Reporting DB';
   state.nodes[7].label = 'Observability';
   state.links = [
-    { ...createLink(state.nodes[0].id, state.nodes[1].id), type: 'sync_api' },
-    { ...createLink(state.nodes[1].id, state.nodes[2].id), type: 'sync_api' },
-    { ...createLink(state.nodes[2].id, state.nodes[3].id), type: 'sync_api' },
-    { ...createLink(state.nodes[3].id, state.nodes[4].id), type: 'event', shape: 'manual' },
+    { ...createLink(state.nodes[0].id, state.nodes[1].id), type: 'http' },
+    { ...createLink(state.nodes[1].id, state.nodes[2].id), type: 'http' },
+    { ...createLink(state.nodes[2].id, state.nodes[3].id), type: 'http' },
+    { ...createLink(state.nodes[3].id, state.nodes[4].id), type: 'event' },
     { ...createLink(state.nodes[4].id, state.nodes[5].id), type: 'event' },
     { ...createLink(state.nodes[5].id, state.nodes[6].id), type: 'write' },
-    { ...createLink(state.nodes[3].id, state.nodes[7].id), type: 'notification' }
+    { ...createLink(state.nodes[3].id, state.nodes[7].id), type: 'notif' }
   ];
   state.selectedNodeId = state.nodes[2].id;
   state.selectedLinkId = null;
@@ -753,7 +739,7 @@ function toggleConnectMode() {
 
 function maybeCreateLink(targetNodeId) {
   if (!state.connectSourceId || state.connectSourceId === targetNodeId) return false;
-  const exists = state.links.some(link => link.from === state.connectSourceId && link.to === targetNodeId && link.shape === state.pendingLinkShape);
+  const exists = state.links.some(link => link.from === state.connectSourceId && link.to === targetNodeId);
   if (!exists) {
     const link = createLink(state.connectSourceId, targetNodeId);
     state.links.push(link);
@@ -793,9 +779,8 @@ function renderTemplates() {
   `).join('');
 }
 
-function startLinkFromNode(nodeId, shape) {
+function startLinkFromNode(nodeId) {
   state.connectSourceId = nodeId;
-  state.pendingLinkShape = shape;
   state.selectedNodeId = nodeId;
   state.selectedLinkId = null;
   renderAll();
@@ -847,13 +832,24 @@ function renderNodeIcon(type) {
 function getAnchor(node, side) {
   if (side === 'right') return { x: node.x + node.width, y: node.y + node.height / 2 };
   if (side === 'left') return { x: node.x, y: node.y + node.height / 2 };
+  if (side === 'bottom') return { x: node.x + node.width / 2, y: node.y + node.height };
+  if (side === 'top') return { x: node.x + node.width / 2, y: node.y };
   return { x: node.x + node.width / 2, y: node.y + node.height / 2 };
 }
 
 function buildLinkPath(source, target) {
-  const from = source.x <= target.x ? getAnchor(source, 'right') : getAnchor(source, 'left');
-  const to = source.x <= target.x ? getAnchor(target, 'left') : getAnchor(target, 'right');
-  return { from, to };
+  const sx = source.x + source.width / 2, sy = source.y + source.height / 2;
+  const tx = target.x + target.width / 2, ty = target.y + target.height / 2;
+  const horizontal = Math.abs(tx - sx) >= Math.abs(ty - sy);
+  let fromSide, toSide;
+  if (horizontal) {
+    fromSide = sx <= tx ? 'right' : 'left';
+    toSide = sx <= tx ? 'left' : 'right';
+  } else {
+    fromSide = sy <= ty ? 'bottom' : 'top';
+    toSide = sy <= ty ? 'top' : 'bottom';
+  }
+  return { from: getAnchor(source, fromSide), to: getAnchor(target, toSide) };
 }
 
 function getLinkGeometry(link) {
@@ -861,23 +857,10 @@ function getLinkGeometry(link) {
   const target = getNode(link.to);
   if (!source || !target) return null;
   const { from, to } = buildLinkPath(source, target);
-  if (link.shape === 'manual') {
-    const bendX = Number.isFinite(link.bendX) ? link.bendX : (from.x + to.x) / 2;
-    const bendY = Number.isFinite(link.bendY) ? link.bendY : (from.y + to.y) / 2 - 40;
-    return {
-      path: `M ${from.x} ${from.y} L ${bendX} ${bendY} L ${to.x} ${to.y}`,
-      labelX: bendX,
-      labelY: bendY - 14,
-      handleX: bendX,
-      handleY: bendY
-    };
-  }
   return {
     path: `M ${from.x} ${from.y} L ${to.x} ${to.y}`,
     labelX: (from.x + to.x) / 2,
-    labelY: (from.y + to.y) / 2 - 14,
-    handleX: null,
-    handleY: null
+    labelY: (from.y + to.y) / 2 - 14
   };
 }
 
@@ -886,29 +869,27 @@ function renderLinks() {
   const labels = document.getElementById('link-label-layer');
   svg.innerHTML = `
     <defs>
-      <marker id="arrow-head" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-        <path d="M 0 0 L 12 6 L 0 12 z" fill="#94a3b8"></path>
-      </marker>
+      ${LINK_TYPES.map(lt => `
+        <marker id="arrow-${lt.id}" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+          <path d="M 0 0 L 12 6 L 0 12 z" fill="${lt.color}"></path>
+        </marker>
+      `).join('')}
     </defs>
     ${state.links.map(link => {
       const geometry = getLinkGeometry(link);
       if (!geometry) return '';
       const linkType = getLinkType(link.type);
       const isActive = state.selectedLinkId === link.id;
-      const handle = isActive && link.shape === 'manual'
-        ? `<circle class="link-handle" data-link-handle="${link.id}" cx="${geometry.handleX}" cy="${geometry.handleY}" r="6"></circle>`
-        : '';
       return `
         <path class="link-hit" data-link-id="${link.id}" d="${geometry.path}"></path>
-        <path d="${geometry.path}" stroke="${linkType.color}" stroke-width="${isActive ? linkType.width + 1.4 : linkType.width}" stroke-dasharray="${linkType.dash}" fill="none" marker-end="url(#arrow-head)" opacity="${isActive ? '1' : '0.92'}"></path>
-        ${handle}
+        <path data-link-id="${link.id}" d="${geometry.path}" stroke="${linkType.color}" stroke-width="${isActive ? linkType.width + 1.4 : linkType.width}" stroke-dasharray="${linkType.dash}" fill="none" marker-end="url(#arrow-${link.type})" opacity="${isActive ? '1' : '0.92'}" style="pointer-events:none;"></path>
       `;
     }).join('')}
   `;
   labels.innerHTML = state.links.map(link => {
     const geometry = getLinkGeometry(link);
-    if (!geometry) return '';
-      const linkType = getLinkType(link.type);
+    if (!geometry || link.type === 'none') return '';
+    const linkType = getLinkType(link.type);
     const isActive = state.selectedLinkId === link.id ? 'active' : '';
     return `<div class="link-label ${isActive}" data-link-id="${link.id}" style="left:${geometry.labelX}px; top:${geometry.labelY}px; color:${linkType.color};">${linkType.label}</div>`;
   }).join('');
@@ -921,19 +902,18 @@ function renderCanvas() {
     const template = getTemplate(node.type);
     const isSelected = state.selectedNodeId === node.id;
     const isConnecting = state.connectSourceId === node.id;
-    const shape = node.type === 'custom_block' ? (node.customShape || 'service') : (template.shape || 'service');
     const accent = node.type === 'custom_block' ? (node.customColor || 'var(--slate)') : template.color;
+    const category = template?.category || 'custom';
     const actionDots = isSelected ? `
       <div class="node-actions">
-        <button class="node-action-btn" type="button" data-link-from="${node.id}" data-link-shape="straight">+ Ligne</button>
-        <button class="node-action-btn" type="button" data-link-from="${node.id}" data-link-shape="manual">+ Manuel</button>
+        <button class="node-action-btn" type="button" data-link-from="${node.id}">+ Lien</button>
       </div>
     ` : '';
     const typeText = node.type === 'custom_block' ? (node.typeLabel || 'Bloc custom') : template.name;
-    const footerText = node.type === 'custom_block' ? (node.footerLabel || 'Custom') : CATEGORY_LABELS[template.category];
+    const footerText = node.type === 'custom_block' ? (node.footerLabel || 'Custom') : CATEGORY_LABELS[category];
     return `
-      <div class="node ${node.type} ${shape} ${isSelected ? 'selected' : ''} ${isConnecting ? 'connecting' : ''}"
-        data-node-id="${node.id}" style="left:${node.x}px; top:${node.y}px; width:${node.width}px; min-height:${node.height}px;">
+      <div class="node ${isSelected ? 'selected' : ''} ${isConnecting ? 'connecting' : ''}"
+        data-cat="${category}" data-node-id="${node.id}" style="left:${node.x}px; top:${node.y}px; width:${node.width}px; min-height:${node.height}px;">
         <div class="top">
           <div class="icon" style="background:${accent};">${renderNodeIcon(node.type)}</div>
           <div class="type">${escapeHtml(typeText)}</div>
@@ -948,7 +928,7 @@ function renderCanvas() {
     `;
   }).join('');
   document.getElementById('session-status').textContent = state.connectSourceId
-    ? `Cliquez sur un second module pour creer une liaison ${state.pendingLinkShape === 'manual' ? 'manuelle' : 'en ligne'}.`
+    ? 'Cliquez sur un second module pour créer la liaison.'
     : `${state.nodes.length} modules, ${state.links.length} liaisons dans la session ${state.sessionId}.`;
   document.getElementById('connect-btn').style.visibility = state.connectSourceId ? 'visible' : 'hidden';
   renderLinks();
@@ -975,11 +955,9 @@ function renderInspector() {
     const isCustom = node.type === 'custom_block';
     document.getElementById('custom-type-field').style.display = isCustom ? 'grid' : 'none';
     document.getElementById('custom-footer-field').style.display = isCustom ? 'grid' : 'none';
-    document.getElementById('custom-shape-field').style.display = isCustom ? 'grid' : 'none';
     document.getElementById('custom-color-field').style.display = isCustom ? 'grid' : 'none';
     if (isCustom) {
       document.getElementById('node-footer-text').value = node.footerLabel || 'Custom';
-      document.getElementById('node-custom-shape').value = node.customShape || 'service';
       document.getElementById('node-custom-color').value = node.customColor || 'var(--slate)';
     }
   }
@@ -994,13 +972,12 @@ function renderInspector() {
     selectedLinkForm.style.display = 'grid';
     document.getElementById('selected-link-title').textContent = `${from?.label || link.from} -> ${to?.label || link.to}`;
     document.getElementById('link-type-select').innerHTML = LINK_TYPES.map(linkType => `
-      <option value="${linkType.id}" ${link.type === linkType.id ? 'selected' : ''}>${linkType.label}</option>
+      <option value="${linkType.id}" ${link.type === linkType.id ? 'selected' : ''}>${linkType.label || '— Aucun type'}</option>
     `).join('');
-    document.getElementById('link-shape-select').value = link.shape || 'straight';
   }
 
   document.getElementById('link-list').innerHTML = state.links.length === 0
-    ? '<div class="hint">Aucune liaison pour l instant.</div>'
+    ? '<div class="hint">Aucune liaison pour l\'instant.</div>'
     : state.links.map(link => {
         const from = getNode(link.from);
         const to = getNode(link.to);
@@ -1008,7 +985,7 @@ function renderInspector() {
         const active = state.selectedLinkId === link.id ? 'style="border-color: rgba(99,102,241,0.45); background: rgba(99,102,241,0.08);"' : '';
         return `<div class="link-chip" ${active} data-select-link="${link.id}">
           <div class="link-chip-main">
-            <span class="link-badge" style="background:${linkType.color}22; color:${linkType.color};">${linkType.label}</span>
+            ${linkType.label ? `<span class="link-badge" style="background:${linkType.color}22; color:${linkType.color};">${linkType.label}</span>` : ''}
             <span>${escapeHtml(from?.label || link.from)} &#8594; ${escapeHtml(to?.label || link.to)}</span>
           </div>
           <button class="btn-danger btn-small" data-delete-link="${link.id}">x</button>
@@ -1080,7 +1057,7 @@ function copySessionLink() {
   const url = new URL(window.location);
   url.searchParams.set('session', state.sessionId);
   navigator.clipboard.writeText(url.toString()).then(() => {
-    document.getElementById('session-status').textContent = 'Lien de session copie dans le presse-papiers.';
+    document.getElementById('session-status').textContent = 'Lien de session copié dans le presse-papiers.';
   }).catch(() => {
     document.getElementById('session-status').textContent = 'Copie impossible automatiquement.';
   });
@@ -1098,43 +1075,31 @@ function clearCanvas() {
 
 function bindCanvasDrag() {
   const finishDrag = () => {
-    if (!dragState && !linkHandleDrag) return;
-    if (linkHandleDrag) {
-      linkHandleDrag = null;
-      saveSession();
-      renderLinks();
-      return;
-    }
+    if (!dragState) return;
     dragState = null;
     saveSession();
     renderCanvas();
   };
 
   document.getElementById('links-layer').addEventListener('pointerdown', event => {
-    const handle = event.target.closest('[data-link-handle]');
-    if (handle) {
-      const link = getLink(handle.dataset.linkHandle);
-      if (!link) return;
-      linkHandleDrag = { linkId: link.id };
-      selectLink(link.id);
-      return;
-    }
     const hit = event.target.closest('[data-link-id]');
     if (!hit) return;
     event.stopPropagation();
     selectLink(hit.dataset.linkId);
+    showLinkTypePopup(hit.dataset.linkId);
   });
 
   document.getElementById('link-label-layer').addEventListener('click', event => {
     const label = event.target.closest('[data-link-id]');
     if (!label) return;
     selectLink(label.dataset.linkId);
+    showLinkTypePopup(label.dataset.linkId);
   });
 
   document.getElementById('canvas').addEventListener('pointerdown', event => {
     const linkButton = event.target.closest('[data-link-from]');
     if (linkButton) {
-      startLinkFromNode(linkButton.dataset.linkFrom, linkButton.dataset.linkShape);
+      startLinkFromNode(linkButton.dataset.linkFrom);
       return;
     }
     const nodeEl = event.target.closest('[data-node-id]');
@@ -1152,30 +1117,36 @@ function bindCanvasDrag() {
     nodeEl.setPointerCapture(event.pointerId);
   });
 
-  document.getElementById('canvas-shell').addEventListener('pointermove', event => {
-    if (linkHandleDrag) {
-      const link = getLink(linkHandleDrag.linkId);
-      if (!link) return;
-      const shell = document.getElementById('canvas-shell').getBoundingClientRect();
-      link.bendX = Math.max(24, event.clientX - shell.left);
-      link.bendY = Math.max(24, event.clientY - shell.top);
-      renderLinks();
+  document.getElementById('canvas-shell').addEventListener('pointerdown', event => {
+    if (event.target.closest('[data-node-id]') || event.target.closest('[data-link-id]') || event.target.closest('[data-link-from]') || event.target.closest('.link-label')) return;
+    panState = { startX: event.clientX, startY: event.clientY, originPanX: panX, originPanY: panY };
+    document.getElementById('canvas-shell').style.cursor = 'grabbing';
+  });
+
+  document.addEventListener('pointermove', event => {
+    if (panState) {
+      panX = panState.originPanX + (event.clientX - panState.startX);
+      panY = panState.originPanY + (event.clientY - panState.startY);
+      updateCanvasTransform();
       return;
     }
     if (!dragState) return;
     const node = getNode(dragState.nodeId);
     if (!node) return;
-    node.x = Math.max(16, dragState.originX + (event.clientX - dragState.startX));
-    node.y = Math.max(16, dragState.originY + (event.clientY - dragState.startY));
+    node.x = Math.max(0, dragState.originX + (event.clientX - dragState.startX) / zoomLevel);
+    node.y = Math.max(0, dragState.originY + (event.clientY - dragState.startY) / zoomLevel);
     renderCanvas();
   });
 
-  document.getElementById('canvas').addEventListener('pointerup', () => {
+  const finishAll = () => {
+    if (panState) {
+      panState = null;
+      document.getElementById('canvas-shell').style.cursor = '';
+    }
     finishDrag();
-  });
-
-  window.addEventListener('pointercancel', finishDrag);
-  window.addEventListener('pointerup', finishDrag);
+  };
+  document.addEventListener('pointerup', finishAll);
+  document.addEventListener('pointercancel', finishAll);
 }
 
 function bindEvents() {
@@ -1208,7 +1179,6 @@ function bindEvents() {
   document.getElementById('node-label').addEventListener('input', event => updateSelectedNode('label', event.target.value));
   document.getElementById('node-subtitle').addEventListener('input', event => updateSelectedNode('subtitle', event.target.value));
   document.getElementById('node-footer-text').addEventListener('input', event => updateSelectedNode('footerLabel', event.target.value));
-  document.getElementById('node-custom-shape').addEventListener('change', event => updateSelectedNode('customShape', event.target.value));
   document.getElementById('node-custom-color').addEventListener('change', event => updateSelectedNode('customColor', event.target.value));
   document.getElementById('duplicate-node-btn').addEventListener('click', duplicateSelectedNode);
   document.getElementById('delete-node-btn').addEventListener('click', deleteSelectedNode);
@@ -1216,20 +1186,6 @@ function bindEvents() {
     const link = getLink(state.selectedLinkId);
     if (!link) return;
     link.type = event.target.value;
-    saveSession();
-    renderAll();
-  });
-  document.getElementById('link-shape-select').addEventListener('change', event => {
-    const link = getLink(state.selectedLinkId);
-    if (!link) return;
-    link.shape = event.target.value;
-    if (link.shape === 'manual' && !Number.isFinite(link.bendX)) {
-      const geometry = getLinkGeometry(link);
-      if (geometry) {
-        link.bendX = geometry.labelX;
-        link.bendY = geometry.labelY + 14;
-      }
-    }
     saveSession();
     renderAll();
   });
@@ -1243,7 +1199,79 @@ function bindEvents() {
     if (!selector) return;
     selectLink(selector.dataset.selectLink);
   });
+  document.getElementById('zoom-in-btn').addEventListener('click', () => setZoom(0.1));
+  document.getElementById('zoom-out-btn').addEventListener('click', () => setZoom(-0.1));
+  document.getElementById('toggle-inspector-btn').addEventListener('click', toggleInspector);
+  document.getElementById('link-type-popup').addEventListener('click', event => {
+    const btn = event.target.closest('[data-set-link-type]');
+    if (!btn) return;
+    const link = getLink(state.selectedLinkId);
+    if (!link) return;
+    link.type = btn.dataset.setLinkType;
+    document.getElementById('link-type-popup').style.display = 'none';
+    saveSession();
+    renderAll();
+  });
+  document.addEventListener('pointerdown', event => {
+    const popup = document.getElementById('link-type-popup');
+    if (popup.style.display !== 'none' && !popup.contains(event.target) && !event.target.closest('[data-link-id]')) {
+      popup.style.display = 'none';
+    }
+  });
+  document.querySelectorAll('#inspector-panel .panel h2').forEach(h2 => {
+    h2.addEventListener('click', () => h2.closest('.panel').classList.toggle('collapsed'));
+  });
+  document.addEventListener('keydown', event => {
+    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.tagName === 'SELECT') return;
+    if ((event.key === 'Backspace' || event.key === 'Delete') && state.selectedNodeId) {
+      event.preventDefault();
+      deleteSelectedNode();
+    }
+  });
   bindCanvasDrag();
+}
+
+let zoomLevel = 1;
+function updateCanvasTransform() {
+  const shell = document.getElementById('canvas-shell');
+  shell.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+  shell.style.transformOrigin = '0 0';
+  document.getElementById('zoom-label').textContent = `${Math.round(zoomLevel * 100)}%`;
+}
+function setZoom(delta) {
+  zoomLevel = Math.round(Math.max(0.3, Math.min(2, zoomLevel + delta)) * 10) / 10;
+  updateCanvasTransform();
+}
+
+function showLinkTypePopup(linkId) {
+  const link = getLink(linkId);
+  if (!link) return;
+  const geometry = getLinkGeometry(link);
+  if (!geometry) return;
+  const shell = document.getElementById('canvas-shell');
+  const shellRect = shell.getBoundingClientRect();
+  const popup = document.getElementById('link-type-popup');
+  popup.innerHTML = LINK_TYPES.map(lt => `
+    <button data-set-link-type="${lt.id}" class="${link.type === lt.id ? 'active' : ''}">
+      <span class="type-dot" style="background:${lt.color};"></span>
+      ${lt.label || '— Aucun type'}
+    </button>
+  `).join('');
+  popup.style.display = 'grid';
+  const x = shellRect.left + geometry.labelX * zoomLevel;
+  const y = shellRect.top + geometry.labelY * zoomLevel + 20;
+  popup.style.left = `${x}px`;
+  popup.style.top = `${y}px`;
+  popup.style.transform = 'translateX(-50%)';
+}
+
+function toggleInspector() {
+  const panel = document.getElementById('inspector-panel');
+  const btn = document.getElementById('toggle-inspector-btn');
+  const app = document.querySelector('.app');
+  panel.classList.toggle('hidden');
+  app.classList.toggle('inspector-off');
+  btn.innerHTML = panel.classList.contains('hidden') ? '&#9664;' : '&#9654;';
 }
 
 function escapeHtml(value) {

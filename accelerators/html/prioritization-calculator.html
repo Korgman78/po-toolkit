@@ -115,13 +115,18 @@
   .moscow-W { background: rgba(107,112,137,0.15); color: var(--muted); }
 
   /* Responsive */
+  @media (max-width: 1100px) {
+    .sidebar { width: 220px; }
+    .method-info { display: none; }
+  }
   @media (max-width: 768px) {
     .app { flex-direction: column; }
     .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 1rem; }
     .method-list { display: flex; flex-wrap: wrap; gap: 0.3rem; }
     .method-item { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
-    .method-info { display: none; }
     .main-content { padding: 1rem; }
+    .criteria-bar .criteria-list { flex-direction: column; }
+    .main-header { flex-direction: column; align-items: flex-start; }
   }
 </style>
 </head>
@@ -275,15 +280,15 @@ const METHODS = {
     }
   },
   weighted: {
-    name: "Scoring pondere",
+    name: "Scoring pondéré",
     icon: "&#9878;",
     color: "#64748b",
-    description: "Scoring pondere simple avec criteres generiques fixes.",
-    formula: "Score = Somme(critere x poids) / Somme(poids)",
+    description: "Scoring pondéré simple avec critères génériques fixes.",
+    formula: "Score = Somme(critère × poids) / Somme(poids)",
     when: "Utile si vous voulez un calcul simple sans entrer dans un cadre strict.",
     coreCriteria: [
       { id: "impact", name: "Impact", description: "Impact global (1-10)", type: "number", min: 1, max: 10, step: 1, default: 5 },
-      { id: "fit", name: "Strategic Fit", description: "Alignement strategique (1-10)", type: "number", min: 1, max: 10, step: 1, default: 5 },
+      { id: "fit", name: "Strategic Fit", description: "Alignement stratégique (1-10)", type: "number", min: 1, max: 10, step: 1, default: 5 },
       { id: "confidence", name: "Confidence", description: "Niveau de confiance (1-10)", type: "number", min: 1, max: 10, step: 1, default: 5 },
     ],
     calculate: (values, weights) => {
@@ -441,7 +446,7 @@ function renderCriteriaBar() {
   const allowCustomCriteria = canAddCriteria();
 
   let html = `<div class="criteria-bar">
-    <h3>Criteres ${criteria.length > 0 ? `(${criteria.length})` : ''} - Poids ajustables</h3>
+    <h3>Critères ${criteria.length > 0 ? `(${criteria.length})` : ''} – Poids ajustables</h3>
     <div class="criteria-list">`;
 
   let lastGroup = null;
@@ -466,7 +471,7 @@ function renderCriteriaBar() {
         <span class="crit-name">${crit.name}</span>
         <span style="font-size:0.65rem;color:var(--muted);">x</span>
         <input type="number" value="${weight}" min="0.1" max="10" step="0.1"
-               onchange="updateWeight('${crit.id}', this.value)" title="Poids du critere">
+               onchange="updateWeight('${crit.id}', this.value)" title="Poids du critère">
         ${crit.isCustom ? `<button class="remove-crit" onclick="removeCriterion('${crit.id}')" title="Supprimer">x</button>` : ''}
       </div>`;
   }
@@ -593,8 +598,12 @@ function render() {
   document.getElementById('main').innerHTML = `
     <div class="main-header">
       <h2>${m.icon} ${m.name}</h2>
-      <div style="display:flex; gap:0.5rem;">
-        <button class="btn-secondary" onclick="resetAll()">Reinitialiser</button>
+      <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+        <label class="btn-secondary" style="cursor:pointer;display:inline-flex;align-items:center;gap:0.35rem;">
+          Importer CSV
+          <input type="file" accept=".csv" id="import-csv-input" style="display:none;" onchange="importCsv(this.files[0]);this.value='';">
+        </label>
+        <button class="btn-secondary" onclick="resetAll()">Réinitialiser</button>
         <button class="btn-primary" onclick="exportResults()">Exporter</button>
       </div>
     </div>
@@ -662,7 +671,7 @@ function addCriterion() {
   if (customCriteria.some(c => c.name.toLowerCase() === name.toLowerCase())) return;
 
   const newCrit = {
-    id, name, description: 'Sous-composante personnalisee du Cost of Delay', type: 'number',
+    id, name, description: 'Sous-composante personnalisée du Cost of Delay', type: 'number',
     min: 1, max: 21, step: 1, default: 3, group: 'Cost of Delay', isCustom: true
   };
   customCriteria.push(newCrit);
@@ -686,7 +695,7 @@ function removeCriterion(id) {
 }
 
 function resetAll() {
-  if (!confirm('Reinitialiser toutes les donnees ?')) return;
+  if (!confirm('Réinitialiser toutes les données ?')) return;
   items = [];
   customCriteria = [];
   criteriaWeights = {};
@@ -737,6 +746,61 @@ function copyExport() {
     event.target.textContent = 'Copié !';
     setTimeout(() => event.target.textContent = 'Copier', 2000);
   });
+}
+
+// ===============================
+// CSV IMPORT
+// ===============================
+function importCsv(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result.replace(/^\uFEFF/, '');
+    const sep = text.indexOf(';') !== -1 ? ';' : ',';
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    if (lines.length < 2) return;
+
+    const headers = parseCsvLine(lines[0], sep).map(h => h.trim().toLowerCase());
+
+    // Map columns — flexible matching for user-story-template format
+    const nameCol = headers.findIndex(h => /titre|title|feature|story|action|nom/.test(h));
+    if (nameCol === -1) { alert('Colonne titre/feature introuvable dans le CSV.'); return; }
+
+    let imported = 0;
+    for (let i = 1; i < lines.length; i++) {
+      const cells = parseCsvLine(lines[i], sep);
+      const name = (cells[nameCol] || '').trim();
+      if (!name) continue;
+
+      const item = { id: nextItemId++, name, values: createDefaultValues(), score: 0, rank: null };
+      items.push(item);
+      imported++;
+    }
+
+    if (imported > 0) render();
+    alert(`${imported} feature${imported > 1 ? 's' : ''} importée${imported > 1 ? 's' : ''}.`);
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parseCsvLine(line, sep) {
+  const cells = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"' && line[i + 1] === '"') { current += '"'; i++; }
+      else if (ch === '"') { inQuotes = false; }
+      else { current += ch; }
+    } else {
+      if (ch === '"') { inQuotes = true; }
+      else if (ch === sep) { cells.push(current); current = ''; }
+      else { current += ch; }
+    }
+  }
+  cells.push(current);
+  return cells;
 }
 
 // ===============================

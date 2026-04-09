@@ -10,32 +10,32 @@ const ACCELERATORS_DATA = [
   { name: "Sprint Review Template", desc: "Support de Sprint Review pré-formaté avec démo, métriques et next steps. Slide Guide incluse.", format: "pptx", file: "../accelerators/pptx/sprint-review-template.pptx" },
   { name: "Definition of Ready / Done", desc: "Checklists DoR et DoD prêtes à afficher. Format poster A3. Slide Guide incluse.", format: "pptx", file: "../accelerators/pptx/definition-of-ready-done.pptx" },
   { name: "Stakeholder Map", desc: "Matrice pouvoir/intérêt pour cartographier vos parties prenantes. Slide Guide incluse.", format: "pptx", file: "../accelerators/pptx/stakeholder-mapping.pptx" },
-  { name: "Slides Library (225 slides)", desc: "Bibliothèque de 225 slides professionnelles : diagrammes, timelines, matrices, pyramides, process flows, tableaux. Prêtes à réutiliser.", format: "pptx", file: "../Slides Library_A4.pptx" },
+  { name: "Slides Library (225 slides)", desc: "Bibliothèque de 225 slides professionnelles : diagrammes, timelines, matrices, pyramides, process flows, tableaux. Prêtes à réutiliser.", format: "pptx", file: "../accelerators/pptx/Slides Library_A4.pptx" },
   { name: "Import Jira (CSV)", desc: "Template CSV pré-formaté pour import bulk dans Jira. Colonnes mappées.", format: "csv", file: "../accelerators/csv/jira-import-template.csv" },
   { name: "Import Azure DevOps (CSV)", desc: "Template CSV pré-formaté pour import bulk dans Azure DevOps.", format: "csv", file: "../accelerators/csv/ado-import-template.csv" },
 ];
 
 const APPS_DATA = [
   { section: "Cadrage & priorisation", name: "Calculateur de Priorisation", desc: "RICE, WSJF, ICE, MoSCoW, Value/Effort — avec critères custom et pondération. L'outil de priorisation ultime du PO.", file: "../accelerators/html/prioritization-calculator.html", color: "#a855f7" },
-  { section: "Cadrage & priorisation", name: "Story Splitter", desc: "Decoupez une feature en stories actionnables avec patterns guides : workflow, front/back, CSV, regles metier, cas limites.", file: "../accelerators/html/story-splitter.html", color: "#14b8a6" },
+  { section: "Cadrage & priorisation", name: "Story Splitter", desc: "Découpez une feature en stories actionnables avec patterns guides : workflow, front/back, CSV, règles métier, cas limites.", file: "../accelerators/html/story-splitter.html", color: "#14b8a6" },
   { section: "Planification & facilitation", name: "Planning Poker", desc: "Outil de vote pour estimer vos stories en équipe. Fibonacci et T-shirt sizes.", file: "../accelerators/html/planning-poker.html", color: "#ec4899" },
-  { section: "Planification & facilitation", name: "PI Planning Simulator", desc: "Planifiez un PI par sprint avec capacite, points, must/should, dependances, IP sprint, objectifs, risques et export CSV.", file: "../accelerators/html/pi-planning-simulator.html", color: "#f59e0b" },
-  { section: "Planification & facilitation", name: "Daily Standup Timer", desc: "Chronomètre 15 minutes avec timer par personne. Gardez vos dailys dans les temps.", file: "../accelerators/html/daily-standup-timer.html", color: "#6366f1" },
-  { section: "Planification & facilitation", name: "Retro Board", desc: "Tableau de rétrospective interactif. Colonnes personnalisables, vote, export.", file: "../accelerators/html/retro-board.html", color: "#10b981" },
-  { section: "Schemas & ateliers", name: "Schemas & Workflows", desc: "Canvas de modelisation simple en mode session locale : modules front, microservices, Kafka, Postgres, APIs et liaisons.", file: "../accelerators/html/schemas-workflows.html", color: "#06b6d4" },
+  { section: "Planification & facilitation", name: "PI Planning Simulator", desc: "Planifiez un PI par sprint avec capacité, points, must/should, dépendances, IP sprint, objectifs, risques et export CSV.", file: "../accelerators/html/pi-planning-simulator.html", color: "#f59e0b" },
+  { section: "Planification & facilitation", name: "Daily Standup Timer", desc: "Chronomètre avec timer par personne. Gardez vos dailys dans les temps.", file: "../accelerators/html/daily-standup-timer.html", color: "#6366f1" },
+  { section: "Planification & facilitation", name: "Retro Board", desc: "Tableau de rétrospective interactif. Colonnes personnalisables, vote et export.", file: "../accelerators/html/retro-board.html", color: "#10b981" },
+  { section: "Schemas & ateliers", name: "Schemas & Workflows", desc: "Canvas de modélisation simple en mode session locale : modules front, microservices, Kafka, Postgres, APIs et liaisons.", file: "../accelerators/html/schemas-workflows.html", color: "#06b6d4" },
   { section: "Utilitaires", name: "JSON & UUID Tools", desc: "Validateur JSON (format, minify, tri des clés) + Générateur UUID (v4, v7, Nano ID). Deux outils en un.", file: "../accelerators/html/json-uuid-tools.html", color: "#64748b" },
 ];
 
 const APP_SECTION_DESCRIPTIONS = {
-  "Cadrage & priorisation": "Passez de l idee au backlog priorise avec une logique produit claire.",
-  "Planification & facilitation": "Animez vos estimations, vos arbitrages de PI et vos rituels d equipe.",
-  "Schemas & ateliers": "Modelez un workflow ou une archi legere a partager pendant les ateliers.",
+  "Cadrage & priorisation": "Passez de l'idée au backlog priorisé avec une logique produit claire.",
+  "Planification & facilitation": "Animez vos estimations, vos arbitrages de PI et vos rituels d'équipe.",
+  "Schemas & ateliers": "Modélisez un workflow ou une archi légère à partager pendant les ateliers.",
   "Utilitaires": "Petits outils transverses pour gagner du temps au quotidien."
 };
 
 const ACCELERATOR_FORMAT_META = {
-  xlsx: { title: "Workbooks Excel", description: "Templates operationnels et actionnables pour priorisation, backlog, release et capacite." },
-  pptx: { title: "Supports & canvases", description: "Slides sobres et reutilisables pour cadrage, ateliers et communication stakeholders." },
+  xlsx: { title: "Workbooks Excel", description: "Templates opérationnels et actionnables pour priorisation, backlog, release et capacité." },
+  pptx: { title: "Supports & canvases", description: "Slides sobres et réutilisables pour cadrage, ateliers et communication stakeholders." },
   csv: { title: "Imports & bulk edits", description: "Fichiers utilitaires pour vos imports Jira et Azure DevOps sans friction." }
 };
 
@@ -474,10 +474,6 @@ function renderAccelerators() {
     <div class="section-header fade-in">
       <h2>&#128640; Accélérateurs & Templates</h2>
       <p>Templates et fichiers prêts à l'emploi. Téléchargez, personnalisez, utilisez. Chaque fichier inclut un onglet ou une slide Guide.</p>
-    </div>
-    <div class="section-header fade-in" style="margin-top: 2rem;">
-      <h2>&#9889; Mini-apps en premier</h2>
-      <p>Pour l usage quotidien, les mini-apps sont mises en avant dans le menu lateral. Les templates restent ici comme assets a telecharger.</p>
     </div>
   `;
 

@@ -134,12 +134,11 @@
   <div class="header">
     <div>
       <h1>PI Planning Simulator</h1>
-      <p>Planifiez les US par sprint, gardez un oeil sur la capacite, les priorites Must/Should, les dependances et les risques du PI.</p>
+      <p>Planifiez les US par sprint, gardez un œil sur la capacité, les priorités Must/Should, les dépendances et les risques du PI.</p>
     </div>
     <div class="header-actions">
-      <button class="btn-secondary" id="add-story-btn">Ajouter une US</button>
       <button class="btn-secondary" id="export-btn">Exporter CSV</button>
-      <button class="btn-danger" id="reset-btn">Reinitialiser</button>
+      <button class="btn-danger" id="reset-btn">Réinitialiser</button>
     </div>
   </div>
 
@@ -147,7 +146,7 @@
     <section class="panel">
       <div class="panel-header">
         <h2>Cadre du PI</h2>
-        <span class="hint">Par defaut : 5 sprints avec IP en sprint 5.</span>
+        <span class="hint">Par défaut : 5 sprints avec IP en sprint 5.</span>
       </div>
       <div class="panel-body">
         <div class="form-grid">
@@ -181,10 +180,10 @@
           <div class="item-section">
             <div class="item-section-head">
               <h3>Risques / points d'attention</h3>
-              <span>Listez les points a surveiller pendant le PI.</span>
+              <span>Listez les points à surveiller pendant le PI.</span>
             </div>
             <div class="item-composer">
-              <input id="risk-input" type="text" placeholder="Ex: Dependance equipe data sur le schema d'export et le contrat de colonnes.">
+              <input id="risk-input" type="text" placeholder="Ex : Dépendance équipe data sur le schéma d'export et le contrat de colonnes.">
               <button class="btn-primary" id="add-risk-btn">+ Ajouter</button>
             </div>
             <div class="item-list" id="risk-list"></div>
@@ -196,7 +195,7 @@
     <section class="panel">
       <div class="panel-header">
         <h2>Alertes de plan</h2>
-        <span class="hint">Capacite, dependances, must-have et hygiene du board.</span>
+        <span class="hint">Capacité, dépendances, must-have et hygiène du board.</span>
       </div>
       <div class="panel-body">
         <div id="warnings"></div>
@@ -209,12 +208,16 @@
   <section class="panel">
     <div class="panel-header">
       <h3>Backlog PI</h3>
-      <span class="hint">Affectez les US a un sprint ou glissez-les sur le board.</span>
+      <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+        <span class="hint" id="backlog-meta"></span>
+        <button class="btn-primary" id="add-story-btn">+ Ajouter une US</button>
+        <label class="btn-secondary" style="cursor:pointer;display:inline-flex;align-items:center;gap:0.35rem;" id="import-csv-label">
+          Importer CSV
+          <input type="file" accept=".csv" id="import-csv-input" style="display:none;">
+        </label>
+      </div>
     </div>
     <div class="panel-body">
-      <div class="toolbar">
-        <span class="meta" id="backlog-meta"></span>
-      </div>
       <div class="table-wrap">
         <table>
           <thead>
@@ -222,9 +225,9 @@
               <th style="width:72px;">ID</th>
               <th>Titre US</th>
               <th style="width:92px;">SP</th>
-              <th style="width:110px;">Priorite</th>
+              <th style="width:110px;">Priorité</th>
               <th style="width:120px;">Squad</th>
-              <th style="width:140px;">Dependances</th>
+              <th style="width:140px;">Dépendances</th>
               <th style="width:140px;">Sprint cible</th>
               <th style="width:48px;"></th>
             </tr>
@@ -238,7 +241,7 @@
   <section class="panel">
     <div class="panel-header">
       <h3>Board PI</h3>
-      <span class="hint">Glissez les cartes d'un sprint a l'autre pour simuler vos arbitrages.</span>
+      <span class="hint">Glissez les cartes d'un sprint à l'autre pour simuler vos arbitrages.</span>
     </div>
     <div class="panel-body">
       <div class="board-grid" id="board"></div>
@@ -334,14 +337,14 @@ function getWarnings() {
   if (state.config.objectives.length === 0) {
     warnings.push({
       level: 'yellow',
-      text: 'Aucun objectif PI n est renseigne. Formalisez au moins 2 ou 3 outcomes attendus.'
+      text: 'Aucun objectif PI n\'est renseigné. Formalisez au moins 2 ou 3 outcomes attendus.'
     });
   }
 
   if (state.config.risks.length === 0) {
     warnings.push({
       level: 'yellow',
-      text: 'Aucun risque n est renseigne. Pensez aux dependances externes, contrats d API, data et capacite.'
+      text: 'Aucun risque n\'est renseigné. Pensez aux dépendances externes, contrats d\'API, data et capacité.'
     });
   }
 
@@ -351,7 +354,7 @@ function getWarnings() {
     if (used > capacity) {
       warnings.push({
         level: 'red',
-        text: `${getSprintLabel(sprintNumber)} depasse sa capacite (${used}/${capacity}).`
+        text: `${getSprintLabel(sprintNumber)} dépasse sa capacité (${used}/${capacity}).`
       });
     }
   });
@@ -360,14 +363,14 @@ function getWarnings() {
     if (story.sprint === state.config.ipSprint) {
       warnings.push({
         level: 'yellow',
-        text: `${story.id} est planifiee en IP sprint. Verifiez si c'est bien voulu ou si elle doit rester buffer / innovation.`
+        text: `${story.id} est planifiée en IP sprint. Vérifiez si c'est bien voulu ou si elle doit rester buffer / innovation.`
       });
     }
 
     if (story.priority === 'Must' && story.sprint === null) {
       warnings.push({
         level: 'red',
-        text: `${story.id} est Must mais n'est affectee a aucun sprint.`
+        text: `${story.id} est Must mais n'est affectée à aucun sprint.`
       });
     }
 
@@ -383,13 +386,13 @@ function getWarnings() {
       if (story.sprint !== null && dependency.sprint === null) {
         warnings.push({
           level: 'yellow',
-          text: `${story.id} est planifiee mais sa dependance ${depId} ne l'est pas encore.`
+          text: `${story.id} est planifiée mais sa dépendance ${depId} ne l'est pas encore.`
         });
       }
       if (story.sprint !== null && dependency.sprint !== null && dependency.sprint > story.sprint) {
         warnings.push({
           level: 'red',
-          text: `${story.id} est planifiee avant sa dependance ${depId}.`
+          text: `${story.id} est planifiée avant sa dépendance ${depId}.`
         });
       }
     });
@@ -404,7 +407,7 @@ function getWarnings() {
   shouldBeforeMust.forEach(story => {
     warnings.push({
       level: 'yellow',
-      text: `${story.id} est un Should planifie alors qu'il reste encore des Must non planifies.`
+      text: `${story.id} est un Should planifié alors qu'il reste encore des Must non planifiés.`
     });
   });
 
@@ -415,7 +418,7 @@ function renderWarnings() {
   const warnings = getWarnings();
   const container = document.getElementById('warnings');
   if (warnings.length === 0) {
-    container.innerHTML = `<div class="warning-empty">Plan coherent pour l'instant : aucune alerte bloquante detectee.</div>`;
+    container.innerHTML = `<div class="warning-empty">Plan cohérent pour l'instant : aucune alerte bloquante détectée.</div>`;
     return;
   }
 
@@ -435,10 +438,10 @@ function renderSummary() {
     <div class="summary-card">
       <span class="label">US dans le PI</span>
       <span class="value">${state.stories.length}</span>
-      <span class="sub">${planned} planifiees</span>
+      <span class="sub">${planned} planifiées</span>
     </div>
     <div class="summary-card">
-      <span class="label">Capacite totale</span>
+      <span class="label">Capacité totale</span>
       <span class="value">${totalCapacity}</span>
       <span class="sub">${totalScope} points de scope</span>
     </div>
@@ -450,7 +453,7 @@ function renderSummary() {
     <div class="summary-card">
       <span class="label">IP Sprint</span>
       <span class="value">S${state.config.ipSprint}</span>
-      <span class="sub">${getUsedCapacity(state.config.ipSprint)} points affectes</span>
+      <span class="sub">${getUsedCapacity(state.config.ipSprint)} points affectés</span>
     </div>
     <div class="summary-card">
       <span class="label">Objectifs / Risques</span>
@@ -463,8 +466,8 @@ function renderSummary() {
 function renderItemList(kind, containerId) {
   const items = kind === 'objectives' ? state.config.objectives : state.config.risks;
   const emptyText = kind === 'objectives'
-    ? 'Ajoutez les outcomes attendus du PI pour garder le board oriente valeur.'
-    : 'Ajoutez les principaux risques ou points d attention pour faciliter les arbitrages.';
+    ? 'Ajoutez les outcomes attendus du PI pour garder le board orienté valeur.'
+    : 'Ajoutez les principaux risques ou points d'attention pour faciliter les arbitrages.';
 
   document.getElementById(containerId).innerHTML = items.length === 0
     ? `<div class="item-empty">${emptyText}</div>`
@@ -478,7 +481,7 @@ function renderItemList(kind, containerId) {
 }
 
 function renderBacklog() {
-  document.getElementById('backlog-meta').textContent = `${state.stories.length} US a arbitrer dans ${state.config.sprintCount} sprints.`;
+  document.getElementById('backlog-meta').textContent = `${state.stories.length} US à arbitrer dans ${state.config.sprintCount} sprints.`;
 
   document.getElementById('backlog-body').innerHTML = state.stories.map(story => `
     <tr data-story-id="${story.id}">
@@ -529,7 +532,7 @@ function renderBoard() {
             ${column.isIp ? '<span class="chip ip">IP</span>' : ''}
           </div>
           ${column.isBacklog ? `
-            <div class="lane-stats"><span>${stories.length} US non planifiees</span></div>
+            <div class="lane-stats"><span>${stories.length} US non planifiées</span></div>
           ` : `
             <div class="lane-stats">
               <span>${used} / ${capacity} pts</span>
@@ -540,7 +543,7 @@ function renderBoard() {
         </div>
         <div class="lane-body ${dragStoryId ? 'drag-ready' : ''}">
           <div class="lane-drop">
-            ${stories.length === 0 ? `<div class="empty-lane">${column.isBacklog ? 'Aucune US en backlog.' : 'Aucune US affectee.'}</div>` : stories.map(renderStoryCard).join('')}
+            ${stories.length === 0 ? `<div class="empty-lane">${column.isBacklog ? 'Aucune US en backlog.' : 'Aucune US affectée.'}</div>` : stories.map(renderStoryCard).join('')}
           </div>
         </div>
       </section>
@@ -780,7 +783,7 @@ function escapeHtml(value) {
 }
 
 function resetAll() {
-  if (!confirm('Reinitialiser la simulation PI ?')) return;
+  if (!confirm('Réinitialiser la simulation PI ?')) return;
   state.config = {
     piName: 'PI Planning',
     sprintCount: 5,
@@ -792,6 +795,91 @@ function resetAll() {
   state.stories = [];
   nextStoryIndex = 1;
   renderAll();
+}
+
+function importCsv(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result.replace(/^\uFEFF/, '');
+    const sep = text.indexOf(';') !== -1 ? ';' : ',';
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    if (lines.length < 2) return;
+
+    const headerRaw = lines[0].split(sep).map(c => c.replace(/^"|"$/g, '').trim().toLowerCase());
+    const colMap = {};
+    headerRaw.forEach((h, i) => {
+      if (/titre|title|story|action/.test(h)) colMap.title = i;
+      else if (/point|sp|story.point/.test(h)) colMap.points = i;
+      else if (/priorit/.test(h)) colMap.priority = i;
+      else if (/squad|equipe|équipe|team/.test(h)) colMap.squad = i;
+      else if (/depend|deps/.test(h)) colMap.dependsOn = i;
+      else if (/sprint/.test(h)) colMap.sprint = i;
+      else if (/role|rôle/.test(h)) colMap.role = i;
+      else if (/benefice|bénéfice|benefit/.test(h)) colMap.benefit = i;
+      else if (/accept|critère|criteria|done/.test(h)) colMap.acceptance = i;
+    });
+
+    if (colMap.title === undefined && colMap.role !== undefined) {
+      colMap.title = colMap.role;
+    }
+
+    let imported = 0;
+    for (let i = 1; i < lines.length; i++) {
+      const cells = parseCsvLine(lines[i], sep);
+      const title = cells[colMap.title]?.trim();
+      if (!title) continue;
+
+      const role = colMap.role !== undefined ? cells[colMap.role]?.trim() : '';
+      const benefit = colMap.benefit !== undefined ? cells[colMap.benefit]?.trim() : '';
+      let fullTitle = title;
+      if (colMap.role !== undefined && colMap.title === colMap.role && benefit) {
+        fullTitle = title;
+      }
+
+      const points = colMap.points !== undefined ? Math.max(1, Number(cells[colMap.points]) || 5) : 5;
+      const rawPriority = colMap.priority !== undefined ? (cells[colMap.priority] || '').trim() : '';
+      const priority = /must|haute|high|critical/i.test(rawPriority) ? 'Must' : 'Should';
+      const squad = colMap.squad !== undefined ? (cells[colMap.squad]?.trim() || 'Core') : 'Core';
+      const dependsOn = colMap.dependsOn !== undefined ? (cells[colMap.dependsOn]?.trim() || '') : '';
+      const sprintRaw = colMap.sprint !== undefined ? cells[colMap.sprint]?.trim() : '';
+      const sprint = sprintRaw && !isNaN(Number(sprintRaw)) ? Number(sprintRaw) : null;
+
+      state.stories.push({
+        id: `US-${nextStoryIndex++}`,
+        title: fullTitle,
+        points,
+        priority,
+        squad,
+        dependsOn,
+        sprint
+      });
+      imported++;
+    }
+
+    if (imported > 0) renderAll();
+    alert(`${imported} user stor${imported > 1 ? 'ies' : 'y'} importée${imported > 1 ? 's' : ''}.`);
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parseCsvLine(line, sep) {
+  const cells = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"' && line[i + 1] === '"') { current += '"'; i++; }
+      else if (ch === '"') { inQuotes = false; }
+      else { current += ch; }
+    } else {
+      if (ch === '"') { inQuotes = true; }
+      else if (ch === sep) { cells.push(current); current = ''; }
+      else { current += ch; }
+    }
+  }
+  cells.push(current);
+  return cells;
 }
 
 function bindEvents() {
@@ -837,6 +925,11 @@ function bindEvents() {
   });
 
   document.getElementById('add-story-btn').addEventListener('click', addStory);
+  document.getElementById('import-csv-input').addEventListener('change', event => {
+    const file = event.target.files[0];
+    if (file) importCsv(file);
+    event.target.value = '';
+  });
   document.getElementById('export-btn').addEventListener('click', exportCsv);
   document.getElementById('reset-btn').addEventListener('click', resetAll);
 
@@ -901,20 +994,7 @@ function bindEvents() {
 function init() {
   loadState();
   if (state.stories.length === 0) {
-    state.config.objectives = [
-      'Livrer un premier parcours reporting manager complet et exploitable',
-      'Securiser les dependances front/back sur les exports CSV',
-      'Garder un buffer reel sur le sprint IP'
-    ];
-    state.config.risks = [
-      'Contrat de colonnes CSV encore mouvant entre produit, back et data'
-    ];
-    state.stories = [
-      { id: 'US-1', title: 'Exporter les rapports manager en CSV', points: 8, priority: 'Must', squad: 'Back', dependsOn: '', sprint: 1 },
-      { id: 'US-2', title: 'UI de lancement export et statut de generation', points: 5, priority: 'Must', squad: 'Front', dependsOn: 'US-1', sprint: 2 },
-      { id: 'US-3', title: 'Filtrer les colonnes et options de format CSV', points: 3, priority: 'Should', squad: 'Full-stack', dependsOn: 'US-1, US-2', sprint: 3 }
-    ];
-    nextStoryIndex = 4;
+    state.stories = [];
   }
   normalizeConfig();
   bindEvents();
