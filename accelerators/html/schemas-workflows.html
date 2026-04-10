@@ -408,6 +408,7 @@
   </aside>
 </div>
 <div id="link-type-popup" class="link-type-popup"></div>
+<div id="link-context-menu" class="link-type-popup"></div>
 
 <script>
 const APP_KEY = 'po-toolkit-schema-workflows';
@@ -784,6 +785,46 @@ function deleteLink(linkId) {
   renderAll();
 }
 
+function makeLinkBidirectional(linkId) {
+  const link = getLink(linkId);
+  if (!link) return;
+  const alreadyReverse = state.links.some(l => l.from === link.to && l.to === link.from);
+  if (alreadyReverse) return;
+  const reverse = createLink(link.to, link.from);
+  reverse.type = link.type;
+  state.links.push(reverse);
+  saveSession();
+  renderAll();
+}
+
+function removeReverseLink(linkId) {
+  const link = getLink(linkId);
+  if (!link) return;
+  const reverse = state.links.find(l => l.from === link.to && l.to === link.from);
+  if (!reverse) return;
+  deleteLink(reverse.id);
+}
+
+function showLinkContextMenu(linkId, clientX, clientY) {
+  const link = getLink(linkId);
+  if (!link) return;
+  const menu = document.getElementById('link-context-menu');
+  const hasReverse = state.links.some(l => l.from === link.to && l.to === link.from);
+  const items = [];
+  if (!hasReverse) {
+    items.push('<button data-ctx-action="make-bidirectional">&#8646; Rendre bidirectionnel</button>');
+  } else {
+    items.push('<button data-ctx-action="remove-reverse">Retirer le lien inverse</button>');
+  }
+  items.push('<button data-ctx-action="delete">Supprimer ce lien</button>');
+  menu.innerHTML = items.join('');
+  menu.dataset.linkId = linkId;
+  menu.style.display = 'grid';
+  menu.style.left = `${clientX}px`;
+  menu.style.top = `${clientY}px`;
+  menu.style.transform = 'none';
+}
+
 function renderCategories() {
   document.getElementById('category-chips').innerHTML = CATEGORY_ORDER.map(category => `
     <button class="category-chip ${state.activeCategory === category ? 'active' : ''}" data-category="${category}">
@@ -911,13 +952,17 @@ function getLinkGeometry(link) {
   const hasReverse = state.links.some(l => l.from === link.to && l.to === link.from);
   const SHIFT = 12;
   // Deterministic opposite sign for the two links of a pair.
-  const shift = hasReverse ? (link.from < link.to ? -SHIFT : SHIFT) : 0;
+  const sign = link.from < link.to ? -1 : 1;
+  const shift = hasReverse ? sign * SHIFT : 0;
   const from = getSideAnchor(source, fromSide, shift);
   const to = getSideAnchor(target, toSide, shift);
+  // For bidirectional pairs, flip one label above and the other below its line
+  // so two different link-type labels don't stack on top of each other.
+  const labelOffset = hasReverse ? sign * 18 : -14;
   return {
     path: `M ${from.x} ${from.y} L ${to.x} ${to.y}`,
     labelX: (from.x + to.x) / 2,
-    labelY: (from.y + to.y) / 2 - 14
+    labelY: (from.y + to.y) / 2 + labelOffset
   };
 }
 
@@ -1147,6 +1192,7 @@ function bindCanvasDrag() {
   };
 
   document.getElementById('links-layer').addEventListener('pointerdown', event => {
+    if (event.button === 2) return; // let contextmenu handle right-clicks
     const hit = event.target.closest('[data-link-id]');
     if (!hit) return;
     event.stopPropagation();
@@ -1154,11 +1200,31 @@ function bindCanvasDrag() {
     showLinkTypePopup(hit.dataset.linkId);
   });
 
+  document.getElementById('links-layer').addEventListener('contextmenu', event => {
+    const hit = event.target.closest('[data-link-id]');
+    if (!hit) return;
+    event.preventDefault();
+    event.stopPropagation();
+    selectLink(hit.dataset.linkId);
+    document.getElementById('link-type-popup').style.display = 'none';
+    showLinkContextMenu(hit.dataset.linkId, event.clientX, event.clientY);
+  });
+
   document.getElementById('link-label-layer').addEventListener('click', event => {
     const label = event.target.closest('[data-link-id]');
     if (!label) return;
     selectLink(label.dataset.linkId);
     showLinkTypePopup(label.dataset.linkId);
+  });
+
+  document.getElementById('link-label-layer').addEventListener('contextmenu', event => {
+    const label = event.target.closest('[data-link-id]');
+    if (!label) return;
+    event.preventDefault();
+    event.stopPropagation();
+    selectLink(label.dataset.linkId);
+    document.getElementById('link-type-popup').style.display = 'none';
+    showLinkContextMenu(label.dataset.linkId, event.clientX, event.clientY);
   });
 
   document.getElementById('canvas').addEventListener('pointerdown', event => {
@@ -1277,10 +1343,29 @@ function bindEvents() {
     saveSession();
     renderAll();
   });
+  document.getElementById('link-context-menu').addEventListener('click', event => {
+    const btn = event.target.closest('[data-ctx-action]');
+    if (!btn) return;
+    const menu = document.getElementById('link-context-menu');
+    const linkId = menu.dataset.linkId;
+    menu.style.display = 'none';
+    if (!linkId) return;
+    if (btn.dataset.ctxAction === 'make-bidirectional') {
+      makeLinkBidirectional(linkId);
+    } else if (btn.dataset.ctxAction === 'remove-reverse') {
+      removeReverseLink(linkId);
+    } else if (btn.dataset.ctxAction === 'delete') {
+      deleteLink(linkId);
+    }
+  });
   document.addEventListener('pointerdown', event => {
     const popup = document.getElementById('link-type-popup');
     if (popup.style.display !== 'none' && !popup.contains(event.target) && !event.target.closest('[data-link-id]')) {
       popup.style.display = 'none';
+    }
+    const ctxMenu = document.getElementById('link-context-menu');
+    if (ctxMenu.style.display !== 'none' && !ctxMenu.contains(event.target)) {
+      ctxMenu.style.display = 'none';
     }
   });
   document.querySelectorAll('#inspector-panel .panel h2').forEach(h2 => {
