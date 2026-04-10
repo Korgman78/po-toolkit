@@ -721,6 +721,32 @@ function duplicateSelectedNode() {
   renderAll();
 }
 
+let clipboardNode = null;
+
+function copySelectedNode() {
+  const node = getNode(state.selectedNodeId);
+  if (!node) return;
+  clipboardNode = { ...node };
+}
+
+function pasteClipboardNode() {
+  if (!clipboardNode) return;
+  const pasted = {
+    ...clipboardNode,
+    id: `node-${state.nextNodeId++}`,
+    x: clipboardNode.x + 24,
+    y: clipboardNode.y + 24,
+    owner: state.pseudo || clipboardNode.owner
+  };
+  // Keep clipboard in sync so successive pastes stack with an offset.
+  clipboardNode = { ...clipboardNode, x: pasted.x, y: pasted.y };
+  state.nodes.push(pasted);
+  state.selectedNodeId = pasted.id;
+  state.selectedLinkId = null;
+  saveSession();
+  renderAll();
+}
+
 function deleteSelectedNode() {
   if (!state.selectedNodeId) return;
   state.nodes = state.nodes.filter(node => node.id !== state.selectedNodeId);
@@ -829,34 +855,65 @@ function renderNodeIcon(type) {
   return icons[type] || icons.custom_block;
 }
 
-function getAnchor(node, side) {
-  if (side === 'right') return { x: node.x + node.width, y: node.y + node.height / 2 };
-  if (side === 'left') return { x: node.x, y: node.y + node.height / 2 };
-  if (side === 'bottom') return { x: node.x + node.width / 2, y: node.y + node.height };
-  if (side === 'top') return { x: node.x + node.width / 2, y: node.y };
-  return { x: node.x + node.width / 2, y: node.y + node.height / 2 };
+// Nodes are rendered with `min-height`, so their real DOM size may exceed the
+// stored node.width/height. We snapshot the actual box after each render and
+// use that for link geometry — otherwise arrows land on the midpoint of the
+// stored rectangle, which visually sits above the real center of the block.
+const measuredNodeSizes = {};
+
+function getNodeBox(node) {
+  const measured = measuredNodeSizes[node.id];
+  const width = measured ? measured.width : node.width;
+  const height = measured ? measured.height : node.height;
+  return {
+    x: node.x,
+    y: node.y,
+    width,
+    height,
+    cx: node.x + width / 2,
+    cy: node.y + height / 2
+  };
 }
 
-function buildLinkPath(source, target) {
-  const sx = source.x + source.width / 2, sy = source.y + source.height / 2;
-  const tx = target.x + target.width / 2, ty = target.y + target.height / 2;
-  const horizontal = Math.abs(tx - sx) >= Math.abs(ty - sy);
-  let fromSide, toSide;
+// Side anchor = always the middle of the chosen edge. `shift` slides the anchor
+// along the edge (vertical edges shift in Y, horizontal edges in X) so that two
+// parallel links on the same side can stay visibly separated.
+function getSideAnchor(node, side, shift = 0) {
+  const box = getNodeBox(node);
+  if (side === 'right') return { x: box.x + box.width, y: box.cy + shift };
+  if (side === 'left') return { x: box.x, y: box.cy + shift };
+  if (side === 'bottom') return { x: box.cx + shift, y: box.y + box.height };
+  if (side === 'top') return { x: box.cx + shift, y: box.y };
+  return { x: box.cx, y: box.cy };
+}
+
+function pickSides(source, target) {
+  const s = getNodeBox(source);
+  const t = getNodeBox(target);
+  const horizontal = Math.abs(t.cx - s.cx) >= Math.abs(t.cy - s.cy);
   if (horizontal) {
-    fromSide = sx <= tx ? 'right' : 'left';
-    toSide = sx <= tx ? 'left' : 'right';
-  } else {
-    fromSide = sy <= ty ? 'bottom' : 'top';
-    toSide = sy <= ty ? 'top' : 'bottom';
+    return s.cx <= t.cx
+      ? { fromSide: 'right', toSide: 'left' }
+      : { fromSide: 'left', toSide: 'right' };
   }
-  return { from: getAnchor(source, fromSide), to: getAnchor(target, toSide) };
+  return s.cy <= t.cy
+    ? { fromSide: 'bottom', toSide: 'top' }
+    : { fromSide: 'top', toSide: 'bottom' };
 }
 
 function getLinkGeometry(link) {
   const source = getNode(link.from);
   const target = getNode(link.to);
   if (!source || !target) return null;
-  const { from, to } = buildLinkPath(source, target);
+  const { fromSide, toSide } = pickSides(source, target);
+  // If a reverse link exists (B -> A for this A -> B), slide the anchors along
+  // the shared edge so the two arrows sit side by side instead of overlapping.
+  const hasReverse = state.links.some(l => l.from === link.to && l.to === link.from);
+  const SHIFT = 12;
+  // Deterministic opposite sign for the two links of a pair.
+  const shift = hasReverse ? (link.from < link.to ? -SHIFT : SHIFT) : 0;
+  const from = getSideAnchor(source, fromSide, shift);
+  const to = getSideAnchor(target, toSide, shift);
   return {
     path: `M ${from.x} ${from.y} L ${to.x} ${to.y}`,
     labelX: (from.x + to.x) / 2,
@@ -931,6 +988,14 @@ function renderCanvas() {
     ? 'Cliquez sur un second module pour créer la liaison.'
     : `${state.nodes.length} modules, ${state.links.length} liaisons dans la session ${state.sessionId}.`;
   document.getElementById('connect-btn').style.visibility = state.connectSourceId ? 'visible' : 'hidden';
+  // Snapshot the real rendered box of every node so link anchors match the
+  // actual visible edges (labels / subtitles may push the block past node.height).
+  state.nodes.forEach(node => {
+    const el = canvas.querySelector(`[data-node-id="${node.id}"]`);
+    if (el) {
+      measuredNodeSizes[node.id] = { width: el.offsetWidth, height: el.offsetHeight };
+    }
+  });
   renderLinks();
 }
 
@@ -1223,9 +1288,25 @@ function bindEvents() {
   });
   document.addEventListener('keydown', event => {
     if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.tagName === 'SELECT') return;
-    if ((event.key === 'Backspace' || event.key === 'Delete') && state.selectedNodeId) {
+    const mod = event.ctrlKey || event.metaKey;
+    if (mod && event.key.toLowerCase() === 'c' && state.selectedNodeId) {
       event.preventDefault();
-      deleteSelectedNode();
+      copySelectedNode();
+      return;
+    }
+    if (mod && event.key.toLowerCase() === 'v' && clipboardNode) {
+      event.preventDefault();
+      pasteClipboardNode();
+      return;
+    }
+    if (event.key === 'Backspace' || event.key === 'Delete') {
+      if (state.selectedLinkId) {
+        event.preventDefault();
+        deleteLink(state.selectedLinkId);
+      } else if (state.selectedNodeId) {
+        event.preventDefault();
+        deleteSelectedNode();
+      }
     }
   });
   bindCanvasDrag();
