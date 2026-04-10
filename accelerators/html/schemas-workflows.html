@@ -519,7 +519,7 @@ function normalizeNode(node) {
 function normalizeLink(link) {
   const typeMap = { sync_api: 'http', notification: 'notif' };
   const type = typeMap[link.type] || link.type || 'none';
-  return { ...link, type };
+  return { ...link, type, bidirectional: !!link.bidirectional };
 }
 
 function updateSessionUrl() {
@@ -785,36 +785,23 @@ function deleteLink(linkId) {
   renderAll();
 }
 
-function makeLinkBidirectional(linkId) {
+function setLinkBidirectional(linkId, bidirectional) {
   const link = getLink(linkId);
   if (!link) return;
-  const alreadyReverse = state.links.some(l => l.from === link.to && l.to === link.from);
-  if (alreadyReverse) return;
-  const reverse = createLink(link.to, link.from);
-  reverse.type = link.type;
-  state.links.push(reverse);
+  link.bidirectional = !!bidirectional;
   saveSession();
   renderAll();
-}
-
-function removeReverseLink(linkId) {
-  const link = getLink(linkId);
-  if (!link) return;
-  const reverse = state.links.find(l => l.from === link.to && l.to === link.from);
-  if (!reverse) return;
-  deleteLink(reverse.id);
 }
 
 function showLinkContextMenu(linkId, clientX, clientY) {
   const link = getLink(linkId);
   if (!link) return;
   const menu = document.getElementById('link-context-menu');
-  const hasReverse = state.links.some(l => l.from === link.to && l.to === link.from);
   const items = [];
-  if (!hasReverse) {
-    items.push('<button data-ctx-action="make-bidirectional">&#8646; Rendre bidirectionnel</button>');
+  if (link.bidirectional) {
+    items.push('<button data-ctx-action="unset-bidirectional">Retirer le bidirectionnel</button>');
   } else {
-    items.push('<button data-ctx-action="remove-reverse">Retirer le lien inverse</button>');
+    items.push('<button data-ctx-action="set-bidirectional">&#8646; Rendre bidirectionnel</button>');
   }
   items.push('<button data-ctx-action="delete">Supprimer ce lien</button>');
   menu.innerHTML = items.join('');
@@ -982,9 +969,10 @@ function renderLinks() {
       if (!geometry) return '';
       const linkType = getLinkType(link.type);
       const isActive = state.selectedLinkId === link.id;
+      const markerStart = link.bidirectional ? `marker-start="url(#arrow-${link.type})"` : '';
       return `
         <path class="link-hit" data-link-id="${link.id}" d="${geometry.path}"></path>
-        <path data-link-id="${link.id}" d="${geometry.path}" stroke="${linkType.color}" stroke-width="${isActive ? linkType.width + 1.4 : linkType.width}" stroke-dasharray="${linkType.dash}" fill="none" marker-end="url(#arrow-${link.type})" opacity="${isActive ? '1' : '0.92'}" style="pointer-events:none;"></path>
+        <path data-link-id="${link.id}" d="${geometry.path}" stroke="${linkType.color}" stroke-width="${isActive ? linkType.width + 1.4 : linkType.width}" stroke-dasharray="${linkType.dash}" fill="none" ${markerStart} marker-end="url(#arrow-${link.type})" opacity="${isActive ? '1' : '0.92'}" style="pointer-events:none;"></path>
       `;
     }).join('')}
   `;
@@ -1350,10 +1338,10 @@ function bindEvents() {
     const linkId = menu.dataset.linkId;
     menu.style.display = 'none';
     if (!linkId) return;
-    if (btn.dataset.ctxAction === 'make-bidirectional') {
-      makeLinkBidirectional(linkId);
-    } else if (btn.dataset.ctxAction === 'remove-reverse') {
-      removeReverseLink(linkId);
+    if (btn.dataset.ctxAction === 'set-bidirectional') {
+      setLinkBidirectional(linkId, true);
+    } else if (btn.dataset.ctxAction === 'unset-bidirectional') {
+      setLinkBidirectional(linkId, false);
     } else if (btn.dataset.ctxAction === 'delete') {
       deleteLink(linkId);
     }
