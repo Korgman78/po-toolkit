@@ -18,6 +18,7 @@ const ACCELERATORS_DATA = [
 const APPS_DATA = [
   { section: "Cadrage & priorisation", name: "Calculateur de Priorisation", desc: "RICE, WSJF, ICE, MoSCoW, Value/Effort — avec critères custom et pondération. L'outil de priorisation ultime du PO.", file: "../accelerators/html/prioritization-calculator.html", color: "#a855f7" },
   { section: "Cadrage & priorisation", name: "Story Splitter", desc: "Découpez une feature en stories actionnables avec patterns guides : workflow, front/back, CSV, règles métier, cas limites.", file: "../accelerators/html/story-splitter.html", color: "#14b8a6" },
+  { section: "Roadmapping & strategie", name: "Roadmap Designer", desc: "Designer de roadmap epic/feature multi-mois avec timeline, statuts, priorites, local storage et import/export JSON.", file: "../accelerators/html/roadmap-designer.html", color: "#1d9a8a" },
   { section: "Planification & facilitation", name: "Planning Poker", desc: "Outil de vote pour estimer vos stories en équipe. Fibonacci et T-shirt sizes.", file: "../accelerators/html/planning-poker.html", color: "#ec4899" },
   { section: "Planification & facilitation", name: "PI Planning Simulator", desc: "Planifiez un PI par sprint avec capacité, points, must/should, dépendances, IP sprint, objectifs, risques et export CSV.", file: "../accelerators/html/pi-planning-simulator.html", color: "#f59e0b" },
   { section: "Planification & facilitation", name: "Daily Standup Timer", desc: "Chronomètre avec timer par personne. Gardez vos dailys dans les temps.", file: "../accelerators/html/daily-standup-timer.html", color: "#6366f1" },
@@ -28,6 +29,7 @@ const APPS_DATA = [
 
 const APP_SECTION_DESCRIPTIONS = {
   "Cadrage & priorisation": "Passez de l'idée au backlog priorisé avec une logique produit claire.",
+  "Roadmapping & strategie": "Construisez une roadmap lisible par outcomes, epics, features et horizon multi-mois.",
   "Planification & facilitation": "Animez vos estimations, vos arbitrages de PI et vos rituels d'équipe.",
   "Schemas & ateliers": "Modélisez un workflow ou une archi légère à partager pendant les ateliers.",
   "Utilitaires": "Petits outils transverses pour gagner du temps au quotidien."

@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roadmap Designer - PO Toolkit</title>
+<style>
+  :root {
+    --bg: #f6f5f1;
+    --surface: #fffefa;
+    --surface-2: #eeeee7;
+    --ink: #171717;
+    --muted: #67665f;
+    --line: #d9d7cd;
+    --strong-line: #bdb9ad;
+    --accent: #1d9a8a;
+    --accent-2: #f05d3d;
+    --accent-3: #a1c94a;
+    --accent-4: #3d72f0;
+    --warn: #b9770e;
+    --danger: #c43a31;
+    --shadow: 0 18px 44px rgba(28, 26, 20, 0.11);
+    --sidebar: 280px;
+    --month-width: 112px;
+    color-scheme: light;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background:
+      linear-gradient(180deg, rgba(29,154,138,0.08), transparent 320px),
+      radial-gradient(circle at 90% 2%, rgba(240,93,61,0.16), transparent 280px),
+      var(--bg);
+    color: var(--ink);
+  }
+
+  button, input, select, textarea { font: inherit; }
+  button { border: 0; cursor: pointer; }
+
+  .app { min-height: 100vh; display: grid; grid-template-rows: auto 1fr; }
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid rgba(23,23,23,0.09);
+    background: rgba(246,245,241,0.88);
+    backdrop-filter: blur(18px);
+  }
+
+  .brand { display: flex; align-items: center; gap: 0.8rem; min-width: 0; }
+  .mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    background: conic-gradient(from 200deg, #171717, #1d9a8a, #a1c94a, #f05d3d, #171717);
+    box-shadow: 0 12px 26px rgba(29,154,138,0.22);
+  }
+  .mark svg { width: 25px; height: 25px; fill: #fffefa; }
+  h1 { margin: 0; font-size: 1.15rem; line-height: 1.15; letter-spacing: 0; }
+  .meta { color: var(--muted); font-size: 0.78rem; margin-top: 0.18rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .actions { display: flex; align-items: center; justify-content: flex-end; gap: 0.45rem; flex-wrap: wrap; }
+  .btn {
+    min-height: 38px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.78rem;
+    font-size: 0.84rem;
+    font-weight: 750;
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.7) inset;
+  }
+  .btn:hover { border-color: var(--strong-line); transform: translateY(-1px); }
+  .btn.primary { background: var(--ink); color: #fffefa; border-color: var(--ink); }
+  .btn.accent { background: var(--accent); color: #fffefa; border-color: var(--accent); }
+  .btn.danger { color: var(--danger); }
+  .btn.icon { width: 38px; padding: 0; }
+  .btn svg { width: 16px; height: 16px; fill: currentColor; flex: 0 0 auto; }
+
+  .workspace {
+    display: grid;
+    grid-template-columns: 330px minmax(0, 1fr);
+    gap: 1rem;
+    padding: 1rem;
+    min-height: 0;
+  }
+
+  .side { display: grid; gap: 0.75rem; align-content: start; }
+  .panel, .roadmap-shell, .modal {
+    background: rgba(255,254,250,0.93);
+    border: 1px solid rgba(23,23,23,0.11);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+  }
+  .panel { overflow: hidden; }
+  .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.85rem 0.9rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .panel-head h2 { margin: 0; font-size: 0.88rem; line-height: 1.2; letter-spacing: 0; }
+  .panel-body { padding: 0.9rem; display: grid; gap: 0.75rem; }
+
+  .field { display: grid; gap: 0.35rem; min-width: 0; }
+  .field label {
+    color: var(--muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+  }
+  input, select, textarea {
+    width: 100%;
+    border: 1px solid var(--line);
+    background: #fffefa;
+    color: var(--ink);
+    border-radius: 8px;
+    padding: 0.62rem 0.7rem;
+    outline: none;
+  }
+  textarea { min-height: 88px; resize: vertical; line-height: 1.45; }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(29,154,138,0.13); }
+
+  .segmented {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 0.2rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-2);
+  }
+  .segmented button {
+    min-height: 32px;
+    border-radius: 6px;
+    color: var(--muted);
+    background: transparent;
+    font-size: 0.78rem;
+    font-weight: 800;
+  }
+  .segmented button.active { color: var(--ink); background: var(--surface); box-shadow: 0 1px 4px rgba(23,23,23,0.08); }
+
+  .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.55rem; }
+  .kpi {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: linear-gradient(180deg, #fffefa, #f4f3ed);
+    padding: 0.72rem;
+    min-width: 0;
+  }
+  .kpi span { display: block; color: var(--muted); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
+  .kpi strong { display: block; margin-top: 0.18rem; font-size: 1.25rem; line-height: 1.1; }
+
+  .legend { display: grid; gap: 0.42rem; }
+  .legend-item { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; color: var(--muted); font-size: 0.78rem; }
+  .legend-left { display: inline-flex; align-items: center; min-width: 0; gap: 0.45rem; }
+  .dot { width: 10px; height: 10px; border-radius: 999px; flex: 0 0 auto; background: var(--dot); }
+  .legend-left span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .count-pill { border: 1px solid var(--line); border-radius: 999px; padding: 0.1rem 0.42rem; background: var(--surface); color: var(--ink); font-weight: 800; font-size: 0.72rem; }
+
+  .roadmap-area { min-width: 0; display: grid; gap: 0.75rem; align-content: start; }
+  .toolbar { display: grid; grid-template-columns: minmax(220px, 1fr) auto; align-items: center; gap: 0.75rem; }
+  .search-wrap { position: relative; }
+  .search-wrap svg { position: absolute; width: 16px; height: 16px; left: 0.72rem; top: 50%; transform: translateY(-50%); fill: var(--muted); }
+  .search-wrap input { padding-left: 2.05rem; }
+  .filters { display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; flex-wrap: wrap; }
+  .filters select { width: auto; min-width: 145px; }
+
+  .roadmap-shell { overflow: hidden; min-width: 0; }
+  .roadmap-scroll { overflow: auto; max-height: calc(100vh - 170px); }
+  .timeline-head, .epic-row {
+    display: grid;
+    grid-template-columns: var(--sidebar) repeat(var(--months), minmax(var(--month-width), 1fr));
+    min-width: calc(var(--sidebar) + var(--months) * var(--month-width));
+  }
+  .timeline-head {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(255,254,250,0.96);
+    border-bottom: 1px solid var(--strong-line);
+  }
+  .corner {
+    position: sticky;
+    left: 0;
+    z-index: 12;
+    background: #fffefa;
+    padding: 0.85rem 0.9rem;
+    border-right: 1px solid var(--strong-line);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 850;
+    font-size: 0.82rem;
+  }
+  .month {
+    min-height: 52px;
+    padding: 0.68rem 0.7rem;
+    border-right: 1px solid var(--line);
+    display: grid;
+    align-content: center;
+    gap: 0.12rem;
+  }
+  .month strong { font-size: 0.82rem; }
+  .month span { color: var(--muted); font-size: 0.7rem; font-weight: 750; text-transform: uppercase; }
+  .month.current { background: rgba(161,201,74,0.16); }
+
+  .epic-row {
+    position: relative;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(90deg, rgba(255,254,250,0.98), rgba(255,254,250,0.78));
+  }
+  .epic-row:hover { background: #fffefa; }
+  .epic-info {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    grid-column: 1;
+    grid-row: 1 / span var(--rows);
+    min-height: calc(var(--rows) * 44px);
+    padding: 0.82rem 0.86rem;
+    border-right: 1px solid var(--strong-line);
+    background: rgba(255,254,250,0.98);
+    display: grid;
+    gap: 0.55rem;
+    align-content: start;
+  }
+  .epic-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.6rem; }
+  .epic-title { margin: 0; font-size: 0.92rem; line-height: 1.25; }
+  .epic-owner { color: var(--muted); font-size: 0.75rem; line-height: 1.35; }
+  .epic-objective { color: var(--muted); font-size: 0.78rem; line-height: 1.38; }
+  .epic-actions { display: flex; gap: 0.25rem; flex: 0 0 auto; }
+
+  .mini-btn {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    color: var(--muted);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+  }
+  .mini-btn:hover { color: var(--ink); border-color: var(--strong-line); }
+  .mini-btn svg { width: 15px; height: 15px; fill: currentColor; }
+
+  .month-cell {
+    min-height: 44px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid rgba(217,215,205,0.5);
+    background:
+      linear-gradient(180deg, rgba(246,245,241,0.55), transparent),
+      rgba(255,254,250,0.35);
+  }
+  .month-cell.current { background: rgba(161,201,74,0.11); }
+  .month-cell.drop-target { outline: 2px solid rgba(29,154,138,0.42); outline-offset: -2px; background: rgba(29,154,138,0.08); }
+
+  .feature {
+    container-type: inline-size;
+    position: relative;
+    align-self: stretch;
+    min-width: 0;
+    margin: 5px 7px;
+    border-radius: 8px;
+    border: 1px solid rgba(23,23,23,0.16);
+    color: #fffefa;
+    background:
+      linear-gradient(110deg, rgba(255,255,255,0.18), transparent 42%),
+      var(--feature-color);
+    box-shadow: 0 12px 22px rgba(23,23,23,0.12);
+    padding: 0.48rem 0.58rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: grab;
+    user-select: none;
+  }
+  .feature:active { cursor: grabbing; }
+  .feature:hover { filter: saturate(1.05) brightness(1.01); transform: translateY(-1px); }
+  .feature-main { min-width: 0; }
+  .feature-title { font-size: 0.79rem; font-weight: 850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
+  .feature-meta { margin-top: 0.18rem; font-size: 0.66rem; opacity: 0.86; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .feature-chip { border-radius: 999px; padding: 0.14rem 0.38rem; font-size: 0.65rem; font-weight: 850; background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.25); }
+  .resize-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 12px;
+    z-index: 2;
+    cursor: ew-resize;
+    opacity: 0;
+  }
+  .resize-handle::after {
+    content: "";
+    position: absolute;
+    top: 9px;
+    bottom: 9px;
+    width: 3px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.7);
+  }
+  .resize-handle.left { left: 0; }
+  .resize-handle.left::after { left: 4px; }
+  .resize-handle.right { right: 0; }
+  .resize-handle.right::after { right: 4px; }
+  .feature:hover .resize-handle, .feature.resizing .resize-handle { opacity: 1; }
+
+  @container (max-width: 132px) {
+    .feature-title {
+      white-space: normal;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .feature-meta, .feature-chip { display: none; }
+  }
+
+  .empty-state {
+    min-height: 360px;
+    display: grid;
+    place-items: center;
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted);
+  }
+  .empty-state h2 { color: var(--ink); margin: 0 0 0.4rem; }
+  .empty-state p { margin: 0 0 1rem; max-width: 420px; line-height: 1.55; }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(18, 18, 15, 0.45);
+    backdrop-filter: blur(8px);
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    width: min(720px, 100%);
+    max-height: min(760px, calc(100vh - 2rem));
+    overflow: auto;
+  }
+  .modal-head {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--line);
+    background: rgba(255,254,250,0.96);
+  }
+  .modal-head h2 { margin: 0; font-size: 1.02rem; }
+  .modal-body { padding: 1rem; display: grid; gap: 0.8rem; }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+  .form-grid .span-2 { grid-column: 1 / -1; }
+  .portfolio-controls { grid-template-columns: 1fr; }
+  .modal-actions {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-top: 1px solid var(--line);
+    background: rgba(255,254,250,0.96);
+  }
+
+  .toast {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 120;
+    max-width: 360px;
+    padding: 0.78rem 0.9rem;
+    border-radius: 8px;
+    background: #171717;
+    color: #fffefa;
+    box-shadow: var(--shadow);
+    transform: translateY(16px);
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.2s ease;
+    font-size: 0.84rem;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .hidden-file { display: none; }
+
+  @media (max-width: 1100px) {
+    .workspace { grid-template-columns: 1fr; }
+    .side { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .roadmap-scroll { max-height: none; }
+  }
+
+  @media (max-width: 760px) {
+    :root { --sidebar: 230px; --month-width: 96px; }
+    .topbar, .toolbar { grid-template-columns: 1fr; }
+    .actions, .filters { justify-content: flex-start; }
+    .topbar .actions .btn { flex: 1 1 calc(50% - 0.45rem); }
+    .workspace { padding: 0.7rem; }
+    .side { grid-template-columns: 1fr; }
+    .form-grid, .kpis { grid-template-columns: 1fr; }
+    .btn { width: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M4 16.5h4.2l2.4-8 3.2 11 2.6-7H20v2h-2.2l-4.3 5.4-2.8-9.7-1.1 4.3H4v-2Z"/></svg>
+      </div>
+      <div>
+        <h1>Roadmap Designer</h1>
+        <div class="meta" id="save-status">Initialisation</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn accent" id="new-feature-btn" title="Nouvelle feature">
+        <svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z"/></svg>
+        Feature
+      </button>
+      <button class="btn" id="new-epic-btn" title="Nouvelle epic">
+        <svg viewBox="0 0 24 24"><path d="M5 4h14v3H5V4Zm0 5h14v11H5V9Zm2 2v7h10v-7H7Z"/></svg>
+        Epic
+      </button>
+      <button class="btn" id="export-btn" title="Exporter JSON">
+        <svg viewBox="0 0 24 24"><path d="M11 3h2v10.2l3.2-3.2 1.4 1.4L12 17l-5.6-5.6L7.8 10l3.2 3.2V3ZM5 19h14v2H5v-2Z"/></svg>
+        JSON
+      </button>
+      <label class="btn" title="Importer JSON">
+        <svg viewBox="0 0 24 24"><path d="M11 21h2V10.8l3.2 3.2 1.4-1.4L12 7 6.4 12.6 7.8 14l3.2-3.2V21ZM5 3h14v2H5V3Z"/></svg>
+        Import
+        <input class="hidden-file" id="import-input" type="file" accept="application/json,.json">
+      </label>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="side">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Portfolio</h2>
+          <button class="mini-btn" id="demo-btn" title="Charger un exemple">
+            <svg viewBox="0 0 24 24"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5Zm0 2.3L18.7 8 12 11.7 5.3 8 12 4.3ZM5 9.7l6 3.3v6.3l-6-3.4V9.7Zm8 9.6V13l6-3.3v6.2l-6 3.4Z"/></svg>
+          </button>
+        </div>
+        <div class="panel-body">
+          <div class="field">
+            <label for="product-name">Produit</label>
+            <input id="product-name" type="text">
+          </div>
+          <div class="form-grid portfolio-controls">
+            <div class="field">
+              <label for="start-month">Debut</label>
+              <input id="start-month" type="month">
+            </div>
+            <div class="field">
+              <label for="month-count">Mois</label>
+              <select id="month-count">
+                <option value="6">6</option>
+                <option value="9">9</option>
+                <option value="12">12</option>
+                <option value="15">15</option>
+                <option value="18">18</option>
+              </select>
+            </div>
+          </div>
+          <div class="segmented" id="zoom-control">
+            <button data-zoom="compact">Compact</button>
+            <button data-zoom="fit">Fit</button>
+            <button data-zoom="wide">Wide</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>Pulse</h2></div>
+        <div class="panel-body">
+          <div class="kpis" id="kpi-grid"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>Statuts</h2></div>
+        <div class="panel-body">
+          <div class="legend" id="status-legend"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>Donnees</h2></div>
+        <div class="panel-body">
+          <button class="btn danger" id="reset-btn" title="Reinitialiser">
+            <svg viewBox="0 0 24 24"><path d="M6 7h12v2H6V7Zm2 4h2v8H8v-8Zm6 0h2v8h-2v-8ZM9 4h6l1 1h4v2H4V5h4l1-1Z"/></svg>
+            Reinitialiser
+          </button>
+        </div>
+      </section>
+    </aside>
+
+    <section class="roadmap-area">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24"><path d="M10 4a6 6 0 0 1 4.8 9.6l4.3 4.3-1.4 1.4-4.3-4.3A6 6 0 1 1 10 4Zm0 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/></svg>
+          <input id="search" type="search" placeholder="Search">
+        </div>
+        <div class="filters">
+          <select id="status-filter"></select>
+          <select id="priority-filter"></select>
+          <select id="owner-filter"></select>
+        </div>
+      </div>
+
+      <section class="roadmap-shell">
+        <div class="roadmap-scroll" id="roadmap-scroll">
+          <div id="roadmap"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
+
+<div class="overlay" id="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modal-title">Edition</h2>
+      <button class="mini-btn" id="close-modal" title="Fermer">
+        <svg viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></svg>
+      </button>
+    </div>
+    <form id="modal-form">
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-actions">
+        <button class="btn danger" type="button" id="delete-modal-btn">Supprimer</button>
+        <div class="actions">
+          <button class="btn" type="button" id="cancel-modal-btn">Annuler</button>
+          <button class="btn primary" type="submit">Enregistrer</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const STORAGE_KEY = 'po-toolkit-roadmap-designer-v2';
+  const VERSION = 1;
+  const STATUSES = [
+    { id: 'discovery', label: 'Discovery', color: '#6f6a62' },
+    { id: 'ready', label: 'Ready', color: '#3d72f0' },
+    { id: 'build', label: 'Build', color: '#1d9a8a' },
+    { id: 'launch', label: 'Launch', color: '#f05d3d' }
+  ];
+  const PRIORITIES = ['P0', 'P1', 'P2', 'P3'];
+  const COLORS = ['#1d9a8a', '#f05d3d', '#3d72f0', '#a85f18', '#7c5cff', '#2d7f58', '#b93f7a'];
+
+  const $ = (selector) => document.querySelector(selector);
+  const els = {
+    productName: $('#product-name'),
+    startMonth: $('#start-month'),
+    monthCount: $('#month-count'),
+    zoomControl: $('#zoom-control'),
+    roadmap: $('#roadmap'),
+    kpis: $('#kpi-grid'),
+    legend: $('#status-legend'),
+    saveStatus: $('#save-status'),
+    search: $('#search'),
+    statusFilter: $('#status-filter'),
+    priorityFilter: $('#priority-filter'),
+    ownerFilter: $('#owner-filter'),
+    modalOverlay: $('#modal-overlay'),
+    modalTitle: $('#modal-title'),
+    modalBody: $('#modal-body'),
+    modalForm: $('#modal-form'),
+    deleteModal: $('#delete-modal-btn'),
+    importInput: $('#import-input'),
+    toast: $('#toast')
+  };
+
+  let state = loadState();
+  let modal = { type: null, epicId: null, featureId: null };
+  let dragged = null;
+  let resizing = null;
+  let suppressFeatureClickUntil = 0;
+
+  function uid(prefix) {
+    if (crypto && crypto.randomUUID) return `${prefix}-${crypto.randomUUID().slice(0, 8)}`;
+    return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+  }
+
+  function currentMonthValue() {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  function addMonths(monthValue, amount) {
+    const [year, month] = monthValue.split('-').map(Number);
+    const date = new Date(year, month - 1 + amount, 1);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  function monthLabel(monthValue) {
+    const [year, month] = monthValue.split('-').map(Number);
+    const date = new Date(year, month - 1, 1);
+    return {
+      month: date.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', ''),
+      year: String(year)
+    };
+  }
+
+  function getMonths() {
+    return Array.from({ length: Number(state.settings.months) }, (_, i) => addMonths(state.settings.start, i));
+  }
+
+  function monthIndex(monthValue) {
+    return getMonths().indexOf(monthValue);
+  }
+
+  function feature(title, status, priority, start, end, owner, confidence, effort, score, metric) {
+    return { id: uid('feature'), title, status, priority, start, end, owner, confidence, effort, score, metric, notes: '' };
+  }
+
+  function createDemoState() {
+    const start = currentMonthValue();
+    return {
+      version: VERSION,
+      updatedAt: new Date().toISOString(),
+      settings: { name: 'Roadmap', start, months: 12, zoom: 'fit' },
+      epics: [
+        {
+          id: uid('epic'),
+          title: 'test epic',
+          owner: '',
+          objective: '',
+          color: COLORS[0],
+          features: [
+            feature('test feature', 'ready', 'P2', start, start, '', 80, 10, 50, '')
+          ]
+        }
+      ]
+    };
+  }
+
+  function clampFeature(item) {
+    const months = getMonths();
+    if (!months.includes(item.start)) item.start = months[0];
+    if (!months.includes(item.end)) item.end = months[months.length - 1];
+    if (monthIndex(item.end) < monthIndex(item.start)) item.end = item.start;
+    return item;
+  }
+
+  function normalizeState(input) {
+    const fallback = createDemoState();
+    const next = {
+      version: VERSION,
+      updatedAt: input.updatedAt || new Date().toISOString(),
+      settings: {
+        name: input.settings?.name || fallback.settings.name,
+        start: input.settings?.start || currentMonthValue(),
+        months: Number(input.settings?.months || 12),
+        zoom: input.settings?.zoom || 'fit'
+      },
+      epics: Array.isArray(input.epics) ? input.epics : []
+    };
+    next.settings.months = [6, 9, 12, 15, 18].includes(next.settings.months) ? next.settings.months : 12;
+    const localMonths = Array.from({ length: Number(next.settings.months) }, (_, i) => addMonths(next.settings.start, i));
+    const localMonthIndex = (monthValue) => localMonths.indexOf(monthValue);
+    const clampImportedFeature = (item) => {
+      if (!localMonths.includes(item.start)) item.start = localMonths[0];
+      if (!localMonths.includes(item.end)) item.end = localMonths[localMonths.length - 1];
+      if (localMonthIndex(item.end) < localMonthIndex(item.start)) item.end = item.start;
+      return item;
+    };
+    next.epics = next.epics.map((epic, index) => ({
+      id: epic.id || uid('epic'),
+      title: epic.title || `Epic ${index + 1}`,
+      owner: epic.owner || '',
+      objective: epic.objective || '',
+      color: epic.color || COLORS[index % COLORS.length],
+      features: Array.isArray(epic.features) ? epic.features.map((item) => clampImportedFeature({
+        id: item.id || uid('feature'),
+        title: item.title || 'Feature',
+        status: STATUSES.some((s) => s.id === item.status) ? item.status : 'discovery',
+        priority: PRIORITIES.includes(item.priority) ? item.priority : 'P2',
+        start: item.start || next.settings.start,
+        end: item.end || item.start || next.settings.start,
+        owner: item.owner || '',
+        confidence: Number(item.confidence || 50),
+        effort: Number(item.effort || 10),
+        score: Number(item.score ?? 50),
+        metric: item.metric || '',
+        notes: item.notes || ''
+      })) : []
+    }));
+    return next;
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return createDemoState();
+      return normalizeState(JSON.parse(raw));
+    } catch (error) {
+      console.warn(error);
+      return createDemoState();
+    }
+  }
+
+  function saveState(message) {
+    state.updatedAt = new Date().toISOString();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    updateSaveStatus();
+    if (message) showToast(message);
+  }
+
+  function updateSaveStatus() {
+    const date = new Date(state.updatedAt);
+    els.saveStatus.textContent = `${state.settings.name} - sauvegarde locale ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+  }
+
+  function showToast(message) {
+    els.toast.textContent = message;
+    els.toast.classList.add('show');
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => els.toast.classList.remove('show'), 2400);
+  }
+
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    }[char]));
+  }
+
+  function statusMeta(id) {
+    return STATUSES.find((item) => item.id === id) || STATUSES[0];
+  }
+
+  function allFeatures() {
+    return state.epics.flatMap((epic) => epic.features.map((item) => ({ ...item, epicId: epic.id, epicTitle: epic.title })));
+  }
+
+  function filteredEpics() {
+    const query = els.search.value.trim().toLowerCase();
+    const status = els.statusFilter.value;
+    const priority = els.priorityFilter.value;
+    const owner = els.ownerFilter.value;
+    return state.epics.map((epic) => {
+      const features = epic.features.filter((item) => {
+        const haystack = `${epic.title} ${epic.owner} ${epic.objective} ${item.title} ${item.owner} ${item.metric}`.toLowerCase();
+        return (!query || haystack.includes(query))
+          && (!status || item.status === status)
+          && (!priority || item.priority === priority)
+          && (!owner || item.owner === owner || epic.owner === owner);
+      });
+      const epicMatches = query && `${epic.title} ${epic.owner} ${epic.objective}`.toLowerCase().includes(query);
+      return { ...epic, features: epicMatches && !status && !priority && !owner ? epic.features : features };
+    }).filter((epic) => epic.features.length || (!query && !status && !priority && !owner));
+  }
+
+  function stackFeatures(features) {
+    const sorted = [...features].sort((a, b) => monthIndex(a.start) - monthIndex(b.start) || monthIndex(a.end) - monthIndex(b.end));
+    const levels = [];
+    return sorted.map((item) => {
+      const start = Math.max(0, monthIndex(item.start));
+      const end = Math.max(start, monthIndex(item.end));
+      let level = levels.findIndex((lastEnd) => lastEnd < start);
+      if (level === -1) {
+        level = levels.length;
+        levels.push(end);
+      } else {
+        levels[level] = end;
+      }
+      return { item, level, start, end };
+    });
+  }
+
+  function render() {
+    els.productName.value = state.settings.name;
+    els.startMonth.value = state.settings.start;
+    els.monthCount.value = String(state.settings.months);
+    document.documentElement.style.setProperty('--months', state.settings.months);
+    const monthWidth = state.settings.zoom === 'compact' ? '92px' : state.settings.zoom === 'wide' ? '140px' : '112px';
+    document.documentElement.style.setProperty('--month-width', monthWidth);
+    Array.from(els.zoomControl.querySelectorAll('button')).forEach((button) => {
+      button.classList.toggle('active', button.dataset.zoom === state.settings.zoom);
+    });
+    renderFilters();
+    renderKpis();
+    renderLegend();
+    renderRoadmap();
+    updateSaveStatus();
+  }
+
+  function renderFilters() {
+    const current = { status: els.statusFilter.value, priority: els.priorityFilter.value, owner: els.ownerFilter.value };
+    els.statusFilter.innerHTML = `<option value="">Tous les statuts</option>${STATUSES.map((s) => `<option value="${s.id}">${s.label}</option>`).join('')}`;
+    els.priorityFilter.innerHTML = `<option value="">Toutes priorites</option>${PRIORITIES.map((p) => `<option value="${p}">${p}</option>`).join('')}`;
+    const owners = [...new Set([
+      ...state.epics.map((epic) => epic.owner).filter(Boolean),
+      ...allFeatures().map((item) => item.owner).filter(Boolean)
+    ])].sort();
+    els.ownerFilter.innerHTML = `<option value="">Tous owners</option>${owners.map((owner) => `<option value="${escapeHtml(owner)}">${escapeHtml(owner)}</option>`).join('')}`;
+    els.statusFilter.value = current.status;
+    els.priorityFilter.value = current.priority;
+    els.ownerFilter.value = current.owner;
+  }
+
+  function renderKpis() {
+    const features = allFeatures();
+    const committed = features.filter((item) => ['ready', 'build', 'launch'].includes(item.status)).length;
+    const launches = features.filter((item) => item.status === 'launch').length;
+    const avgConfidence = features.length ? Math.round(features.reduce((sum, item) => sum + Number(item.confidence || 0), 0) / features.length) : 0;
+    const avgScore = features.length ? Math.round(features.reduce((sum, item) => sum + Number(item.score || 0), 0) / features.length) : 0;
+    els.kpis.innerHTML = [
+      ['Epics', state.epics.length],
+      ['Features', features.length],
+      ['Engagees', committed],
+      ['Score moy.', avgScore],
+      ['Effort', features.reduce((sum, item) => sum + Number(item.effort || 0), 0)],
+      ['Confiance', `${avgConfidence}%`]
+    ].map(([label, value]) => `<div class="kpi"><span>${label}</span><strong>${value}</strong></div>`).join('');
+  }
+
+  function renderLegend() {
+    const features = allFeatures();
+    els.legend.innerHTML = STATUSES.map((status) => {
+      const count = features.filter((item) => item.status === status.id).length;
+      return `<div class="legend-item"><div class="legend-left"><i class="dot" style="--dot:${status.color}"></i><span>${status.label}</span></div><span class="count-pill">${count}</span></div>`;
+    }).join('');
+  }
+
+  function renderRoadmap() {
+    const months = getMonths();
+    const epics = filteredEpics();
+    if (!epics.length) {
+      els.roadmap.innerHTML = `
+        <div class="empty-state">
+          <div>
+            <h2>Aucune feature</h2>
+            <p>Modifiez les filtres ou creez une nouvelle epic pour continuer.</p>
+            <button class="btn primary" onclick="window.roadmapDesigner.openEpic()">Nouvelle epic</button>
+          </div>
+        </div>`;
+      return;
+    }
+
+    const header = `
+      <div class="timeline-head">
+        <div class="corner">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M3 4h18v2H3V4Zm2 4h14v12H5V8Zm2 2v8h10v-8H7Z"/></svg>
+          ${escapeHtml(state.settings.name)}
+        </div>
+        ${months.map((month) => {
+          const label = monthLabel(month);
+          return `<div class="month ${month === currentMonthValue() ? 'current' : ''}"><strong>${label.month}</strong><span>${label.year}</span></div>`;
+        }).join('')}
+      </div>`;
+
+    els.roadmap.innerHTML = header + epics.map((epic) => renderEpicRow(epic, months)).join('');
+    bindRoadmapEvents();
+  }
+
+  function renderEpicRow(epic, months) {
+    const stacked = stackFeatures(epic.features);
+    const rows = Math.max(1, stacked.reduce((max, entry) => Math.max(max, entry.level + 1), 1));
+    const monthCells = months.map((month, index) => `
+      <div class="month-cell ${month === currentMonthValue() ? 'current' : ''}" data-epic-id="${epic.id}" data-month="${month}" style="grid-column:${index + 2};grid-row:1 / span ${rows};"></div>
+    `).join('');
+    const features = stacked.map(({ item, level, start, end }) => {
+      const meta = statusMeta(item.status);
+      return `
+        <button class="feature" draggable="true" data-feature-id="${item.id}" data-epic-id="${epic.id}"
+          style="grid-column:${start + 2} / ${end + 3};grid-row:${level + 1};--feature-color:${meta.color};"
+          title="${escapeHtml(item.title)}">
+          <span class="resize-handle left" data-resize-side="left" title="Reduire ou etendre par la gauche"></span>
+          <span class="feature-main">
+            <span class="feature-title">${escapeHtml(item.title)}</span>
+            <span class="feature-meta">${escapeHtml(item.owner || epic.owner || 'Owner')} - Score ${Number(item.score || 0)} - ${escapeHtml(item.metric || meta.label)}</span>
+          </span>
+          <span class="feature-chip">${escapeHtml(item.priority)} / ${Number(item.score || 0)}</span>
+          <span class="resize-handle right" data-resize-side="right" title="Reduire ou etendre par la droite"></span>
+        </button>`;
+    }).join('');
+    return `
+      <div class="epic-row" style="--rows:${rows};">
+        <div class="epic-info">
+          <div class="epic-top">
+            <div>
+              <h3 class="epic-title">${escapeHtml(epic.title)}</h3>
+              <div class="epic-owner">${escapeHtml(epic.owner || 'Owner')}</div>
+            </div>
+            <div class="epic-actions">
+              <button class="mini-btn" data-action="add-feature" data-epic-id="${epic.id}" title="Ajouter feature">
+                <svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z"/></svg>
+              </button>
+              <button class="mini-btn" data-action="edit-epic" data-epic-id="${epic.id}" title="Editer epic">
+                <svg viewBox="0 0 24 24"><path d="M4 17.2V20h2.8L17.1 9.7l-2.8-2.8L4 17.2ZM18.4 8.4l1.2-1.2a1 1 0 0 0 0-1.4l-1.4-1.4a1 1 0 0 0-1.4 0l-1.2 1.2 2.8 2.8Z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="epic-objective">${escapeHtml(epic.objective || '')}</div>
+        </div>
+        ${monthCells}
+        ${features}
+      </div>`;
+  }
+
+  function bindRoadmapEvents() {
+    document.querySelectorAll('[data-action="edit-epic"]').forEach((button) => button.addEventListener('click', () => openEpicModal(button.dataset.epicId)));
+    document.querySelectorAll('[data-action="add-feature"]').forEach((button) => button.addEventListener('click', () => openFeatureModal(button.dataset.epicId)));
+    document.querySelectorAll('.feature').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        if (Date.now() < suppressFeatureClickUntil || event.target.closest('.resize-handle')) return;
+        openFeatureModal(button.dataset.epicId, button.dataset.featureId);
+      });
+      button.addEventListener('dragstart', (event) => {
+        if (resizing) {
+          event.preventDefault();
+          return;
+        }
+        dragged = { epicId: button.dataset.epicId, featureId: button.dataset.featureId };
+        event.dataTransfer.effectAllowed = 'move';
+      });
+      button.addEventListener('dragend', () => {
+        dragged = null;
+        document.querySelectorAll('.drop-target').forEach((node) => node.classList.remove('drop-target'));
+      });
+    });
+    document.querySelectorAll('.resize-handle').forEach((handle) => {
+      handle.addEventListener('pointerdown', startResize);
+    });
+    document.querySelectorAll('.month-cell').forEach((cell) => {
+      cell.addEventListener('dragover', (event) => {
+        if (!dragged) return;
+        event.preventDefault();
+        cell.classList.add('drop-target');
+      });
+      cell.addEventListener('dragleave', () => cell.classList.remove('drop-target'));
+      cell.addEventListener('drop', (event) => {
+        event.preventDefault();
+        cell.classList.remove('drop-target');
+        moveFeature(dragged, cell.dataset.epicId, cell.dataset.month);
+      });
+    });
+  }
+
+  function getFeatureRef(epicId, featureId) {
+    const epic = state.epics.find((item) => item.id === epicId);
+    if (!epic) return null;
+    const item = epic.features.find((featureItem) => featureItem.id === featureId);
+    return item ? { epic, item } : null;
+  }
+
+  function monthFromPointer(clientX) {
+    const monthNodes = Array.from(document.querySelectorAll('.timeline-head .month'));
+    if (!monthNodes.length) return null;
+    const rects = monthNodes.map((node, index) => ({ index, rect: node.getBoundingClientRect() }));
+    const hit = rects.find(({ rect }) => clientX >= rect.left && clientX <= rect.right);
+    if (hit) return getMonths()[hit.index];
+    if (clientX < rects[0].rect.left) return getMonths()[0];
+    return getMonths()[rects.length - 1];
+  }
+
+  function startResize(event) {
+    const featureNode = event.target.closest('.feature');
+    if (!featureNode) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const ref = getFeatureRef(featureNode.dataset.epicId, featureNode.dataset.featureId);
+    if (!ref) return;
+    resizing = {
+      side: event.target.dataset.resizeSide,
+      epicId: featureNode.dataset.epicId,
+      featureId: featureNode.dataset.featureId,
+      lastMonth: null
+    };
+    dragged = null;
+    suppressFeatureClickUntil = Date.now() + 600;
+    featureNode.classList.add('resizing');
+    document.body.style.userSelect = 'none';
+    window.addEventListener('pointermove', updateResize);
+    window.addEventListener('pointerup', stopResize, { once: true });
+    window.addEventListener('pointercancel', stopResize, { once: true });
+  }
+
+  function updateResize(event) {
+    if (!resizing) return;
+    const month = monthFromPointer(event.clientX);
+    if (!month || month === resizing.lastMonth) return;
+    const ref = getFeatureRef(resizing.epicId, resizing.featureId);
+    if (!ref) return;
+    const currentStart = monthIndex(ref.item.start);
+    const currentEnd = monthIndex(ref.item.end);
+    const targetIndex = monthIndex(month);
+    if (resizing.side === 'left') {
+      ref.item.start = getMonths()[Math.min(targetIndex, currentEnd)];
+    } else {
+      ref.item.end = getMonths()[Math.max(targetIndex, currentStart)];
+    }
+    resizing.lastMonth = month;
+    renderRoadmap();
+  }
+
+  function stopResize() {
+    if (!resizing) return;
+    document.body.style.userSelect = '';
+    resizing = null;
+    suppressFeatureClickUntil = Date.now() + 350;
+    window.removeEventListener('pointermove', updateResize);
+    window.removeEventListener('pointercancel', stopResize);
+    saveState('Feature redimensionnee');
+    render();
+  }
+
+  function moveFeature(payload, targetEpicId, targetStart) {
+    if (!payload) return;
+    const sourceEpic = state.epics.find((epic) => epic.id === payload.epicId);
+    const targetEpic = state.epics.find((epic) => epic.id === targetEpicId);
+    if (!sourceEpic || !targetEpic) return;
+    const index = sourceEpic.features.findIndex((item) => item.id === payload.featureId);
+    if (index < 0) return;
+    const [item] = sourceEpic.features.splice(index, 1);
+    const duration = Math.max(0, monthIndex(item.end) - monthIndex(item.start));
+    item.start = targetStart;
+    item.end = addMonths(targetStart, duration);
+    clampFeature(item);
+    targetEpic.features.push(item);
+    saveState('Feature deplacee');
+    render();
+  }
+
+  function openEpicModal(epicId) {
+    const epic = state.epics.find((item) => item.id === epicId) || { title: '', owner: '', objective: '', color: COLORS[state.epics.length % COLORS.length] };
+    modal = { type: 'epic', epicId: epicId || null, featureId: null };
+    els.modalTitle.textContent = epicId ? 'Epic' : 'Nouvelle epic';
+    els.deleteModal.style.visibility = epicId ? 'visible' : 'hidden';
+    els.modalBody.innerHTML = `
+      <div class="form-grid">
+        <div class="field span-2"><label for="modal-epic-title">Titre</label><input id="modal-epic-title" name="title" required value="${escapeHtml(epic.title)}"></div>
+        <div class="field"><label for="modal-epic-owner">Owner</label><input id="modal-epic-owner" name="owner" value="${escapeHtml(epic.owner)}"></div>
+        <div class="field"><label for="modal-epic-color">Couleur</label><input id="modal-epic-color" name="color" type="color" value="${escapeHtml(epic.color)}"></div>
+        <div class="field span-2"><label for="modal-epic-objective">Outcome</label><textarea id="modal-epic-objective" name="objective">${escapeHtml(epic.objective)}</textarea></div>
+      </div>`;
+    els.modalOverlay.classList.add('open');
+    $('#modal-epic-title').focus();
+  }
+
+  function openFeatureModal(epicId, featureId) {
+    const epic = state.epics.find((item) => item.id === epicId) || state.epics[0];
+    if (!epic) return openEpicModal();
+    const item = epic.features.find((featureItem) => featureItem.id === featureId) || {
+      title: '',
+      status: 'discovery',
+      priority: 'P2',
+      start: state.settings.start,
+      end: state.settings.start,
+      owner: epic.owner,
+      confidence: 60,
+      effort: 10,
+      score: 50,
+      metric: '',
+      notes: ''
+    };
+    modal = { type: 'feature', epicId: epic.id, featureId: featureId || null };
+    els.modalTitle.textContent = featureId ? 'Feature' : 'Nouvelle feature';
+    els.deleteModal.style.visibility = featureId ? 'visible' : 'hidden';
+    const months = getMonths();
+    els.modalBody.innerHTML = `
+      <div class="form-grid">
+        <div class="field span-2"><label for="modal-feature-title">Titre</label><input id="modal-feature-title" name="title" required value="${escapeHtml(item.title)}"></div>
+        <div class="field"><label for="modal-feature-epic">Epic</label><select id="modal-feature-epic" name="epicId">${state.epics.map((epicItem) => `<option value="${epicItem.id}" ${epicItem.id === epic.id ? 'selected' : ''}>${escapeHtml(epicItem.title)}</option>`).join('')}</select></div>
+        <div class="field"><label for="modal-feature-owner">Owner</label><input id="modal-feature-owner" name="owner" value="${escapeHtml(item.owner)}"></div>
+        <div class="field"><label for="modal-feature-status">Statut</label><select id="modal-feature-status" name="status">${STATUSES.map((status) => `<option value="${status.id}" ${status.id === item.status ? 'selected' : ''}>${status.label}</option>`).join('')}</select></div>
+        <div class="field"><label for="modal-feature-priority">Priorite</label><select id="modal-feature-priority" name="priority">${PRIORITIES.map((priority) => `<option value="${priority}" ${priority === item.priority ? 'selected' : ''}>${priority}</option>`).join('')}</select></div>
+        <div class="field"><label for="modal-feature-start">Debut</label><select id="modal-feature-start" name="start">${months.map((month) => `<option value="${month}" ${month === item.start ? 'selected' : ''}>${month}</option>`).join('')}</select></div>
+        <div class="field"><label for="modal-feature-end">Fin</label><select id="modal-feature-end" name="end">${months.map((month) => `<option value="${month}" ${month === item.end ? 'selected' : ''}>${month}</option>`).join('')}</select></div>
+        <div class="field"><label for="modal-feature-confidence">Confiance</label><input id="modal-feature-confidence" name="confidence" type="number" min="0" max="100" value="${Number(item.confidence || 0)}"></div>
+        <div class="field"><label for="modal-feature-effort">Effort</label><input id="modal-feature-effort" name="effort" type="number" min="0" max="999" value="${Number(item.effort || 0)}"></div>
+        <div class="field"><label for="modal-feature-score">Score</label><input id="modal-feature-score" name="score" type="number" min="0" max="100" value="${Number(item.score || 0)}"></div>
+        <div class="field span-2"><label for="modal-feature-metric">Mesure</label><input id="modal-feature-metric" name="metric" value="${escapeHtml(item.metric)}"></div>
+        <div class="field span-2"><label for="modal-feature-notes">Notes</label><textarea id="modal-feature-notes" name="notes">${escapeHtml(item.notes)}</textarea></div>
+      </div>`;
+    els.modalOverlay.classList.add('open');
+    $('#modal-feature-title').focus();
+  }
+
+  function closeModal() {
+    els.modalOverlay.classList.remove('open');
+    modal = { type: null, epicId: null, featureId: null };
+  }
+
+  function saveModal(event) {
+    event.preventDefault();
+    const data = Object.fromEntries(new FormData(els.modalForm).entries());
+    if (modal.type === 'epic') {
+      if (modal.epicId) {
+        const epic = state.epics.find((item) => item.id === modal.epicId);
+        Object.assign(epic, data);
+      } else {
+        state.epics.push({ id: uid('epic'), title: data.title, owner: data.owner, objective: data.objective, color: data.color, features: [] });
+      }
+      saveState('Epic sauvegardee');
+    }
+    if (modal.type === 'feature') {
+      const sourceEpic = state.epics.find((item) => item.id === modal.epicId);
+      const targetEpic = state.epics.find((item) => item.id === data.epicId);
+      let item = modal.featureId ? sourceEpic.features.find((featureItem) => featureItem.id === modal.featureId) : null;
+      if (!item) item = { id: uid('feature') };
+      Object.assign(item, {
+        title: data.title,
+        status: data.status,
+        priority: data.priority,
+        start: data.start,
+        end: data.end,
+        owner: data.owner,
+        confidence: Number(data.confidence || 0),
+        effort: Number(data.effort || 0),
+        score: Number(data.score || 0),
+        metric: data.metric,
+        notes: data.notes
+      });
+      clampFeature(item);
+      if (!modal.featureId) targetEpic.features.push(item);
+      if (modal.featureId && sourceEpic.id !== targetEpic.id) {
+        sourceEpic.features = sourceEpic.features.filter((featureItem) => featureItem.id !== modal.featureId);
+        targetEpic.features.push(item);
+      }
+      saveState('Feature sauvegardee');
+    }
+    closeModal();
+    render();
+  }
+
+  function deleteModalItem() {
+    if (modal.type === 'epic' && modal.epicId) {
+      const epic = state.epics.find((item) => item.id === modal.epicId);
+      if (!confirm(`Supprimer "${epic.title}" et ses features ?`)) return;
+      state.epics = state.epics.filter((item) => item.id !== modal.epicId);
+      saveState('Epic supprimee');
+    }
+    if (modal.type === 'feature' && modal.featureId) {
+      const epic = state.epics.find((item) => item.id === modal.epicId);
+      epic.features = epic.features.filter((item) => item.id !== modal.featureId);
+      saveState('Feature supprimee');
+    }
+    closeModal();
+    render();
+  }
+
+  function exportJson() {
+    const payload = JSON.stringify(state, null, 2);
+    const blob = new Blob([payload], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `roadmap-${state.settings.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'designer'}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    showToast('Export JSON pret');
+  }
+
+  function importJson(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        state = normalizeState(JSON.parse(reader.result));
+        saveState('Import JSON termine');
+        render();
+      } catch (error) {
+        console.warn(error);
+        showToast('Import impossible: JSON invalide');
+      } finally {
+        els.importInput.value = '';
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function resetData() {
+    if (!confirm('Reinitialiser la roadmap locale ?')) return;
+    state = createDemoState();
+    saveState('Roadmap reinitialisee');
+    render();
+  }
+
+  function bindEvents() {
+    $('#new-epic-btn').addEventListener('click', () => openEpicModal());
+    $('#new-feature-btn').addEventListener('click', () => openFeatureModal(state.epics[0]?.id));
+    $('#export-btn').addEventListener('click', exportJson);
+    $('#reset-btn').addEventListener('click', resetData);
+    $('#demo-btn').addEventListener('click', resetData);
+    $('#close-modal').addEventListener('click', closeModal);
+    $('#cancel-modal-btn').addEventListener('click', closeModal);
+    els.modalOverlay.addEventListener('click', (event) => { if (event.target === els.modalOverlay) closeModal(); });
+    els.modalForm.addEventListener('submit', saveModal);
+    els.deleteModal.addEventListener('click', deleteModalItem);
+    els.importInput.addEventListener('change', (event) => importJson(event.target.files[0]));
+
+    els.productName.addEventListener('change', () => {
+      state.settings.name = els.productName.value.trim() || 'Roadmap';
+      saveState();
+      render();
+    });
+    els.startMonth.addEventListener('change', () => {
+      state.settings.start = els.startMonth.value || currentMonthValue();
+      state.epics.forEach((epic) => epic.features.forEach(clampFeature));
+      saveState();
+      render();
+    });
+    els.monthCount.addEventListener('change', () => {
+      state.settings.months = Number(els.monthCount.value);
+      state.epics.forEach((epic) => epic.features.forEach(clampFeature));
+      saveState();
+      render();
+    });
+    els.zoomControl.addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-zoom]');
+      if (!button) return;
+      state.settings.zoom = button.dataset.zoom;
+      saveState();
+      render();
+    });
+    [els.search, els.statusFilter, els.priorityFilter, els.ownerFilter].forEach((input) => input.addEventListener('input', render));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && els.modalOverlay.classList.contains('open')) closeModal();
+    });
+  }
+
+  window.roadmapDesigner = {
+    openEpic: () => openEpicModal(),
+    openFeature: (epicId) => openFeatureModal(epicId)
+  };
+
+  bindEvents();
+  render();
+})();
+</script>
+</body>
+</html>

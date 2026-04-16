@@ -47,6 +47,7 @@ Activation a faire une seule fois dans GitHub:
 |-----|-------------|
 | `prioritization-calculator.html` | Priorisation multi-frameworks (RICE, WSJF, ICE, MoSCoW, Value/Effort), criteres, ponderation, export |
 | `story-splitter.html` | Decoupage guide d'une feature en user stories : workflow, front/back, CSV, regles metier, edge cases |
+| `roadmap-designer.html` | Designer de roadmap epic/feature multi-mois avec sauvegarde locale, filtres, drag/drop, import/export JSON |
 | `planning-poker.html` | Vote d'estimation (Fibonacci/T-shirt), revelation, consensus |
 | `pi-planning-simulator.html` | Simulation de PI Planning par sprint : capacite, points, must/should, dependances, IP sprint, export CSV |
 | `daily-standup-timer.html` | Timer avec chrono par personne, shuffle, recap |
