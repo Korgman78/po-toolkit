@@ -62,6 +62,9 @@
   #app-timer { display: none; text-align: center; }
   #app-summary { display: none; }
 </style>
+<script src="https://cdn.ably.com/lib/ably.min-2.js"></script>
+<script src="ably-config.js"></script>
+<script src="ably-sync.js"></script>
 </head>
 <body>
 <h1>Daily Standup Timer</h1>
@@ -72,7 +75,7 @@
   <label>Session :</label>
   <input type="text" id="session-id" value="" placeholder="session-id" onchange="changeSession(this.value)">
   <button onclick="newSession()">Nouvelle</button>
-  <button onclick="copySessionLink()">Copier le lien</button>
+  <button onclick="copySessionLink(this)">Copier le lien</button>
 </div>
 
 
@@ -180,22 +183,24 @@ function newSession() {
   changeSession(generateSessionId());
 }
 
-function copySessionLink() {
+function copySessionLink(btn) {
   const id = document.getElementById('session-id').value;
   const url = new URL(window.location);
   url.searchParams.set('session', id);
   navigator.clipboard.writeText(url.toString()).then(() => {
-    const btn = event.target;
     btn.textContent = 'Copié !';
     setTimeout(() => btn.textContent = 'Copier le lien', 2000);
   });
 }
 
+let _ablyReceiving = false;
 function saveSession() {
   const id = document.getElementById('session-id').value;
   const key = APP_KEY + '-session-' + id;
-  localStorage.setItem(key, JSON.stringify(getSessionData()));
+  const data = getSessionData();
+  localStorage.setItem(key, JSON.stringify(data));
   localStorage.setItem(APP_KEY + '-last-session', id);
+  if (!_ablyReceiving && window.ablySync) ablySync.broadcast(data);
 }
 
 function loadSession() {
@@ -369,8 +374,38 @@ function resetApp() {
   renderMembers();
 }
 
+// ---- Sync (cross-tab + Ably real-time) ----
+function mergeIncoming(incoming) {
+  if (running) return; // Don't disrupt an active standup
+  restoreSessionData(incoming);
+}
+
+window.addEventListener('storage', (event) => {
+  const id = document.getElementById('session-id').value;
+  if (event.key !== APP_KEY + '-session-' + id || !event.newValue) return;
+  try {
+    _ablyReceiving = true;
+    mergeIncoming(JSON.parse(event.newValue));
+    _ablyReceiving = false;
+  } catch(e) { _ablyReceiving = false; }
+});
+
+// Ably real-time (cross-device)
+function joinAblyChannel() {
+  if (!window.ablySync) return;
+  const id = document.getElementById('session-id').value;
+  ablySync.join('standup:' + id, (data) => {
+    try {
+      _ablyReceiving = true;
+      mergeIncoming(data);
+      _ablyReceiving = false;
+    } catch(e) { _ablyReceiving = false; }
+  });
+}
+
 // Init
 initSession();
+joinAblyChannel();
 </script>
 </body>
 </html>

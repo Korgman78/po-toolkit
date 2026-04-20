@@ -29,11 +29,18 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Build static bundle
+        env:
+          ABLY_TOKEN: ${{ secrets.ABLY_TOKEN }}
         run: |
           mkdir -p dist
           cp index.html dist/index.html
           cp -r site dist/site
           cp -r accelerators dist/accelerators
+          if [ -n "$ABLY_TOKEN" ]; then
+            echo "window.ABLY_TOKEN = '$ABLY_TOKEN';" > dist/accelerators/html/ably-config.js
+          else
+            echo "// No ABLY_TOKEN secret configured" > dist/accelerators/html/ably-config.js
+          fi
           touch dist/.nojekyll
 
       - name: Upload artifact

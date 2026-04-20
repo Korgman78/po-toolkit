@@ -325,6 +325,8 @@
             <button class="btn-secondary" id="zoom-in-btn" title="Zoom +">+</button>
           </div>
           <button class="btn-secondary" id="connect-btn">Annuler la liaison</button>
+          <button class="btn-secondary" id="export-png-btn">Export PNG</button>
+          <button class="btn-secondary" id="export-svg-btn">Export SVG</button>
           <button class="btn-secondary" id="seed-btn">Exemple</button>
           <button class="btn-danger" id="clear-btn">Vider le canvas</button>
         </div>
@@ -1291,6 +1293,8 @@ function bindEvents() {
   document.getElementById('import-btn').addEventListener('click', () => document.getElementById('import-file').click());
   document.getElementById('import-file').addEventListener('change', event => importSession(event.target.files[0]));
   document.getElementById('connect-btn').addEventListener('click', toggleConnectMode);
+  document.getElementById('export-png-btn').addEventListener('click', exportAsPng);
+  document.getElementById('export-svg-btn').addEventListener('click', exportAsSvg);
   document.getElementById('seed-btn').addEventListener('click', seedExample);
   document.getElementById('clear-btn').addEventListener('click', clearCanvas);
   document.getElementById('pseudo-input').addEventListener('change', event => changePseudo(event.target.value));
@@ -1435,6 +1439,156 @@ function escapeHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+
+function buildExportSvg() {
+  if (state.nodes.length === 0) return null;
+  const PAD = 40;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  state.nodes.forEach(n => {
+    const box = getNodeBox(n);
+    minX = Math.min(minX, box.x);
+    minY = Math.min(minY, box.y);
+    maxX = Math.max(maxX, box.x + box.width);
+    maxY = Math.max(maxY, box.y + box.height);
+  });
+  const w = maxX - minX + PAD * 2;
+  const h = maxY - minY + PAD * 2;
+  const ox = -minX + PAD;
+  const oy = -minY + PAD;
+
+  const CAT_COLORS = {
+    fronts: '#6366f1', edge_access: '#ef4444', services: '#22c55e',
+    integration: '#f59e0b', data: '#06b6d4', platform: '#8b5cf6',
+    external: '#64748b', custom: '#64748b'
+  };
+
+  let defs = LINK_TYPES.map(lt => `
+    <marker id="exp-arrow-${lt.id}" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="${lt.color}"/>
+    </marker>`).join('');
+
+  let linksMarkup = state.links.map(link => {
+    const geo = getLinkGeometry(link);
+    if (!geo) return '';
+    const lt = getLinkType(link.type);
+    const shifted = geo.path.replace(/(\d+\.?\d*)/g, (m, num, offset) => {
+      const before = geo.path.substring(0, offset);
+      const mCount = (before.match(/[ML]/g) || []).length;
+      const coords = geo.path.match(/\d+\.?\d*/g);
+      const idx = coords.indexOf(num, 0);
+      return idx % 2 === 0 ? String(parseFloat(num) + ox) : String(parseFloat(num) + oy);
+    });
+    // Rebuild path with offset
+    const src = getNode(link.from), tgt = getNode(link.to);
+    if (!src || !tgt) return '';
+    const { fromSide, toSide } = pickSides(src, tgt);
+    const hasReverse = state.links.some(l => l.from === link.to && l.to === link.from);
+    const SHIFT = 12;
+    const sign = link.from < link.to ? -1 : 1;
+    const shift = hasReverse ? sign * SHIFT : 0;
+    const from = getSideAnchor(src, fromSide, shift);
+    const to = getSideAnchor(tgt, toSide, shift);
+    const path = `M ${from.x + ox} ${from.y + oy} L ${to.x + ox} ${to.y + oy}`;
+    const markerStart = link.bidirectional ? `marker-start="url(#exp-arrow-${link.type})"` : '';
+    const labelOffset = hasReverse ? sign * 18 : -14;
+    const lx = (from.x + to.x) / 2 + ox;
+    const ly = (from.y + to.y) / 2 + oy + labelOffset;
+    let labelSvg = '';
+    if (link.type !== 'none') {
+      labelSvg = `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="${lt.color}" font-family="Segoe UI, system-ui, sans-serif">${lt.label}</text>`;
+    }
+    return `<path d="${path}" stroke="${lt.color}" stroke-width="${lt.width}" stroke-dasharray="${lt.dash}" fill="none" ${markerStart} marker-end="url(#exp-arrow-${link.type})"/>` + labelSvg;
+  }).join('\n');
+
+  let nodesMarkup = state.nodes.map(n => {
+    const template = getTemplate(n.type);
+    const box = getNodeBox(n);
+    const x = n.x + ox, y = n.y + oy;
+    const bw = box.width, bh = box.height;
+    const cat = template?.category || 'custom';
+    const accent = n.type === 'custom_block' ? (n.customColor || '#64748b') : (CAT_COLORS[cat] || '#64748b');
+    const bgFill = accent + '18';
+    const typeText = n.type === 'custom_block' ? (n.typeLabel || 'Bloc custom') : template.name;
+    const footerText = n.type === 'custom_block' ? (n.footerLabel || 'Custom') : (CATEGORY_LABELS[cat] || 'Custom');
+
+    return `<g>
+      <rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="18" fill="#101521" stroke="${accent}" stroke-opacity="0.55" stroke-width="1"/>
+      <rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="18" fill="${bgFill}"/>
+      <text x="${x + 14}" y="${y + 22}" font-size="10" font-weight="800" fill="${accent}" text-transform="uppercase" letter-spacing="0.08em" font-family="Segoe UI, system-ui, sans-serif">${escapeHtml(typeText)}</text>
+      <text x="${x + 14}" y="${y + 42}" font-size="14" font-weight="800" fill="#f8fafc" font-family="Segoe UI, system-ui, sans-serif">${escapeHtml(n.label)}</text>
+      <text x="${x + 14}" y="${y + 60}" font-size="10" fill="#8a90ab" font-family="Segoe UI, system-ui, sans-serif">${escapeHtml(n.subtitle || '')}</text>
+      <rect x="${x + bw - 14 - footerText.length * 5.5}" y="${y + bh - 24}" width="${footerText.length * 5.5 + 12}" height="18" rx="9" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+      <text x="${x + bw - 8}" y="${y + bh - 12}" text-anchor="end" font-size="9" fill="#8a90ab" font-family="Segoe UI, system-ui, sans-serif">${escapeHtml(footerText)}</text>
+    </g>`;
+  }).join('\n');
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+  <rect width="${w}" height="${h}" fill="#101521" rx="20"/>
+  <defs>${defs}</defs>
+  ${linksMarkup}
+  ${nodesMarkup}
+</svg>`;
+}
+
+function exportAsSvg() {
+  const svg = buildExportSvg();
+  if (!svg) return alert('Aucun module sur le canvas.');
+  const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${state.sessionId}-schema.svg`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
+}
+
+function exportAsPng() {
+  const svg = buildExportSvg();
+  if (!svg) return alert('Aucun module sur le canvas.');
+  const scale = 2; // retina
+  const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth * scale;
+    canvas.height = img.naturalHeight * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(scale, scale);
+    ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(url);
+    canvas.toBlob(pngBlob => {
+      const pngUrl = URL.createObjectURL(pngBlob);
+      const a = document.createElement('a');
+      a.href = pngUrl;
+      a.download = `${state.sessionId}-schema.png`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(pngUrl); a.remove(); }, 0);
+    }, 'image/png');
+  };
+  img.src = url;
+}
+
+// ---- Cross-tab sync ----
+window.addEventListener('storage', (event) => {
+  const expectedKey = getStorageKey();
+  if (event.key !== expectedKey || !event.newValue) return;
+  try {
+    const parsed = JSON.parse(event.newValue);
+    state.nodes = Array.isArray(parsed.nodes) ? parsed.nodes.map(normalizeNode) : [];
+    state.links = Array.isArray(parsed.links) ? parsed.links.map(normalizeLink) : [];
+    state.nextNodeId = Number.isFinite(parsed.nextNodeId) ? parsed.nextNodeId : 1;
+    if (state.selectedNodeId && !state.nodes.find(n => n.id === state.selectedNodeId)) {
+      state.selectedNodeId = state.nodes[0]?.id || null;
+    }
+    if (state.selectedLinkId && !state.links.find(l => l.id === state.selectedLinkId)) {
+      state.selectedLinkId = null;
+    }
+    renderAll();
+  } catch(e) {}
+});
 
 function init() {
   bindEvents();

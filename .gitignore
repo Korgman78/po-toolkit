@@ -1,6 +1,8 @@
 .claude/
 .tmp/
 *.tmp.js
+.env
+accelerators/html/ably-config.js
 
 # OS / editor noise
 Thumbs.db

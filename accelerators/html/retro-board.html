@@ -203,6 +203,9 @@
     .sf-center, .sf-line { display: none; }
   }
 </style>
+<script src="https://cdn.ably.com/lib/ably.min-2.js"></script>
+<script src="ably-config.js"></script>
+<script src="ably-sync.js"></script>
 </head>
 <body>
 
@@ -242,7 +245,7 @@
     <label>Session :</label>
     <input type="text" id="session-id" value="" placeholder="ID" onchange="changeSession(this.value)">
     <button onclick="newSession()">Nouvelle</button>
-    <button onclick="copySessionLink()">Copier le lien</button>
+    <button onclick="copySessionLink(this)">Copier le lien</button>
   </div>
   <div class="bar pseudo-bar">
     <div class="avatar" id="my-avatar" style="background:var(--blue)">?</div>
@@ -277,7 +280,7 @@
     <h2>Export Rétrospective</h2>
     <pre id="export-text"></pre>
     <div class="export-actions">
-      <button class="btn-primary" onclick="copyExport()">Copier</button>
+      <button class="btn-primary" onclick="copyExport(this)">Copier</button>
       <button class="btn-secondary" onclick="closeExport()">Fermer</button>
     </div>
   </div>
@@ -760,10 +763,10 @@ function exportRetro() {
   document.getElementById('export-text').textContent = text;
   document.getElementById('export-modal').classList.add('open');
 }
-function copyExport() {
+function copyExport(btn) {
   navigator.clipboard.writeText(document.getElementById('export-text').textContent).then(() => {
-    event.target.textContent = 'Copié !';
-    setTimeout(() => event.target.textContent = 'Copier', 2000);
+    btn.textContent = 'Copié !';
+    setTimeout(() => btn.textContent = 'Copier', 2000);
   });
 }
 function closeExport() { document.getElementById('export-modal').classList.remove('open'); }
@@ -785,20 +788,21 @@ function changeSession(v) {
   load();
 }
 function newSession() { changeSession(genId()); }
-function copySessionLink() {
+function copySessionLink(btn) {
   const u = new URL(window.location);
   u.searchParams.set('session', document.getElementById('session-id').value);
   navigator.clipboard.writeText(u.toString()).then(() => {
-    event.target.textContent = 'Copié !';
-    setTimeout(() => event.target.textContent = 'Copier le lien', 2000);
+    btn.textContent = 'Copié !';
+    setTimeout(() => btn.textContent = 'Copier le lien', 2000);
   });
 }
+let _ablyReceiving = false;
 function save() {
   const id = document.getElementById('session-id').value;
-  localStorage.setItem(APP_KEY+'-session-'+id, JSON.stringify({
-    tpl: currentTpl, columns, sprint: document.getElementById('sprint-name').value, anon: isAnon
-  }));
+  const data = { tpl: currentTpl, columns, sprint: document.getElementById('sprint-name').value, anon: isAnon };
+  localStorage.setItem(APP_KEY+'-session-'+id, JSON.stringify(data));
   localStorage.setItem(APP_KEY+'-last-session', id);
+  if (!_ablyReceiving && window.ablySync) ablySync.broadcast(data);
 }
 function load() {
   const id = document.getElementById('session-id').value;
@@ -828,6 +832,62 @@ function initSession() {
   load();
 }
 
+// ---- Sync (cross-tab + Ably real-time) ----
+function mergeIncoming(incoming) {
+  const incomingCols = incoming.columns || {};
+  for (const colKey of Object.keys(incomingCols)) {
+    if (!columns[colKey]) {
+      columns[colKey] = incomingCols[colKey];
+      continue;
+    }
+    const localById = new Map(columns[colKey].cards.map(c => [c.id, c]));
+    const incomingCards = incomingCols[colKey].cards || [];
+    incomingCards.forEach(c => localById.set(c.id, c));
+    columns[colKey].cards = Array.from(localById.values());
+  }
+  for (const colKey of Object.keys(columns)) {
+    if (!incomingCols[colKey]) delete columns[colKey];
+  }
+  if (incoming.tpl && incoming.tpl !== currentTpl) {
+    currentTpl = incoming.tpl;
+    document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('active'));
+    const names = ['classic','4l','starfish','speedboat'];
+    const idx = names.indexOf(currentTpl);
+    if (idx >= 0) document.querySelectorAll('.tbtn')[idx].classList.add('active');
+  }
+  if (incoming.sprint !== undefined) {
+    document.getElementById('sprint-name').value = incoming.sprint;
+  }
+  if (incoming.anon !== undefined) {
+    isAnon = incoming.anon;
+    document.getElementById('anon-cb').checked = isAnon;
+  }
+  render();
+}
+
+window.addEventListener('storage', (event) => {
+  const id = document.getElementById('session-id').value;
+  if (event.key !== APP_KEY + '-session-' + id || !event.newValue) return;
+  try {
+    _ablyReceiving = true;
+    mergeIncoming(JSON.parse(event.newValue));
+    _ablyReceiving = false;
+  } catch(e) { _ablyReceiving = false; }
+});
+
+// Ably real-time (cross-device)
+function joinAblyChannel() {
+  if (!window.ablySync) return;
+  const id = document.getElementById('session-id').value;
+  ablySync.join('retro:' + id, (data) => {
+    try {
+      _ablyReceiving = true;
+      mergeIncoming(data);
+      _ablyReceiving = false;
+    } catch(e) { _ablyReceiving = false; }
+  });
+}
+
 // ---- Init ----
 function init() {
   const saved = localStorage.getItem(APP_KEY+'-pseudo');
@@ -841,6 +901,7 @@ function init() {
     setTimeout(() => document.getElementById('pseudo-input').focus(), 100);
   }
   initSession();
+  joinAblyChannel();
 }
 init();
 </script>
