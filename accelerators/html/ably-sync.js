@@ -1,5 +1,5 @@
 // ably-sync.js — Lightweight real-time sync for PO Toolkit mini-apps
-// Requires: ably-config.js (sets window.ABLY_TOKEN) + Ably SDK from CDN
+// Requires: ably-config.js (sets window.ABLY_KEY) + Ably SDK from CDN
 (function () {
   let ably = null;
   let channel = null;
@@ -9,12 +9,11 @@
 
   function init() {
     if (ably) return;
-    if (!window.ABLY_TOKEN) return;
+    if (!window.ABLY_KEY) return;
     try {
       ably = new Ably.Realtime({
-        token: window.ABLY_TOKEN,
-        clientId: clientId,
-        recover: (_, cb) => cb(true)
+        key: window.ABLY_KEY,
+        clientId: clientId
       });
       ably.connection.on('connected', () => { connected = true; });
       ably.connection.on('disconnected', () => { connected = false; });
