@@ -95,6 +95,8 @@
   .history-item { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
   .history-item .story-name { font-weight: 600; font-size: 0.9rem; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 1rem; }
   .history-item .story-result { font-weight: 800; color: var(--accent); font-size: 1.1rem; }
+  button:disabled, .scale-btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+  textarea[readonly] { opacity: 0.6; cursor: not-allowed; }
 </style>
 <script src="https://cdn.ably.com/lib/ably.min-2.js"></script>
 <script src="ably-config.js"></script>
@@ -191,7 +193,21 @@ let voters = []; // { pseudo, vote, color }
 let myPseudo = '';
 let revealed = false;
 let history = [];
+let sessionOwner = '';
 let _ablyReceiving = false;
+
+function isOwner() { return myPseudo && myPseudo === sessionOwner; }
+
+function applyOwnerLock() {
+  const locked = !isOwner() && sessionOwner;
+  document.querySelectorAll('.scale-btn').forEach(b => b.disabled = locked);
+  document.getElementById('story-text').readOnly = locked;
+  document.getElementById('reveal-btn').disabled = locked;
+  document.querySelectorAll('.controls .btn-secondary').forEach(b => b.disabled = locked);
+  // Keep "Exporter session" enabled for everyone
+  const exportBtn = document.querySelector('.controls button[onclick*="openSessionExport"]');
+  if (exportBtn) exportBtn.disabled = false;
+}
 
 // ---- Pseudo system ----
 function getAvatarLetter(name) {
@@ -304,14 +320,11 @@ function renderVoters() {
     return `
       <div class="voter-row ${isMe ? 'is-me' : ''}">
         <div class="voter-avatar" style="background:${v.color}">${getAvatarLetter(v.pseudo)}</div>
-        <span class="voter-name">${escapeHtml(v.pseudo)}${isMe ? '<span class="me-tag">(vous)</span>' : ''}</span>
+        <span class="voter-name">${escapeHtml(v.pseudo)}${isMe ? '<span class="me-tag">(vous)</span>' : ''}${v.pseudo === sessionOwner ? '<span class="me-tag" style="color:var(--accent)">★</span>' : ''}</span>
         <div class="voter-vote ${revealed && hasVote ? 'revealed' : hasVote ? 'hidden-vote' : ''}">${voteDisplay}</div>
-        ${!isMe ? `<button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.7rem;padding:0.2rem;" onclick="removeVoter(${i})" title="Retirer">✕</button>` : ''}
       </div>
     `;
   }).join('');
-
-  list.innerHTML += `<button class="add-voter" onclick="addVoter()" style="margin-top:0.5rem;">+ Ajouter un participant</button>`;
 }
 
 function escapeHtml(text) {
@@ -589,7 +602,8 @@ function getSessionData() {
     scale: currentScale,
     story: document.getElementById('story-text').value,
     history: history,
-    revealed: revealed
+    revealed: revealed,
+    owner: sessionOwner
   };
 }
 
@@ -608,6 +622,7 @@ function restoreSessionData(data) {
   }));
   history = data.history || [];
   revealed = data.revealed || false;
+  sessionOwner = data.owner || '';
   document.getElementById('story-text').value = data.story || '';
 
   // Make sure I'm in the list
@@ -617,6 +632,7 @@ function restoreSessionData(data) {
 
   renderVoters();
   renderHistory();
+  applyOwnerLock();
 
   if (revealed) {
     revealVotes();
@@ -630,6 +646,7 @@ function resetSessionData() {
   }
   history = [];
   revealed = false;
+  sessionOwner = myPseudo || '';
   currentScale = 'fibonacci';
   renderCards();
   renderVoters();
@@ -693,6 +710,7 @@ function mergeIncoming(incoming) {
   }));
   revealed = incoming.revealed || false;
   history = incoming.history || [];
+  sessionOwner = incoming.owner || sessionOwner;
   document.getElementById('story-text').value = incoming.story || '';
 
   // Detect round reset (all votes null + not revealed)
@@ -722,6 +740,7 @@ function mergeIncoming(incoming) {
 
   renderVoters();
   renderHistory();
+  applyOwnerLock();
   if (revealed) revealVotes();
 
   return needsSave;

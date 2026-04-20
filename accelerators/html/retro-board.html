@@ -202,6 +202,20 @@
     .sf-arm { position: relative !important; width: 100% !important; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important; transform: none !important; }
     .sf-center, .sf-line { display: none; }
   }
+
+  /* Participants */
+  .participants-section { margin-top: 1.5rem; padding: 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
+  .participants-section h3 { font-size: 0.9rem; font-weight: 700; color: var(--muted); margin-bottom: 0.75rem; }
+  .participants-section h3 span { color: var(--blue); }
+  #participants-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .participant { display: flex; align-items: center; gap: 0.4rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.3rem 0.7rem 0.3rem 0.3rem; font-size: 0.82rem; font-weight: 600; }
+  .participant.is-owner { border-color: var(--blue); }
+  .p-avatar { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800; color: white; }
+  .owner-star { color: var(--blue); font-size: 0.75rem; margin-left: 0.1rem; }
+
+  /* Disabled state */
+  button:disabled, .tbtn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+  input[readonly] { opacity: 0.6; cursor: not-allowed; }
 </style>
 <script src="https://cdn.ably.com/lib/ably.min-2.js"></script>
 <script src="ably-config.js"></script>
@@ -275,6 +289,11 @@
 
 <div id="board-container"></div>
 
+<div class="participants-section">
+  <h3>Participants <span id="participants-count"></span></h3>
+  <div id="participants-list"></div>
+</div>
+
 <div class="export-modal" id="export-modal">
   <div class="export-content">
     <h2>Export Rétrospective</h2>
@@ -333,7 +352,38 @@ let currentTpl = 'classic';
 let columns = {};
 let myPseudo = '';
 let isAnon = false;
+let sessionOwner = '';
+let participants = []; // { pseudo, color }
 let sbAddTarget = null; // for speedboat modal
+
+function isOwner() { return myPseudo && myPseudo === sessionOwner; }
+
+function applyOwnerLock() {
+  const locked = !isOwner() && sessionOwner;
+  document.querySelectorAll('.tbtn').forEach(b => b.disabled = locked);
+  document.getElementById('sprint-name').readOnly = locked;
+  document.getElementById('anon-cb').disabled = locked;
+}
+
+function ensureParticipant() {
+  if (myPseudo && !participants.find(p => p.pseudo === myPseudo)) {
+    participants.push({ pseudo: myPseudo, color: getColor(myPseudo) });
+  }
+}
+
+function renderParticipants() {
+  const el = document.getElementById('participants-list');
+  if (!el) return;
+  const countEl = document.getElementById('participants-count');
+  if (countEl) countEl.textContent = `(${participants.length})`;
+  el.innerHTML = participants.map(p =>
+    `<div class="participant ${p.pseudo === sessionOwner ? 'is-owner' : ''}">
+      <div class="p-avatar" style="background:${p.color}">${avatarLetter(p.pseudo)}</div>
+      <span>${esc(p.pseudo)}</span>
+      ${p.pseudo === sessionOwner ? '<span class="owner-star">★</span>' : ''}
+    </div>`
+  ).join('');
+}
 
 // ---- Utils ----
 function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
@@ -799,10 +849,12 @@ function copySessionLink(btn) {
 let _ablyReceiving = false;
 function save() {
   const id = document.getElementById('session-id').value;
-  const data = { tpl: currentTpl, columns, sprint: document.getElementById('sprint-name').value, anon: isAnon };
+  ensureParticipant();
+  const data = { tpl: currentTpl, columns, sprint: document.getElementById('sprint-name').value, anon: isAnon, owner: sessionOwner, participants };
   localStorage.setItem(APP_KEY+'-session-'+id, JSON.stringify(data));
   localStorage.setItem(APP_KEY+'-last-session', id);
   if (!_ablyReceiving && window.ablySync) ablySync.broadcast(data);
+  renderParticipants();
 }
 function load() {
   const id = document.getElementById('session-id').value;
@@ -813,15 +865,26 @@ function load() {
       currentTpl = d.tpl || 'classic';
       columns = d.columns || {};
       isAnon = d.anon || false;
+      sessionOwner = d.owner || '';
+      participants = d.participants || [];
       document.getElementById('anon-cb').checked = isAnon;
       document.getElementById('sprint-name').value = d.sprint || '';
       document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('active'));
       const names = ['classic','4l','starfish','speedboat'];
       const idx = names.indexOf(currentTpl);
       if (idx >= 0) document.querySelectorAll('.tbtn')[idx].classList.add('active');
+      ensureParticipant();
       render();
+      renderParticipants();
+      applyOwnerLock();
     } catch(e) { console.warn(e); setTpl('classic'); }
-  } else { setTpl('classic'); }
+  } else {
+    sessionOwner = myPseudo || '';
+    participants = [];
+    ensureParticipant();
+    setTpl('classic');
+    renderParticipants();
+  }
 }
 function initSession() {
   const id = getSessionId();
@@ -862,7 +925,14 @@ function mergeIncoming(incoming) {
     isAnon = incoming.anon;
     document.getElementById('anon-cb').checked = isAnon;
   }
+  if (incoming.owner) sessionOwner = incoming.owner;
+  if (incoming.participants) {
+    participants = incoming.participants;
+    ensureParticipant();
+  }
   render();
+  renderParticipants();
+  applyOwnerLock();
 }
 
 window.addEventListener('storage', (event) => {
