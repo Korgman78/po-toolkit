@@ -1,5 +1,8 @@
 const TOOL_CATEGORIES = window.PO_TOOLKIT_DATA?.TOOLS_DATA || {};
 const METHOD_CATEGORIES = window.PO_TOOLKIT_DATA?.METHODS_DATA || {};
+const FORMATION_CATEGORIES = window.PO_TOOLKIT_DATA?.FORMATION_DATA || {};
+
+const SCHEMAS_WORKFLOWS_APP = "../accelerators/html/schemas-workflows.html";
 
 const ACCELERATORS_DATA = [
   { name: "Template User Stories", desc: "Colonnes structurées : rôle, action, bénéfice, critères d'acceptance, priorité, story points. Onglet Guide inclus.", format: "xlsx", file: "../accelerators/xlsx/user-story-template.xlsx" },
@@ -187,6 +190,20 @@ function renderHome() {
     </div>
 
     <div class="section-header">
+      <h2>Formation</h2>
+    </div>
+    <div class="categories-grid">
+      ${Object.entries(FORMATION_CATEGORIES).map(([key, theme]) => `
+        <div class="category-card" style="--card-accent: ${theme.color}" onclick="navigateTo('formation', '${key}')">
+          <div class="card-icon" style="color: ${theme.color}; background: ${theme.color}15">${theme.icon}</div>
+          <h3>${theme.title}</h3>
+          <p class="card-desc">${theme.tagline}</p>
+          <span class="card-count">${theme.chapters.length} chapitres &#8594;</span>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="section-header" style="margin-top: 2.5rem;">
       <h2>Outils par catégorie</h2>
     </div>
     <div class="categories-grid">${renderCategoryCards(Object.entries(TOOL_CATEGORIES), 'tools')}</div>
@@ -651,6 +668,132 @@ function renderCheatsheets() {
   return html;
 }
 
+// ---- Formation ----
+function renderFormationOverview() {
+  let html = `
+    <div class="breadcrumb">
+      <a href="#home">Accueil</a> <span class="sep">&#9656;</span>
+      <span>Formation</span>
+    </div>
+    <div class="section-header fade-in">
+      <h2>&#127891; Formation</h2>
+      <p>Des parcours de cours structurés pour monter en compétence. Chaque thématique se parcourt chapitre par chapitre, avec des exercices pratiques à réaliser dans nos mini-apps.</p>
+    </div>
+    <div class="categories-grid">
+  `;
+  for (const [key, theme] of Object.entries(FORMATION_CATEGORIES)) {
+    html += `
+      <div class="category-card" style="--card-accent: ${theme.color}" onclick="navigateTo('formation', '${key}')">
+        <div class="card-icon" style="color: ${theme.color}; background: ${theme.color}15">${theme.icon}</div>
+        <h3>${theme.title}</h3>
+        <p class="card-desc">${theme.tagline}</p>
+        <div class="formation-card-meta">
+          <span class="formation-pill">${theme.chapters.length} chapitres</span>
+          <span class="formation-pill">${theme.level}</span>
+          <span class="formation-pill">&#9201; ${theme.duration}</span>
+        </div>
+        <span class="card-count">Commencer &#8594;</span>
+      </div>
+    `;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function renderFormationTheme(themeKey, chapterSlug = null) {
+  const theme = FORMATION_CATEGORIES[themeKey];
+  if (!theme) return '<h2>Thématique non trouvée</h2>';
+
+  let html = `
+    <div class="breadcrumb">
+      <a href="#home">Accueil</a> <span class="sep">&#9656;</span>
+      <a href="#formation">Formation</a> <span class="sep">&#9656;</span>
+      <span>${theme.title}</span>
+    </div>
+    <div class="formation-hero fade-in" style="--card-accent: ${theme.color}">
+      <div class="formation-hero-icon" style="color: ${theme.color}; background: ${theme.color}1a">${theme.icon}</div>
+      <div>
+        <h1>${theme.title}</h1>
+        <div class="formation-card-meta" style="margin: 0.4rem 0 0.7rem;">
+          <span class="formation-pill">${theme.chapters.length} chapitres</span>
+          <span class="formation-pill">${theme.level}</span>
+          <span class="formation-pill">&#9201; ${theme.duration}</span>
+        </div>
+        <p>${theme.description}</p>
+      </div>
+    </div>
+    <div class="formation-intro fade-in">${theme.intro}</div>
+  `;
+
+  // Table of contents
+  html += `
+    <div class="formation-toc fade-in">
+      <h3>&#128214; Plan du cours</h3>
+      <ol>
+  `;
+  theme.chapters.forEach((ch, i) => {
+    html += `<li><a href="#formation/${themeKey}/${ch.slug}"><span class="toc-num">${i + 1}</span><span class="toc-text"><strong>${ch.title}</strong><span>${ch.summary}</span></span></a></li>`;
+  });
+  html += `</ol></div>`;
+
+  // Chapters
+  theme.chapters.forEach((ch, i) => {
+    const isActive = ch.slug === chapterSlug;
+    html += `
+      <article class="formation-chapter${isActive ? ' is-active' : ''}" id="chapter-${ch.slug}" data-detail-slug="${ch.slug}">
+        <div class="formation-chapter-head">
+          <span class="formation-chapter-num" style="background: ${theme.color}">${i + 1}</span>
+          <h2>${ch.title}</h2>
+        </div>
+        <div class="formation-content">${ch.content}</div>
+        <div class="formation-keypoints">
+          <h4>&#128273; À retenir</h4>
+          <ul>${ch.keyPoints.map(k => `<li>${k}</li>`).join('')}</ul>
+        </div>
+        ${renderExercise(ch.exercise)}
+      </article>
+    `;
+  });
+
+  // Completion note
+  html += `
+    <div class="formation-end fade-in">
+      <h3>&#127942; Cours terminé</h3>
+      <p>Vous avez parcouru les ${theme.chapters.length} chapitres. Le meilleur ancrage reste la pratique : reprenez vos schémas, confrontez-les à un collègue technique, et challengez votre vraie architecture produit avec la grille de lecture du PO.</p>
+      <a class="formation-cta" href="${SCHEMAS_WORKFLOWS_APP}" target="_blank">&#9654; Ouvrir Schémas &amp; Workflows</a>
+    </div>
+  `;
+
+  return html;
+}
+
+function renderExercise(ex) {
+  if (!ex) return '';
+  return `
+    <div class="formation-exercise">
+      <div class="formation-exercise-head">
+        <span class="formation-exercise-badge">&#9999; Exercice</span>
+        <h4>${ex.title}</h4>
+      </div>
+      <p class="formation-exercise-brief">${ex.brief}</p>
+      <div class="formation-exercise-body">
+        <div class="formation-exercise-col">
+          <h5>&#129518; Étapes</h5>
+          <ol>${ex.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+        </div>
+        <div class="formation-exercise-col">
+          <h5>&#9989; Critères de réussite</h5>
+          <ul class="formation-checklist">${ex.checklist.map(c => `<li>${c}</li>`).join('')}</ul>
+        </div>
+      </div>
+      <div class="formation-exercise-footer">
+        <span class="formation-deliverable"><strong>Livrable :</strong> ${ex.deliverable}</span>
+        <a class="formation-cta" href="${SCHEMAS_WORKFLOWS_APP}" target="_blank">&#9654; Ouvrir Schémas &amp; Workflows</a>
+      </div>
+    </div>
+  `;
+}
+
 // ---- Filter Tools ----
 function filterTools(filter, btn) {
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -693,6 +836,18 @@ function buildSearchIndex() {
         icon: cat.icon,
         link: `#methods/${key}/${slugify(method.name)}`,
         searchText: `${method.name} ${method.description} ${cat.title} ${method.when} ${method.tips.join(' ')}`.toLowerCase()
+      });
+    }
+  }
+  for (const [key, theme] of Object.entries(FORMATION_CATEGORIES)) {
+    for (const ch of theme.chapters) {
+      index.push({
+        title: ch.title,
+        category: `Formation · ${theme.title}`,
+        type: 'formation',
+        icon: theme.icon,
+        link: `#formation/${key}/${ch.slug}`,
+        searchText: `${ch.title} ${ch.summary} ${theme.title} ${ch.keyPoints.join(' ')} ${ch.exercise ? ch.exercise.title : ''}`.toLowerCase()
       });
     }
   }
@@ -749,6 +904,15 @@ function renderSidebar() {
       </a>
     </div>
     <div class="sidebar-section">
+      <div class="sidebar-section-title">Formation</div>
+      <a class="sidebar-link" href="#formation"><span class="link-icon">&#127891;</span> Tous les parcours</a>
+  `;
+  for (const [key, theme] of Object.entries(FORMATION_CATEGORIES)) {
+    html += `<a class="sidebar-link sidebar-sublink" href="#formation/${key}"><span class="link-icon">${theme.icon}</span> ${theme.title}</a>`;
+  }
+  html += `
+    </div>
+    <div class="sidebar-section">
       <div class="sidebar-section-title">Accélérateurs</div>
       <a class="sidebar-link" href="#apps"><span class="link-icon">&#9889;</span> Mini-Apps</a>
       <a class="sidebar-link" href="#accelerators"><span class="link-icon">&#128196;</span> Templates</a>
@@ -799,6 +963,10 @@ function handleRoute() {
     content = renderApps();
   } else if (page === 'cheatsheets') {
     content = renderCheatsheets();
+  } else if (page === 'formation' && !subpage) {
+    content = renderFormationOverview();
+  } else if (page === 'formation' && subpage) {
+    content = renderFormationTheme(subpage, detail);
   } else {
     content = renderHome();
   }

@@ -27,6 +27,14 @@ Activation a faire une seule fois dans GitHub:
 - Recherche (Ctrl+K), dark mode, filtres par pricing/profil PO
 - 100% statique, ouvrable hors-ligne
 
+### Formation (parcours de cours)
+
+Section de cours structures, accessible depuis la sidebar « Formation ». Chaque thematique se parcourt chapitre par chapitre, avec points cles et exercices pratiques renvoyant vers les mini-apps.
+
+| Thematique | Contenu |
+|------------|---------|
+| **Architecture Fonctionnelle** | 8 chapitres (patterns applicatifs & integration) : fondamentaux & attributs de qualite, architecture en couches, monolithe vs microservices (DDD), communication synchrone (REST/GraphQL/gRPC), asynchrone & evenementiel (Kafka/EDA/CQRS), donnees & persistance (Saga), patterns d'integration (Gateway, BFF, Circuit Breaker, Strangler Fig...), bonnes pratiques & anti-patterns. Exercices a realiser dans `schemas-workflows.html`. |
+
 ### Accelerateurs telechargeables
 
 | Fichier | Format | Description |
