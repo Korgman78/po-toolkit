@@ -34,6 +34,7 @@ Section de cours structures, accessible depuis la sidebar « Formation ». Chaqu
 | Thematique | Contenu |
 |------------|---------|
 | **Architecture Fonctionnelle** | 8 chapitres (patterns applicatifs & integration) : fondamentaux & attributs de qualite, architecture en couches, monolithe vs microservices (DDD), communication synchrone (REST/GraphQL/gRPC), asynchrone & evenementiel (Kafka/EDA/CQRS), donnees & persistance (Saga), patterns d'integration (Gateway, BFF, Circuit Breaker, Strangler Fig...), bonnes pratiques & anti-patterns. Exercices a realiser dans `schemas-workflows.html`. |
+| **Introduction a la CI/CD** | 10 chapitres (parcours Delivery & Agilite, niveau debutant) : pourquoi la CI/CD, Git & strategies de branches, integration continue, anatomie d'un pipeline & outillage, strategie de tests & quality gates, environnements / IaC / GitOps, strategies de deploiement & feature flags, DevSecOps & conformite, metriques DORA & observabilite, role du PO. Donnees dans `site/formation-cicd.js`. |
 
 ### Accelerateurs telechargeables
 

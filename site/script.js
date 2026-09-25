@@ -4,6 +4,21 @@ const FORMATION_CATEGORIES = window.PO_TOOLKIT_DATA?.FORMATION_DATA || {};
 
 const SCHEMAS_WORKFLOWS_APP = "../accelerators/html/schemas-workflows.html";
 
+const FORMATION_TRACKS = [
+  { name: "Technique", icon: "&#129518;", desc: "Comprendre les systèmes et dialoguer d'égal à égal avec l'équipe technique." },
+  { name: "Discovery & Produit", icon: "&#128301;", desc: "Trouver, cadrer et prioriser la bonne chose à construire." },
+  { name: "Delivery & Agilité", icon: "&#128640;", desc: "Livrer avec un flux sain, des estimations fiables et des rituels utiles." },
+];
+
+function formationGroupedByTrack() {
+  const groups = {};
+  for (const [key, theme] of Object.entries(FORMATION_CATEGORIES)) {
+    const track = theme.track || "Autres";
+    (groups[track] = groups[track] || []).push([key, theme]);
+  }
+  return groups;
+}
+
 const ACCELERATORS_DATA = [
   { name: "Template User Stories", desc: "Colonnes structurées : rôle, action, bénéfice, critères d'acceptance, priorité, story points. Onglet Guide inclus.", format: "xlsx", file: "../accelerators/xlsx/user-story-template.xlsx" },
   { name: "Matrices de Priorisation", desc: "Un seul workbook avec un onglet par méthode : RICE, WSJF, ICE, MoSCoW et Value vs Effort. Guide inclus.", format: "xlsx", file: "../accelerators/xlsx/prioritization-matrices.xlsx" },
@@ -193,14 +208,17 @@ function renderHome() {
       <h2>Formation</h2>
     </div>
     <div class="categories-grid">
-      ${Object.entries(FORMATION_CATEGORIES).map(([key, theme]) => `
-        <div class="category-card" style="--card-accent: ${theme.color}" onclick="navigateTo('formation', '${key}')">
-          <div class="card-icon" style="color: ${theme.color}; background: ${theme.color}15">${theme.icon}</div>
-          <h3>${theme.title}</h3>
-          <p class="card-desc">${theme.tagline}</p>
-          <span class="card-count">${theme.chapters.length} chapitres &#8594;</span>
-        </div>
-      `).join('')}
+      ${FORMATION_TRACKS.map(track => {
+        const themes = (formationGroupedByTrack()[track.name] || []);
+        if (!themes.length) return '';
+        return `
+        <div class="category-card" onclick="navigateTo('formation')">
+          <div class="card-icon" style="color: var(--accent); background: var(--accent-bg)">${track.icon}</div>
+          <h3>${track.name}</h3>
+          <p class="card-desc">${track.desc}</p>
+          <span class="card-count">${themes.length} parcours &#8594;</span>
+        </div>`;
+      }).join('')}
     </div>
 
     <div class="section-header" style="margin-top: 2.5rem;">
@@ -669,6 +687,22 @@ function renderCheatsheets() {
 }
 
 // ---- Formation ----
+function renderFormationCard(key, theme) {
+  return `
+    <div class="category-card" style="--card-accent: ${theme.color}" onclick="navigateTo('formation', '${key}')">
+      <div class="card-icon" style="color: ${theme.color}; background: ${theme.color}15">${theme.icon}</div>
+      <h3>${theme.title}</h3>
+      <p class="card-desc">${theme.tagline}</p>
+      <div class="formation-card-meta">
+        <span class="formation-pill">${theme.chapters.length} chapitres</span>
+        <span class="formation-pill">${theme.level}</span>
+        <span class="formation-pill">&#9201; ${theme.duration}</span>
+      </div>
+      <span class="card-count">Commencer &#8594;</span>
+    </div>
+  `;
+}
+
 function renderFormationOverview() {
   let html = `
     <div class="breadcrumb">
@@ -677,26 +711,30 @@ function renderFormationOverview() {
     </div>
     <div class="section-header fade-in">
       <h2>&#127891; Formation</h2>
-      <p>Des parcours de cours structurés pour monter en compétence. Chaque thématique se parcourt chapitre par chapitre, avec des exercices pratiques à réaliser dans nos mini-apps.</p>
+      <p>Des parcours de cours structurés pour monter en compétence. Chaque thématique se parcourt chapitre par chapitre, avec points clés et exercices pratiques à réaliser dans nos mini-apps.</p>
     </div>
-    <div class="categories-grid">
   `;
-  for (const [key, theme] of Object.entries(FORMATION_CATEGORIES)) {
+
+  const groups = formationGroupedByTrack();
+  for (const track of FORMATION_TRACKS) {
+    const themes = groups[track.name];
+    if (!themes || !themes.length) continue;
     html += `
-      <div class="category-card" style="--card-accent: ${theme.color}" onclick="navigateTo('formation', '${key}')">
-        <div class="card-icon" style="color: ${theme.color}; background: ${theme.color}15">${theme.icon}</div>
-        <h3>${theme.title}</h3>
-        <p class="card-desc">${theme.tagline}</p>
-        <div class="formation-card-meta">
-          <span class="formation-pill">${theme.chapters.length} chapitres</span>
-          <span class="formation-pill">${theme.level}</span>
-          <span class="formation-pill">&#9201; ${theme.duration}</span>
-        </div>
-        <span class="card-count">Commencer &#8594;</span>
+      <div class="section-header fade-in" style="margin-top: 1.75rem;">
+        <h2>${track.icon} ${track.name}</h2>
+        <p>${track.desc}</p>
+      </div>
+      <div class="categories-grid">
+        ${themes.map(([key, theme]) => renderFormationCard(key, theme)).join('')}
       </div>
     `;
   }
-  html += `</div>`;
+  // Any theme without a known track
+  const known = new Set(FORMATION_TRACKS.map(t => t.name));
+  for (const [trackName, themes] of Object.entries(groups)) {
+    if (known.has(trackName)) continue;
+    html += `<div class="categories-grid">${themes.map(([key, theme]) => renderFormationCard(key, theme)).join('')}</div>`;
+  }
   return html;
 }
 
@@ -750,25 +788,27 @@ function renderFormationTheme(themeKey, chapterSlug = null) {
           <h4>&#128273; À retenir</h4>
           <ul>${ch.keyPoints.map(k => `<li>${k}</li>`).join('')}</ul>
         </div>
-        ${renderExercise(ch.exercise)}
+        ${renderExercise(ch.exercise, theme.defaultApp)}
       </article>
     `;
   });
 
   // Completion note
+  const endApp = theme.defaultApp;
   html += `
     <div class="formation-end fade-in">
       <h3>&#127942; Cours terminé</h3>
-      <p>Vous avez parcouru les ${theme.chapters.length} chapitres. Le meilleur ancrage reste la pratique : reprenez vos schémas, confrontez-les à un collègue technique, et challengez votre vraie architecture produit avec la grille de lecture du PO.</p>
-      <a class="formation-cta" href="${SCHEMAS_WORKFLOWS_APP}" target="_blank">&#9654; Ouvrir Schémas &amp; Workflows</a>
+      <p>Vous avez parcouru les ${theme.chapters.length} chapitres. Le meilleur ancrage reste la pratique : refaites les exercices sur un cas réel, et confrontez vos productions à un pair pour challenger vos choix.</p>
+      ${endApp ? `<a class="formation-cta" href="${endApp.file}" target="_blank">&#9654; Ouvrir ${endApp.name}</a>` : `<a class="formation-cta" href="#apps">&#9889; Voir les mini-apps</a>`}
     </div>
   `;
 
   return html;
 }
 
-function renderExercise(ex) {
+function renderExercise(ex, defaultApp) {
   if (!ex) return '';
+  const app = ex.app || defaultApp || null;
   return `
     <div class="formation-exercise">
       <div class="formation-exercise-head">
@@ -788,7 +828,7 @@ function renderExercise(ex) {
       </div>
       <div class="formation-exercise-footer">
         <span class="formation-deliverable"><strong>Livrable :</strong> ${ex.deliverable}</span>
-        <a class="formation-cta" href="${SCHEMAS_WORKFLOWS_APP}" target="_blank">&#9654; Ouvrir Schémas &amp; Workflows</a>
+        ${app ? `<a class="formation-cta" href="${app.file}" target="_blank">&#9654; Ouvrir ${app.name}</a>` : ''}
       </div>
     </div>
   `;
@@ -904,15 +944,6 @@ function renderSidebar() {
       </a>
     </div>
     <div class="sidebar-section">
-      <div class="sidebar-section-title">Formation</div>
-      <a class="sidebar-link" href="#formation"><span class="link-icon">&#127891;</span> Tous les parcours</a>
-  `;
-  for (const [key, theme] of Object.entries(FORMATION_CATEGORIES)) {
-    html += `<a class="sidebar-link sidebar-sublink" href="#formation/${key}"><span class="link-icon">${theme.icon}</span> ${theme.title}</a>`;
-  }
-  html += `
-    </div>
-    <div class="sidebar-section">
       <div class="sidebar-section-title">Accélérateurs</div>
       <a class="sidebar-link" href="#apps"><span class="link-icon">&#9889;</span> Mini-Apps</a>
       <a class="sidebar-link" href="#accelerators"><span class="link-icon">&#128196;</span> Templates</a>
@@ -927,6 +958,14 @@ function renderSidebar() {
   html += `</div><div class="sidebar-section"><div class="sidebar-section-title">Méthodes</div>`;
   for (const [key, cat] of Object.entries(METHOD_CATEGORIES)) {
     html += `<a class="sidebar-link" href="#methods/${key}"><span class="link-icon">${cat.icon}</span> ${cat.title}</a>`;
+  }
+  html += `</div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Formation</div>
+      <a class="sidebar-link" href="#formation"><span class="link-icon">&#127891;</span> Tous les parcours</a>
+  `;
+  for (const [key, theme] of Object.entries(FORMATION_CATEGORIES)) {
+    html += `<a class="sidebar-link sidebar-sublink" href="#formation/${key}"><span class="link-icon">${theme.icon}</span> ${theme.title}</a>`;
   }
   html += `</div>`;
   return html;
