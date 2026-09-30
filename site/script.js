@@ -1,871 +1,675 @@
+// ============================================================
+//  PO Toolkit — application (routeur, rendu, palette, progression)
+// ============================================================
 const TOOL_CATEGORIES = window.PO_TOOLKIT_DATA?.TOOLS_DATA || {};
 const METHOD_CATEGORIES = window.PO_TOOLKIT_DATA?.METHODS_DATA || {};
 const FORMATION_CATEGORIES = window.PO_TOOLKIT_DATA?.FORMATION_DATA || {};
 
-const SCHEMAS_WORKFLOWS_APP = "../accelerators/html/schemas-workflows.html";
+// ---------- Icons (inline SVG, stroke-based, 24px grid) ----------
+const ICONS = {
+  home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  book: '<path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2z"/><path d="M22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/>',
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
+  compass: '<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  arrowRight: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  arrowLeft: '<path d="M19 12H5M11 6l-6 6 6 6"/>',
+  chevron: '<path d="m9 6 6 6-6 6"/>',
+  external: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  download: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+  moon: '<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+  check: '<path d="m5 12 5 5L20 7"/>',
+  x: '<path d="M6 6l12 12M18 6 6 18"/>',
+  enter: '<path d="M9 10 4 15l5 5"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/>',
+  message: '<path d="M4 5h16v11H8l-4 4z"/><path d="M8 9.5h8M8 12.5h5"/>',
+  list: '<path d="M4 6h16M4 12h10M4 18h5"/>',
+  cards: '<rect x="4" y="6" width="10" height="14" rx="1.5"/><path d="M8 3h10.5A1.5 1.5 0 0 1 20 4.5V17"/>',
+  split: '<path d="M4 4v16M20 4v16"/><path d="M8 8h8M8 12h5M8 16h7"/>',
+  route: '<circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h7a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h7"/>',
+  board: '<rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M3 9h18M9 9v11M15 9v11"/>',
+  timer: '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M10 2h4"/>',
+  flow: '<rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="15" width="6" height="6" rx="1"/><path d="M9 6h4a2 2 0 0 1 2 2v7"/>',
+  braces: '<path d="M8 4H7a2 2 0 0 0-2 2v4l-2 2 2 2v4a2 2 0 0 0 2 2h1M16 4h1a2 2 0 0 1 2 2v4l2 2-2 2v4a2 2 0 0 1-2 2h-1"/>',
+  file: '<path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/>',
+  sheet: '<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+  kanban: '<rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M9 4v16M15 4v16"/>',
+  pen: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13 7 4 4"/>',
+  users: '<circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21 20a6 6 0 0 0-4-5.6"/>',
+  chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  code: '<path d="m8 9-4 3 4 3M16 9l4 3-4 3M13 5l-2 14"/>',
+  plug: '<path d="M9 2v6M15 2v6M6 8h12v3a6 6 0 0 1-12 0zM12 17v5"/>',
+  checkSquare: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="m8 12 3 3 5-6"/>',
+  database: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
+  refresh: '<path d="M20 11a8 8 0 0 0-14.9-3M4 4v4h4M4 13a8 8 0 0 0 14.9 3M20 20v-4h-4"/>',
+  cpu: '<rect x="6" y="6" width="12" height="12" rx="1.5"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
+  box: '<path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/>',
+  sparkles: '<path d="M12 3l1.8 4.7 4.7 1.8-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>',
+  target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+  bulb: '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/>',
+  dot: '<circle cx="12" cy="12" r="3"/>',
+};
 
-const FORMATION_TRACKS = [
-  { name: "Technique", icon: "&#129518;", desc: "Comprendre les systèmes et dialoguer d'égal à égal avec l'équipe technique." },
-  { name: "Discovery & Produit", icon: "&#128301;", desc: "Trouver, cadrer et prioriser la bonne chose à construire." },
-  { name: "Delivery & Agilité", icon: "&#128640;", desc: "Livrer avec un flux sain, des estimations fiables et des rituels utiles." },
-];
-
-function formationGroupedByTrack() {
-  const groups = {};
-  for (const [key, theme] of Object.entries(FORMATION_CATEGORIES)) {
-    const track = theme.track || "Autres";
-    (groups[track] = groups[track] || []).push([key, theme]);
-  }
-  return groups;
+function icon(name, size = 16, cls = '') {
+  return `<svg class="icon${cls ? ` ${cls}` : ''}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.dot}</svg>`;
 }
 
-const ACCELERATORS_DATA = [
-  { name: "Template User Stories", desc: "Colonnes structurées : rôle, action, bénéfice, critères d'acceptance, priorité, story points. Onglet Guide inclus.", format: "xlsx", file: "../accelerators/xlsx/user-story-template.xlsx" },
-  { name: "Matrices de Priorisation", desc: "Un seul workbook avec un onglet par méthode : RICE, WSJF, ICE, MoSCoW et Value vs Effort. Guide inclus.", format: "xlsx", file: "../accelerators/xlsx/prioritization-matrices.xlsx" },
-  { name: "Release Plan", desc: "Planning de release avec calcul de vélocité, suivi des milestones et tracker de vélocité. Onglet Guide inclus.", format: "xlsx", file: "../accelerators/xlsx/release-plan.xlsx" },
-  { name: "Capacity Planning", desc: "Calcul charge/capacité par sprint, gestion des congés et allocation. Onglet Guide inclus.", format: "xlsx", file: "../accelerators/xlsx/capacity-planning.xlsx" },
-  { name: "Product Canvas", desc: "Canvas visuel avec vision, personas, problèmes, solutions, métriques. Slide Guide incluse.", format: "pptx", file: "../accelerators/pptx/product-canvas.pptx" },
-  { name: "Sprint Review Template", desc: "Support de Sprint Review pré-formaté avec démo, métriques et next steps. Slide Guide incluse.", format: "pptx", file: "../accelerators/pptx/sprint-review-template.pptx" },
-  { name: "Definition of Ready / Done", desc: "Checklists DoR et DoD prêtes à afficher. Format poster A3. Slide Guide incluse.", format: "pptx", file: "../accelerators/pptx/definition-of-ready-done.pptx" },
-  { name: "Stakeholder Map", desc: "Matrice pouvoir/intérêt pour cartographier vos parties prenantes. Slide Guide incluse.", format: "pptx", file: "../accelerators/pptx/stakeholder-mapping.pptx" },
-  { name: "Slides Library (225 slides)", desc: "Bibliothèque de 225 slides professionnelles : diagrammes, timelines, matrices, pyramides, process flows, tableaux. Prêtes à réutiliser.", format: "pptx", file: "../accelerators/pptx/Slides Library_A4.pptx" },
-  { name: "Import Jira (CSV)", desc: "Template CSV pré-formaté pour import bulk dans Jira. Colonnes mappées.", format: "csv", file: "../accelerators/csv/jira-import-template.csv" },
-  { name: "Import Azure DevOps (CSV)", desc: "Template CSV pré-formaté pour import bulk dans Azure DevOps.", format: "csv", file: "../accelerators/csv/ado-import-template.csv" },
+const TOOL_CATEGORY_ICONS = {
+  'project-management': 'kanban', roadmapping: 'route', 'design-prototyping': 'pen', 'user-research': 'users',
+  analytics: 'chart', collaboration: 'message', documentation: 'file', 'devops-technical': 'code',
+  'api-testing': 'plug', testing: 'checkSquare',
+};
+const METHOD_CATEGORY_ICONS = { prioritization: 'list', discovery: 'compass', metrics: 'chart', scaling: 'layers' };
+const COURSE_ICONS = {
+  'architecture-fonctionnelle': 'flow', 'api-contrats': 'plug', 'donnees-modelisation': 'database',
+  'ci-cd': 'refresh', 'ia-safe': 'cpu', 'projet-produit': 'box', 'ia-quotidien': 'sparkles',
+};
+
+// ---------- Static data ----------
+const FORMATION_TRACKS = [
+  { name: "Discovery & Produit", desc: "Trouver, cadrer et prioriser la bonne chose à construire." },
+  { name: "Delivery & Agilité", desc: "Livrer avec un flux sain, des estimations fiables et des rituels utiles." },
+  { name: "Technique", desc: "Comprendre les systèmes et dialoguer d'égal à égal avec l'équipe technique." },
 ];
 
 const APPS_DATA = [
-  { section: "Cadrage & priorisation", name: "Calculateur de Priorisation", desc: "RICE, WSJF, ICE, MoSCoW, Value/Effort — avec critères custom et pondération. L'outil de priorisation ultime du PO.", file: "../accelerators/html/prioritization-calculator.html", color: "#a855f7" },
-  { section: "Cadrage & priorisation", name: "Story Splitter", desc: "Découpez une feature en stories actionnables avec patterns guides : workflow, front/back, CSV, règles métier, cas limites.", file: "../accelerators/html/story-splitter.html", color: "#14b8a6" },
-  { section: "Roadmapping & strategie", name: "Roadmap Designer", desc: "Designer de roadmap epic/feature multi-mois avec timeline, statuts, priorites, local storage et import/export JSON.", file: "../accelerators/html/roadmap-designer.html", color: "#1d9a8a" },
-  { section: "Planification & facilitation", name: "Planning Poker", desc: "Outil de vote pour estimer vos stories en équipe. Fibonacci et T-shirt sizes.", file: "../accelerators/html/planning-poker.html", color: "#ec4899" },
-  { section: "Planification & facilitation", name: "PI Planning Simulator", desc: "Planifiez un PI par sprint avec capacité, points, must/should, dépendances, IP sprint, objectifs, risques et export CSV.", file: "../accelerators/html/pi-planning-simulator.html", color: "#f59e0b" },
-  { section: "Planification & facilitation", name: "Daily Standup Timer", desc: "Chronomètre avec timer par personne. Gardez vos dailys dans les temps.", file: "../accelerators/html/daily-standup-timer.html", color: "#6366f1" },
-  { section: "Planification & facilitation", name: "Retro Board", desc: "Tableau de rétrospective interactif. Colonnes personnalisables, vote et export.", file: "../accelerators/html/retro-board.html", color: "#10b981" },
-  { section: "Schemas & ateliers", name: "Schemas & Workflows", desc: "Canvas de modélisation simple en mode session locale : modules front, microservices, Kafka, Postgres, APIs et liaisons.", file: "../accelerators/html/schemas-workflows.html", color: "#06b6d4" },
-  { section: "Utilitaires", name: "JSON & UUID Tools", desc: "Validateur JSON (format, minify, tri des clés) + Générateur UUID (v4, v7, Nano ID). Deux outils en un.", file: "../accelerators/html/json-uuid-tools.html", color: "#64748b" },
+  { key: 'prio', section: "Cadrage & priorisation", name: "Calculateur de priorisation", short: "RICE, WSJF, ICE, MoSCoW, valeur/effort", desc: "RICE, WSJF, ICE, MoSCoW, valeur/effort, avec critères personnalisés et pondération.", file: "../accelerators/html/prioritization-calculator.html", icon: 'list', mode: 'local', task: "Prioriser le backlog", shortcut: 'p' },
+  { key: 'story', section: "Cadrage & priorisation", name: "Story Splitter", short: "Découpage vertical guidé", desc: "Découpez une feature en stories actionnables avec des patterns : workflow, règles métier, données, cas limites.", file: "../accelerators/html/story-splitter.html", icon: 'split', mode: 'local', task: "Découper une user story", shortcut: 's' },
+  { key: 'roadmap', section: "Roadmapping & stratégie", name: "Roadmap Designer", short: "Epics et features sur plusieurs mois", desc: "Roadmap epic/feature multi-mois avec timeline, statuts, priorités, sauvegarde locale et import/export JSON.", file: "../accelerators/html/roadmap-designer.html", icon: 'route', mode: 'local', task: "Construire une roadmap", shortcut: 'm' },
+  { key: 'poker', section: "Planification & facilitation", name: "Planning Poker", short: "Estimation en équipe", desc: "Vote d'estimation en équipe, Fibonacci ou tailles de t-shirt, révélation simultanée.", file: "../accelerators/html/planning-poker.html", icon: 'cards', mode: 'realtime', task: "Estimer avec l'équipe", shortcut: 'e' },
+  { key: 'pi', section: "Planification & facilitation", name: "PI Planning Simulator", short: "Capacité, dépendances, objectifs", desc: "Planifiez un PI par sprint : capacité, points, must/should, dépendances, IP sprint, objectifs, risques, export CSV.", file: "../accelerators/html/pi-planning-simulator.html", icon: 'board', mode: 'local', task: "Préparer un PI Planning", shortcut: 'i' },
+  { key: 'daily', section: "Planification & facilitation", name: "Daily Standup Timer", short: "Tour de parole minuté", desc: "Chronomètre avec un temps par personne pour garder le daily dans les temps.", file: "../accelerators/html/daily-standup-timer.html", icon: 'timer', mode: 'realtime', task: "Animer le daily", shortcut: 'd' },
+  { key: 'retro', section: "Planification & facilitation", name: "Retro Board", short: "Rétrospective, votes, actions", desc: "Tableau de rétrospective interactif : colonnes personnalisables, votes et export.", file: "../accelerators/html/retro-board.html", icon: 'message', mode: 'realtime', task: "Animer une rétrospective", shortcut: 'r' },
+  { key: 'schemas', section: "Schémas & ateliers", name: "Schémas & Workflows", short: "Diagrammes de flux et d'architecture", desc: "Canvas de modélisation : modules front, microservices, Kafka, Postgres, API et liaisons.", file: "../accelerators/html/schemas-workflows.html", icon: 'flow', mode: 'local', task: "Schématiser un flux", shortcut: 'w' },
+  { key: 'json', section: "Utilitaires", name: "JSON & UUID Tools", short: "Validation JSON, génération d'UUID", desc: "Validateur JSON (format, minify, tri des clés) et générateur d'UUID (v4, v7, Nano ID).", file: "../accelerators/html/json-uuid-tools.html", icon: 'braces', mode: 'local' },
 ];
+const QUICK_ACTIONS = ['retro', 'prio', 'poker', 'story', 'roadmap', 'pi'].map(k => APPS_DATA.find(a => a.key === k));
 
 const APP_SECTION_DESCRIPTIONS = {
-  "Cadrage & priorisation": "Passez de l'idée au backlog priorisé avec une logique produit claire.",
-  "Roadmapping & strategie": "Construisez une roadmap lisible par outcomes, epics, features et horizon multi-mois.",
-  "Planification & facilitation": "Animez vos estimations, vos arbitrages de PI et vos rituels d'équipe.",
-  "Schemas & ateliers": "Modélisez un workflow ou une archi légère à partager pendant les ateliers.",
-  "Utilitaires": "Petits outils transverses pour gagner du temps au quotidien."
+  "Cadrage & priorisation": "Passer de l'idée au backlog priorisé.",
+  "Roadmapping & stratégie": "Construire une roadmap lisible par outcomes, epics et horizons.",
+  "Planification & facilitation": "Animer les estimations, les arbitrages de PI et les rituels d'équipe.",
+  "Schémas & ateliers": "Modéliser un workflow ou une architecture légère pendant un atelier.",
+  "Utilitaires": "Petits outils transverses pour gagner du temps.",
 };
 
+const ACCELERATORS_DATA = [
+  { name: "Template User Stories", desc: "Rôle, action, bénéfice, critères d'acceptance, priorité, story points. Onglet Guide inclus.", format: "xlsx", file: "../accelerators/xlsx/user-story-template.xlsx" },
+  { name: "Matrices de priorisation", desc: "Un onglet par méthode : RICE, WSJF, ICE, MoSCoW et valeur/effort. Guide inclus.", format: "xlsx", file: "../accelerators/xlsx/prioritization-matrices.xlsx" },
+  { name: "Release Plan", desc: "Planning de release avec calcul de vélocité, jalons et suivi. Onglet Guide inclus.", format: "xlsx", file: "../accelerators/xlsx/release-plan.xlsx" },
+  { name: "Capacity Planning", desc: "Charge et capacité par sprint, congés et allocation. Onglet Guide inclus.", format: "xlsx", file: "../accelerators/xlsx/capacity-planning.xlsx" },
+  { name: "Product Canvas", desc: "Vision, personas, problèmes, solutions, métriques. Slide Guide incluse.", format: "pptx", file: "../accelerators/pptx/product-canvas.pptx" },
+  { name: "Sprint Review", desc: "Support pré-formaté : démo, métriques et prochaines étapes. Slide Guide incluse.", format: "pptx", file: "../accelerators/pptx/sprint-review-template.pptx" },
+  { name: "Definition of Ready / Done", desc: "Checklists DoR et DoD prêtes à afficher, format poster A3.", format: "pptx", file: "../accelerators/pptx/definition-of-ready-done.pptx" },
+  { name: "Stakeholder Map", desc: "Matrice pouvoir/intérêt pour cartographier les parties prenantes.", format: "pptx", file: "../accelerators/pptx/stakeholder-mapping.pptx" },
+  { name: "Bibliothèque de slides", desc: "225 slides : diagrammes, timelines, matrices, pyramides, process flows, tableaux.", format: "pptx", file: "../accelerators/pptx/Slides Library_A4.pptx" },
+  { name: "Import Jira", desc: "CSV pré-formaté pour un import en masse dans Jira, colonnes mappées.", format: "csv", file: "../accelerators/csv/jira-import-template.csv" },
+  { name: "Import Azure DevOps", desc: "CSV pré-formaté pour un import en masse dans Azure DevOps.", format: "csv", file: "../accelerators/csv/ado-import-template.csv" },
+];
 const ACCELERATOR_FORMAT_META = {
-  xlsx: { title: "Workbooks Excel", description: "Templates opérationnels et actionnables pour priorisation, backlog, release et capacité." },
-  pptx: { title: "Supports & canvases", description: "Slides sobres et réutilisables pour cadrage, ateliers et communication stakeholders." },
-  csv: { title: "Imports & bulk edits", description: "Fichiers utilitaires pour vos imports Jira et Azure DevOps sans friction." }
+  xlsx: { title: "Classeurs Excel", description: "Priorisation, backlog, release et capacité." },
+  pptx: { title: "Supports et canvases", description: "Cadrage, ateliers et communication avec les parties prenantes." },
+  csv: { title: "Imports", description: "Imports en masse dans Jira et Azure DevOps." },
 };
+
+const CHEATSHEETS = [
+  { title: "Rédaction de user stories", items: [
+    ["Format standard", "<strong>En tant que</strong> [persona], <strong>je veux</strong> [action], <strong>afin de</strong> [bénéfice]."],
+    ["Critères INVEST", "<strong>I</strong>ndépendante, <strong>N</strong>égociable, <strong>V</strong>alorisable, <strong>E</strong>stimable, <strong>S</strong>uffisamment petite, <strong>T</strong>estable."],
+    ["Critères d'acceptance", "<strong>Étant donné</strong> [contexte], <strong>quand</strong> [action], <strong>alors</strong> [résultat attendu]."],
+    ["Patterns de découpage", "Par étape du workflow, par règle métier, par type de données, par interface, par performance, cas nominal puis cas limites."],
+  ] },
+  { title: "Priorisation rapide", items: [
+    ["RICE", "<strong>R</strong>each × <strong>I</strong>mpact × <strong>C</strong>onfidence ÷ <strong>E</strong>ffort. Impact : 3 massif, 2 fort, 1 moyen, 0,5 faible, 0,25 minimal."],
+    ["MoSCoW", "<strong>Must</strong> (≤ 60 %), <strong>Should</strong> (~20 %), <strong>Could</strong> (~20 %), <strong>Won't</strong> (pas cette fois)."],
+    ["WSJF", "Coût du retard ÷ taille du travail. Coût du retard = valeur métier + criticité temporelle + réduction de risque."],
+    ["Matrice valeur / effort", "<strong>Quick wins</strong> (valeur haute, effort faible) · <strong>Paris</strong> (valeur haute, effort élevé) · <strong>Bouche-trous</strong> (faible, faible) · <strong>Gouffres</strong> (valeur faible, effort élevé)."],
+  ] },
+  { title: "Métriques essentielles", items: [
+    ["HEART (Google)", "<strong>Happiness</strong> (NPS, CSAT), <strong>Engagement</strong> (DAU/MAU), <strong>Adoption</strong> (activation), <strong>Retention</strong> (churn), <strong>Task success</strong> (taux de complétion)."],
+    ["AARRR", "Acquisition → Activation → Rétention → Revenu → Recommandation. Concentrez-vous sur le maillon faible."],
+    ["Delivery agile", "Lead time, cycle time, débit, burndown, cumulative flow, taux de défauts échappés."],
+    ["SaaS", "MRR/ARR, churn, LTV, CAC, ratio LTV:CAC (≥ 3:1), net revenue retention, délai de retour sur investissement."],
+  ] },
+  { title: "Cérémonies agiles : le rôle du PO", items: [
+    ["Sprint planning", "<strong>Avant :</strong> backlog affiné, stories prêtes. <strong>Pendant :</strong> présenter le pourquoi, clarifier, ne pas imposer le comment. <strong>Résultat :</strong> objectif et backlog de sprint."],
+    ["Daily", "<strong>Rôle du PO :</strong> écouter, débloquer, ne pas micro-manager. 15 minutes maximum."],
+    ["Sprint review", "<strong>Avant :</strong> inviter les parties prenantes. <strong>Pendant :</strong> démontrer le terminé, recueillir les retours. <strong>Après :</strong> adapter le backlog."],
+    ["Affinage", "Une à deux fois par sprint : clarifier, estimer, découper. Objectif : deux sprints de stories prêtes."],
+  ] },
+];
 
 const TOOL_LOGO_SLUGS = {
-  jira: "jira",
-  linear: "linear",
-  "azure-devops": "azuredevops",
-  shortcut: "shortcut",
-  asana: "asana",
-  "monday-com": "mondaydotcom",
-  trello: "trello",
-  clickup: "clickup",
-  youtrack: "youtrack",
-  "github-projects": "github",
-  productboard: "productboard",
-  "aha": "aha",
-  airfocus: "airfocus",
-  figma: "figma",
-  miro: "miro",
-  sketch: "sketch",
-  penpot: "penpot",
-  "adobe-xd": "adobexd",
-  figjam: "figma",
-  slack: "slack",
-  "microsoft-teams": "microsoftteams",
-  zoom: "zoom",
-  loom: "loom",
-  notion: "notion",
-  confluence: "confluence",
-  coda: "coda",
-  docusaurus: "docusaurus",
-  gitbook: "gitbook",
-  amplitude: "amplitude",
-  mixpanel: "mixpanel",
-  tableau: "tableau",
-  looker: "looker",
-  metabase: "metabase",
-  powerbi: "powerbi",
-  hotjar: "hotjar",
-  datadog: "datadog",
-  sentry: "sentry",
-  intercom: "intercom",
-  typeform: "typeform",
-  dovetail: "dovetail",
-  maze: "maze",
-  zendesk: "zendesk",
-  salesforce: "salesforce",
-  github: "github",
-  gitlab: "gitlab",
-  bitbucket: "bitbucket",
-  openai: "openai",
-  chatgpt: "openai",
-  claude: "anthropic",
-  perplexity: "perplexity",
-  "google-analytics": "googleanalytics",
-  "google-meet": "googlemeet",
-  "google-workspace": "googleworkspace",
-  fullstory: "fullstory",
-  mural: "mural",
-  whimsical: "whimsical"
+  jira: "jira", linear: "linear", "azure-devops": "azuredevops", shortcut: "shortcut", asana: "asana",
+  "monday-com": "mondaydotcom", trello: "trello", clickup: "clickup", youtrack: "youtrack", "github-projects": "github",
+  productboard: "productboard", aha: "aha", airfocus: "airfocus", figma: "figma", miro: "miro", sketch: "sketch",
+  penpot: "penpot", "adobe-xd": "adobexd", figjam: "figma", slack: "slack", "microsoft-teams": "microsoftteams",
+  zoom: "zoom", loom: "loom", notion: "notion", confluence: "confluence", coda: "coda", docusaurus: "docusaurus",
+  gitbook: "gitbook", amplitude: "amplitude", mixpanel: "mixpanel", tableau: "tableau", looker: "looker",
+  metabase: "metabase", powerbi: "powerbi", hotjar: "hotjar", datadog: "datadog", sentry: "sentry",
+  intercom: "intercom", typeform: "typeform", dovetail: "dovetail", maze: "maze", zendesk: "zendesk",
+  salesforce: "salesforce", github: "github", gitlab: "gitlab", bitbucket: "bitbucket", openai: "openai",
+  chatgpt: "openai", claude: "anthropic", perplexity: "perplexity", "google-analytics": "googleanalytics",
+  "google-meet": "googlemeet", "google-workspace": "googleworkspace", fullstory: "fullstory", mural: "mural",
+  whimsical: "whimsical",
 };
 
-// ---- Utility Functions ----
-function getTheme() {
-  return localStorage.getItem('po-toolkit-theme') || 'light';
-}
-function setTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('po-toolkit-theme', theme);
-  const btn = document.querySelector('.theme-toggle');
-  if (btn) btn.innerHTML = theme === 'dark' ? '&#9728;' : '&#9790;';
-}
+const PRICING = {
+  free: { label: 'Gratuit', cls: 'badge-free' },
+  freemium: { label: 'Freemium', cls: 'badge-freemium' },
+  paid: { label: 'Payant', cls: 'badge-paid' },
+};
 
-function slugify(text) {
+// ---------- Utilities ----------
+const $ = (sel, root = document) => root.querySelector(sel);
+const pad2 = (n) => String(n).padStart(2, '0');
+
+function legacySlug(text) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function stripTags(html) {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent || '';
+}
+function plural(n, one, many) { return `${n} ${n > 1 ? many : one}`; }
 
-function getHostname(toolUrl) {
-  try {
-    return new URL(toolUrl).hostname.replace(/^www\./, '');
-  } catch (error) {
-    return '';
+function safeGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+function safeSet(key, value) { try { localStorage.setItem(key, value); } catch (e) { /* stockage indisponible */ } }
+
+// ---------- Theme ----------
+function currentTheme() { return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; }
+function setTheme(theme, persist = true) {
+  document.documentElement.setAttribute('data-theme', theme);
+  if (persist) safeSet('po-toolkit-theme', theme);
+  const btn = $('#theme-toggle');
+  if (btn) {
+    btn.innerHTML = icon(theme === 'dark' ? 'sun' : 'moon', 16);
+    btn.setAttribute('aria-label', theme === 'dark' ? 'Passer en thème clair' : 'Passer en thème sombre');
   }
 }
 
+// ---------- Progress (per viewer, stored locally) ----------
+const PROGRESS_KEY = 'po-toolkit-progress';
+function loadProgress() {
+  try { return JSON.parse(safeGet(PROGRESS_KEY)) || {}; } catch (e) { return {}; }
+}
+function saveProgress(p) { safeSet(PROGRESS_KEY, JSON.stringify(p)); }
+function courseState(key) {
+  const p = loadProgress()[key] || {};
+  return { done: new Set(p.done || []), last: p.last || null, quiz: p.quiz || null, updated: p.updated || 0 };
+}
+function updateCourse(key, fn) {
+  const all = loadProgress();
+  const cur = all[key] || { done: [] };
+  fn(cur);
+  cur.updated = Date.now();
+  all[key] = cur;
+  saveProgress(all);
+}
+function markChapterDone(key, slug) {
+  updateCourse(key, c => { if (!c.done.includes(slug)) c.done.push(slug); });
+}
+function setLastChapter(key, slug) { updateCourse(key, c => { c.last = slug; }); }
+function saveQuizScore(key, right, total) {
+  updateCourse(key, c => { if (!c.quiz || right > c.quiz.best) c.quiz = { best: right, total }; });
+}
+function courseSummary(key) {
+  const theme = FORMATION_CATEGORIES[key];
+  const st = courseState(key);
+  const doneCount = theme.chapters.filter(ch => st.done.has(ch.slug)).length;
+  const total = theme.chapters.length;
+  const nextCh = theme.chapters.find(ch => !st.done.has(ch.slug));
+  const started = doneCount > 0 || !!st.last;
+  const finished = doneCount === total;
+  return { theme, st, doneCount, total, nextCh, started, finished };
+}
+function readingMinutes(html) {
+  const words = stripTags(html).split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 200));
+}
+
+// ---------- Tool logos ----------
 function getToolLogoSrc(tool) {
-  const toolKey = slugify(tool.name);
-  const simpleIconSlug = TOOL_LOGO_SLUGS[toolKey];
+  const simpleIconSlug = TOOL_LOGO_SLUGS[legacySlug(tool.name)];
   if (simpleIconSlug) return `https://cdn.simpleicons.org/${simpleIconSlug}`;
-  const hostname = getHostname(tool.url);
-  if (!hostname) return '';
-  return `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
+  try {
+    const host = new URL(tool.url).hostname.replace(/^www\./, '');
+    return `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
+  } catch (e) { return ''; }
+}
+function toolLogo(tool, large = false) {
+  const src = getToolLogoSrc(tool);
+  const fallback = escapeHtml(tool.name.slice(0, 2).toUpperCase());
+  const cls = `tool-logo${large ? ' tool-logo-lg' : ''}`;
+  if (!src) return `<span class="${cls}">${fallback}</span>`;
+  return `<span class="${cls}"><img src="${src}" alt="" loading="lazy" referrerpolicy="no-referrer" data-fallback="${fallback}"></span>`;
+}
+function scoreView(score) {
+  return `<span class="score" title="Score PO ${score}/10"><span class="score-bar"><span style="width:${score * 10}%"></span></span>${Number(score).toFixed(1)}</span>`;
 }
 
-function renderToolLogo(tool) {
-  const logoSrc = getToolLogoSrc(tool);
-  if (!logoSrc) return tool.logo;
-  const fallback = tool.name.slice(0, 2).toUpperCase();
-  return `<img src="${logoSrc}" alt="${tool.name} logo" class="tool-logo-img" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove(); this.parentElement.classList.add('tool-logo-fallback'); this.parentElement.textContent='${fallback}'">`;
-}
-
-function renderCategoryCards(entries, routeName) {
-  return entries.map(([key, entry]) => `
-    <div class="category-card" ${entry.color ? `style="--card-accent: ${entry.color}"` : ''} onclick="navigateTo('${routeName}', '${key}')">
-      <div class="card-icon" ${entry.color ? `style="color: ${entry.color}; background: ${entry.color}15"` : ''}>${entry.icon}</div>
-      <h3>${entry.title}</h3>
-      <p class="card-desc">${entry.description.substring(0, 100)}...</p>
-      <span class="card-count">${routeName === 'tools' ? `${entry.tools.length} outils` : `${entry.methods.length} méthodes`} &#8594;</span>
-    </div>
-  `).join('');
-}
-
-function scrollToRouteDetail(detail) {
-  if (!detail) return;
-
-  const detailCard = document.querySelector(`[data-detail-slug="${detail}"]`);
-  if (!detailCard) return;
-
-  window.requestAnimationFrame(() => {
-    detailCard.scrollIntoView({ block: 'start', behavior: 'smooth' });
-  });
-}
-
-// ---- SPA Router ----
-function navigateTo(page, subpage, detail) {
-  const parts = [page, subpage, detail].filter(Boolean);
-  const hash = `#${parts.join('/')}`;
-  window.location.hash = hash;
-}
-
+// ---------- Router ----------
 function getRoute() {
-  const hash = window.location.hash.slice(1) || 'home';
-  const parts = hash.split('/');
-  return { page: parts[0], subpage: parts[1] || null, detail: parts[2] || null };
+  const hash = decodeURIComponent(window.location.hash.slice(1)) || 'home';
+  const [page, subpage = null, detail = null] = hash.split('/');
+  return { page: page || 'home', subpage, detail };
+}
+const TOOLBOX_PAGES = ['toolbox', 'apps', 'accelerators', 'cheatsheets'];
+function sectionOf(page) {
+  if (page === 'formation') return 'formation';
+  if (TOOLBOX_PAGES.includes(page)) return 'toolbox';
+  if (page === 'tools') return 'tools';
+  if (page === 'methods') return 'methods';
+  return 'home';
 }
 
-// ---- Render Functions ----
-function renderHome() {
-  const toolCount = Object.values(TOOL_CATEGORIES).reduce((sum, cat) => sum + cat.tools.length, 0);
-  const methodCount = Object.values(METHOD_CATEGORIES).reduce((sum, cat) => sum + cat.methods.length, 0);
-  const catCount = Object.keys(TOOL_CATEGORIES).length;
+// ---------- Sidebar ----------
+function renderSidebar(route) {
+  const section = sectionOf(route.page);
+  const toolCount = Object.values(TOOL_CATEGORIES).reduce((s, c) => s + c.tools.length, 0);
+  const methodCount = Object.values(METHOD_CATEGORIES).reduce((s, c) => s + c.methods.length, 0);
+  const nav = [
+    { id: 'home', label: 'Accueil', icon: 'home', href: '#home' },
+    { id: 'formation', label: 'Formation', icon: 'book', href: '#formation', count: Object.keys(FORMATION_CATEGORIES).length },
+    { id: 'toolbox', label: 'Boîte à outils', icon: 'grid', href: '#toolbox', count: APPS_DATA.length },
+    { id: 'tools', label: "Référentiel d'outils", icon: 'layers', href: '#tools', count: toolCount },
+    { id: 'methods', label: 'Méthodes', icon: 'compass', href: '#methods', count: methodCount },
+  ];
 
   let html = `
-    <div style="margin-bottom: 2rem;" class="fade-in">
-      <h1 style="font-size: 1.8rem; margin-bottom: 0.25rem;">PO Toolkit</h1>
-      <p style="color: var(--text-secondary); margin: 0;">${toolCount} outils &middot; ${catCount} catégories &middot; ${methodCount} méthodes &middot; templates &middot; mini-apps</p>
-    </div>
-
-    <div class="section-header">
-      <h2>Formation</h2>
-    </div>
-    <div class="categories-grid">
-      ${FORMATION_TRACKS.map(track => {
-        const themes = (formationGroupedByTrack()[track.name] || []);
-        if (!themes.length) return '';
-        return `
-        <div class="category-card" onclick="navigateTo('formation')">
-          <div class="card-icon" style="color: var(--accent); background: var(--accent-bg)">${track.icon}</div>
-          <h3>${track.name}</h3>
-          <p class="card-desc">${track.desc}</p>
-          <span class="card-count">${themes.length} parcours &#8594;</span>
-        </div>`;
-      }).join('')}
-    </div>
-
-    <div class="section-header" style="margin-top: 2.5rem;">
-      <h2>Outils par catégorie</h2>
-    </div>
-    <div class="categories-grid">${renderCategoryCards(Object.entries(TOOL_CATEGORIES), 'tools')}</div>
-    <div class="section-header" style="margin-top: 2.5rem;">
-      <h2>Méthodes & Frameworks</h2>
-    </div>
-    <div class="categories-grid">${renderCategoryCards(Object.entries(METHOD_CATEGORIES), 'methods')}</div>
-    <div class="section-header" style="margin-top: 2.5rem;">
-      <h2>Accélérateurs</h2>
-    </div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
-      <div class="category-card" onclick="navigateTo('apps')">
-        <div class="card-icon" style="color: #2563eb; background: #dbeafe">&#9889;</div>
-        <h3>Mini-Apps</h3>
-        <p class="card-desc">Priorisation, Story Splitter, PI Planning, schemas collaboratifs, facilitation...</p>
-        <span class="card-count">Voir &#8594;</span>
-      </div>
-      <div class="category-card" onclick="navigateTo('accelerators')">
-        <div class="card-icon" style="color: #16a34a; background: #dcfce7">&#128196;</div>
-        <h3>Templates & Fichiers</h3>
-        <p class="card-desc">Excel, PowerPoint, CSV prêts à l'emploi.</p>
-        <span class="card-count">Voir &#8594;</span>
-      </div>
-      <div class="category-card" onclick="navigateTo('cheatsheets')">
-        <div class="card-icon" style="color: #d97706; background: #fef3c7">&#128203;</div>
-        <h3>Cheat Sheets</h3>
-        <p class="card-desc">Fiches mémo imprimables pour le quotidien.</p>
-        <span class="card-count">Voir &#8594;</span>
-      </div>
+    <a class="brand" href="#home" aria-label="PO Toolkit, accueil">
+      <span class="brand-mark"><span></span></span>
+      <span class="brand-name">po/toolkit</span>
+    </a>
+    <div class="nav">
+      ${nav.map(n => `
+        <a class="nav-link${section === n.id ? ' is-active' : ''}" href="${n.href}"${section === n.id ? ' aria-current="page"' : ''}>
+          ${icon(n.icon, 16)}<span class="label">${n.label}</span>${n.count ? `<span class="nav-count">${n.count}</span>` : ''}
+        </a>`).join('')}
     </div>
   `;
 
+  if (route.page === 'formation' && route.subpage && FORMATION_CATEGORIES[route.subpage]) {
+    const key = route.subpage;
+    const { theme, st, doneCount, total } = courseSummary(key);
+    html += `
+      <div class="side-section">
+        <span class="eyebrow">Ce parcours</span>
+        <a class="side-title" href="#formation/${key}" style="color: inherit">${theme.title}</a>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="progress" style="flex-grow:1"><span style="width:${Math.round(doneCount / total * 100)}%"></span></div>
+          <span class="mono" style="font-size:11.5px;color:var(--text-3)">${pad2(doneCount)}/${pad2(total)}</span>
+        </div>
+        <ol class="side-list">
+          ${theme.chapters.map((ch, i) => {
+            const active = route.detail === ch.slug;
+            const done = st.done.has(ch.slug);
+            return `<li><a class="side-item${active ? ' is-active' : ''}${done ? ' is-done' : ''}" href="#formation/${key}/${ch.slug}"${active ? ' aria-current="page"' : ''}>
+              <span class="num">${done && !active ? '✓' : pad2(i + 1)}</span><span>${ch.title}</span></a></li>`;
+          }).join('')}
+          ${theme.quiz && theme.quiz.length ? `<li><a class="side-item${route.detail === 'quiz' ? ' is-active' : ''}${st.quiz ? ' is-done' : ''}" href="#formation/${key}/quiz">
+            <span class="num">${st.quiz ? '✓' : ''}</span><span>Quiz final</span>${st.quiz ? `<span class="count">${st.quiz.best}/${st.quiz.total}</span>` : ''}</a></li>` : ''}
+        </ol>
+      </div>`;
+  } else if (section === 'tools') {
+    html += `
+      <div class="side-section">
+        <span class="eyebrow">Catégories</span>
+        <div class="side-list">
+          ${Object.entries(TOOL_CATEGORIES).map(([k, c]) => `
+            <a class="side-item${route.subpage === k ? ' is-active' : ''}" href="#tools/${k}">
+              <span>${c.title}</span><span class="count">${c.tools.length}</span></a>`).join('')}
+        </div>
+      </div>`;
+  } else if (section === 'methods') {
+    html += `
+      <div class="side-section">
+        <span class="eyebrow">Familles</span>
+        <div class="side-list">
+          ${Object.entries(METHOD_CATEGORIES).map(([k, c]) => `
+            <a class="side-item${route.subpage === k ? ' is-active' : ''}" href="#methods/${k}">
+              <span>${c.title}</span><span class="count">${c.methods.length}</span></a>`).join('')}
+        </div>
+      </div>`;
+  } else if (section === 'toolbox') {
+    const items = [
+      ['apps', 'Mini-apps', APPS_DATA.length], ['accelerators', 'Templates', ACCELERATORS_DATA.length], ['cheatsheets', 'Fiches mémo', CHEATSHEETS.length],
+    ];
+    html += `
+      <div class="side-section">
+        <span class="eyebrow">Boîte à outils</span>
+        <div class="side-list">
+          ${items.map(([p, l, n]) => `<a class="side-item${route.page === p ? ' is-active' : ''}" href="#${p}"><span>${l}</span><span class="count">${n}</span></a>`).join('')}
+        </div>
+      </div>`;
+  }
   return html;
 }
 
-function renderToolsOverview() {
-  return `
-    <div class="breadcrumb">
-      <a href="#home">Accueil</a> <span class="sep">&#9656;</span>
-      <span>Outils</span>
-    </div>
-    <div class="section-header fade-in">
-      <h2>&#128203; Outils</h2>
-      <p>Explorez les catégories d'outils couvertes dans le guide et entrez dans la fiche qui vous intéresse.</p>
-    </div>
-    <div class="categories-grid">
-      ${renderCategoryCards(Object.entries(TOOL_CATEGORIES), 'tools')}
-    </div>
-  `;
-}
-
-function renderMethodsOverview() {
-  return `
-    <div class="breadcrumb">
-      <a href="#home">Accueil</a> <span class="sep">&#9656;</span>
-      <span>Méthodes</span>
-    </div>
-    <div class="section-header fade-in">
-      <h2>&#9878; Méthodes & Frameworks</h2>
-      <p>Retrouvez les principales approches de priorisation, discovery, métriques et scaling déjà structurées dans le guide.</p>
-    </div>
-    <div class="categories-grid">
-      ${renderCategoryCards(Object.entries(METHOD_CATEGORIES), 'methods')}
-    </div>
-  `;
-}
-
-function renderToolCategory(categoryKey, activeToolSlug = null) {
-  const cat = TOOL_CATEGORIES[categoryKey];
-  if (!cat) return '<h2>Catégorie non trouvee</h2>';
-
-  let html = `
-    <div class="breadcrumb">
-      <a href="#home">Accueil</a> <span class="sep">&#9656;</span>
-      <a href="#tools">Outils</a> <span class="sep">&#9656;</span>
-      <span>${cat.title}</span>
-    </div>
-    <div class="section-header fade-in">
-      <h2>${cat.icon} ${cat.title}</h2>
-      <p>${cat.description}</p>
-    </div>
-    <div class="filter-bar">
-      <button class="filter-btn active" onclick="filterTools('all', this)">Tous</button>
-      <button class="filter-btn" onclick="filterTools('free', this)">Gratuit</button>
-      <button class="filter-btn" onclick="filterTools('freemium', this)">Freemium</button>
-      <button class="filter-btn" onclick="filterTools('paid', this)">Payant</button>
-      <button class="filter-btn" onclick="filterTools('po-métier', this)">PO Métier</button>
-      <button class="filter-btn" onclick="filterTools('po-technique', this)">PO Technique</button>
-    </div>
-    <div class="tools-grid" id="tools-grid">
-  `;
-
-  for (const tool of cat.tools) {
-    const pricingTag = tool.pricing === 'free' ? 'tag-free' : tool.pricing === 'freemium' ? 'tag-freemium' : 'tag-paid';
-    const pricingLabel = tool.pricing === 'free' ? 'Gratuit' : tool.pricing === 'freemium' ? 'Freemium' : 'Payant';
-    const idealLower = tool.ideal.map(i => i.toLowerCase());
-    const toolSlug = slugify(tool.name);
-    const highlightStyle = toolSlug === activeToolSlug ? ' style="border-color: var(--accent); box-shadow: var(--shadow-md);"' : '';
-
-    html += `
-      <div class="tool-card" id="tool-${toolSlug}" data-detail-slug="${toolSlug}" data-pricing="${tool.pricing}" data-ideal="${idealLower.join(',')}"${highlightStyle}>
-        <div class="tool-card-header">
-          <div class="tool-logo">${renderToolLogo(tool)}</div>
-          <div class="tool-info">
-            <h3>${tool.name}</h3>
-            <span class="tool-tagline">${tool.tagline}</span>
-          </div>
-        </div>
-        <div class="tool-tags">
-          <span class="tag ${pricingTag}">${pricingLabel}</span>
-          ${tool.ideal.map(i => `<span class="tag">${i}</span>`).join('')}
-        </div>
-        <p class="tool-description">${tool.description}</p>
-        <div class="tool-pros-cons">
-          <div class="tool-pros">
-            <h4>&#9989; Forces</h4>
-            <ul>${tool.pros.map(p => `<li>${p}</li>`).join('')}</ul>
-          </div>
-          <div class="tool-cons">
-            <h4>&#10060; Limites</h4>
-            <ul>${tool.cons.map(c => `<li>${c}</li>`).join('')}</ul>
-          </div>
-        </div>
-        <div class="tool-rating">
-          <span class="rating-label">Score PO</span>
-          <div class="rating-bar"><div class="rating-fill" style="width: ${tool.score * 10}%"></div></div>
-          <span class="rating-score">${tool.score}/10</span>
-        </div>
-        <div class="tool-ideal" style="margin-top: 0.75rem;">
-          <span style="font-size: 0.75rem; color: var(--text-tertiary); margin-right: 0.3rem;">Intégrations :</span>
-          ${tool.intégrations.map(i => `<span class="ideal-badge">${i}</span>`).join('')}
-        </div>
-        ${tool.url ? `<a href="${tool.url}" target="_blank" rel="noopener" class="tool-website">&#127760; Site officiel &#8599;</a>` : ''}
-      </div>
-    `;
+// ---------- Breadcrumbs ----------
+function crumbsFor(route) {
+  const c = [];
+  const { page, subpage, detail } = route;
+  if (page === 'formation') {
+    c.push(['Formation', '#formation']);
+    const theme = FORMATION_CATEGORIES[subpage];
+    if (theme) {
+      c.push([theme.title, `#formation/${subpage}`]);
+      if (detail === 'quiz') c.push(['Quiz final']);
+      else if (detail) {
+        const idx = theme.chapters.findIndex(ch => ch.slug === detail);
+        if (idx >= 0) c.push([`Chapitre ${pad2(idx + 1)}`]);
+      }
+    }
+  } else if (TOOLBOX_PAGES.includes(page)) {
+    c.push(['Boîte à outils', '#toolbox']);
+    if (page === 'apps') c.push(['Mini-apps']);
+    if (page === 'accelerators') c.push(['Templates']);
+    if (page === 'cheatsheets') c.push(['Fiches mémo']);
+  } else if (page === 'tools') {
+    c.push(["Référentiel d'outils", '#tools']);
+    if (TOOL_CATEGORIES[subpage]) c.push([TOOL_CATEGORIES[subpage].title]);
+  } else if (page === 'methods') {
+    c.push(['Méthodes', '#methods']);
+    if (METHOD_CATEGORIES[subpage]) c.push([METHOD_CATEGORIES[subpage].title]);
+  } else {
+    c.push(['Accueil']);
   }
+  const last = c.length - 1;
+  return c.map(([label, href], i) => i === last || !href
+    ? `<span class="current">${label}</span>`
+    : `<a href="${href}">${label}</a><span class="sep">/</span>`).join('');
+}
 
-  html += `</div>`;
-
-  // Comparison table
-  html += `
-    <div class="section-header" style="margin-top: 3rem;">
-      <h2>&#128202; Comparatif rapide</h2>
-    </div>
-    <div class="comparison-table-wrap">
-      <table class="comparison-table">
-        <thead>
-          <tr>
-            <th>Outil</th>
-            <th>Pricing</th>
-            <th>Score</th>
-            <th>Ideal pour</th>
-            <th>Top integration</th>
-          </tr>
-        </thead>
+// ---------- Shared views ----------
+function pageHead({ kicker, title, lead, aside = '' }) {
+  return `
+    <header class="page-head">
+      <div class="head-row">
+        <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+          ${kicker ? `<span class="kicker">${kicker}</span>` : ''}
+          <h1>${title}</h1>
+        </div>
+        ${aside}
+      </div>
+      ${lead ? `<p class="lead">${lead}</p>` : ''}
+    </header>`;
+}
+function appModeView(app) {
+  return app.mode === 'realtime'
+    ? `<span style="display:inline-flex;align-items:center;gap:8px;white-space:nowrap;color:var(--text-2)"><span class="dot dot-live"></span>Temps réel</span>`
+    : `<span style="display:inline-flex;align-items:center;gap:8px;white-space:nowrap;color:var(--text-3)"><span class="dot"></span>Local</span>`;
+}
+function appsTable(apps) {
+  return `
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Outil</th><th>Usage</th><th>Mode</th><th class="right"><span class="sr-only">Ouvrir</span></th></tr></thead>
         <tbody>
-  `;
-
-  for (const tool of [...cat.tools].sort((a, b) => b.score - a.score)) {
-    html += `
-      <tr>
-        <td><strong>${tool.name}</strong></td>
-        <td><span class="tag tag-${tool.pricing === 'free' ? 'free' : tool.pricing === 'freemium' ? 'freemium' : 'paid'}">${tool.pricing === 'free' ? 'Gratuit' : tool.pricing === 'freemium' ? 'Freemium' : 'Payant'}</span></td>
-        <td><strong>${tool.score}/10</strong></td>
-        <td>${tool.ideal.slice(0, 2).join(', ')}</td>
-        <td>${tool.intégrations.slice(0, 3).join(', ')}</td>
-      </tr>
-    `;
-  }
-
-  html += `</tbody></table></div>`;
-
-  // Prev/Next navigation
-  const catKeys = Object.keys(TOOL_CATEGORIES);
-  const idx = catKeys.indexOf(categoryKey);
-  html += `<div class="page-nav">`;
-  if (idx > 0) {
-    const prev = TOOL_CATEGORIES[catKeys[idx - 1]];
-    html += `<a href="#tools/${catKeys[idx - 1]}"><span class="nav-label">&#8592; Précédent</span><span class="nav-title">${prev.title}</span></a>`;
-  } else {
-    html += `<div></div>`;
-  }
-  if (idx < catKeys.length - 1) {
-    const next = TOOL_CATEGORIES[catKeys[idx + 1]];
-    html += `<a href="#tools/${catKeys[idx + 1]}"><span class="nav-label">Suivant &#8594;</span><span class="nav-title">${next.title}</span></a>`;
-  }
-  html += `</div>`;
-
-  return html;
+          ${apps.map(a => `
+            <tr class="is-link" data-open="${a.file}">
+              <td><span class="cell-tool"><span class="tile-icon">${icon(a.icon, 16)}</span><span class="name">${a.name}</span></span></td>
+              <td class="muted">${a.short}</td>
+              <td>${appModeView(a)}</td>
+              <td class="right"><a class="btn btn-sm btn-ghost" href="${a.file}" target="_blank" rel="noopener" aria-label="Ouvrir ${a.name}">Ouvrir ${icon('external', 14)}</a></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
 }
 
-function renderMethodCategory(methodKey, activeMethodSlug = null) {
-  const cat = METHOD_CATEGORIES[methodKey];
-  if (!cat) return '<h2>Catégorie non trouvee</h2>';
+// ---------- Home ----------
+function renderHome() {
+  const courses = Object.keys(FORMATION_CATEGORIES).map(courseSummary);
+  const byKey = Object.fromEntries(Object.keys(FORMATION_CATEGORIES).map((k, i) => [k, courses[i]]));
+  const keys = Object.keys(FORMATION_CATEGORIES);
+  const started = keys.filter(k => byKey[k].started).sort((a, b) => byKey[b].st.updated - byKey[a].st.updated);
+  const learnKeys = (started.length ? started : ['ia-quotidien', 'ia-safe', 'projet-produit'].filter(k => byKey[k])).slice(0, 3);
+  const toolCount = Object.values(TOOL_CATEGORIES).reduce((s, c) => s + c.tools.length, 0);
+  const methodCount = Object.values(METHOD_CATEGORIES).reduce((s, c) => s + c.methods.length, 0);
 
-  let html = `
-    <div class="breadcrumb">
-      <a href="#home">Accueil</a> <span class="sep">&#9656;</span>
-      <a href="#methods">Méthodes</a> <span class="sep">&#9656;</span>
-      <span>${cat.title}</span>
-    </div>
-    <div class="section-header fade-in">
-      <h2>${cat.icon} ${cat.title}</h2>
-      <p>${cat.description}</p>
-    </div>
-  `;
+  const learnItem = (k) => {
+    const s = byKey[k];
+    const segs = s.theme.chapters.map(ch => `<span class="${s.st.done.has(ch.slug) ? 'on' : ''}"></span>`).join('');
+    let foot;
+    if (s.finished) foot = `<span class="foot done">${icon('check', 14)} Terminé${s.st.quiz ? ` · quiz <span class="mono">${s.st.quiz.best}/${s.st.quiz.total}</span>` : ''}</span>`;
+    else if (s.started) foot = `<span class="foot">Reprendre au chapitre ${pad2(s.theme.chapters.indexOf(s.nextCh) + 1)} ${icon('arrowRight', 14)}</span>`;
+    else foot = `<span class="foot muted">${s.theme.level} · ${s.theme.duration}</span>`;
+    const href = s.started && !s.finished ? `#formation/${k}/${s.nextCh.slug}` : `#formation/${k}`;
+    return `
+      <a class="learn-item" href="${href}">
+        <span class="top"><span class="t">${s.theme.title}</span><span class="n">${pad2(s.doneCount)}/${pad2(s.total)}</span></span>
+        <span class="segments">${segs}</span>
+        ${foot}
+      </a>`;
+  };
 
-  // Special: PDF guide for scaling
-  if (methodKey === 'scaling') {
-    html += `
-      <div class="method-card" style="background: linear-gradient(135deg, var(--accent-bg), var(--bg-secondary)); border-left: 4px solid var(--accent); display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-        <div style="font-size: 2.5rem;">&#128218;</div>
-        <div style="flex: 1; min-width: 200px;">
-          <h3 style="margin-bottom: 0.3rem;">Guide détaillé complet — Agilité à l'Échelle</h3>
-          <p style="color: var(--text-secondary); font-size: 0.85rem;">Document de référence couvrant SAFe, LeSS, Spotify Model et les bonnes pratiques de scaling. Analyse approfondie des frameworks, comparaisons et recommandations.</p>
-        </div>
-        <a href="../accelerators/agilite-echelle-guide.pdf" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; border-radius: 10px; background: var(--accent); color: white; text-decoration: none; font-weight: 700; font-size: 0.85rem; white-space: nowrap;">&#128196; Télécharger le PDF &#8599;</a>
-      </div>
-    `;
-  }
-
-  for (const method of cat.methods) {
-    const methodSlug = slugify(method.name);
-    const highlightStyle = methodSlug === activeMethodSlug ? ' style="border-color: var(--accent); box-shadow: var(--shadow-md);"' : '';
-
-    html += `
-      <div class="method-card" id="method-${methodSlug}" data-detail-slug="${methodSlug}"${highlightStyle}>
-        <div class="method-card-top">
-          <div>
-            <span class="method-badge">Framework</span>
-            <h3>${method.name}</h3>
-            <p>${method.description}</p>
-          </div>
-          <div class="method-mini-panel">
-            <h4>&#127919; Quand l'utiliser</h4>
-            <p>${method.when}</p>
-          </div>
-        </div>
-        <div class="method-panels">
-          <div class="method-panel method-panel-steps">
-            <h4>&#128260; Sequencement recommande</h4>
-            <div class="method-steps">
-              ${method.steps.map((s, i) => `
-                <div class="method-step">
-                  <div class="step-num">${i + 1}</div>
-                  <div class="step-title">${s}</div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-          <div class="method-panel">
-            <h4>&#128161; Tips terrain</h4>
-            <div class="method-tips">
-              ${method.tips.map(t => `<p>&#8226; ${t}</p>`).join('')}
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  // Prev/Next
-  const keys = Object.keys(METHOD_CATEGORIES);
-  const idx = keys.indexOf(methodKey);
-  html += `<div class="page-nav">`;
-  if (idx > 0) {
-    const prev = METHOD_CATEGORIES[keys[idx - 1]];
-    html += `<a href="#methods/${keys[idx - 1]}"><span class="nav-label">&#8592; Précédent</span><span class="nav-title">${prev.title}</span></a>`;
-  } else {
-    html += `<div></div>`;
-  }
-  if (idx < keys.length - 1) {
-    const next = METHOD_CATEGORIES[keys[idx + 1]];
-    html += `<a href="#methods/${keys[idx + 1]}"><span class="nav-label">Suivant &#8594;</span><span class="nav-title">${next.title}</span></a>`;
-  }
-  html += `</div>`;
-
-  return html;
-}
-
-function renderAccelerators() {
-  let html = `
-    <div class="breadcrumb">
-      <a href="#home">Accueil</a> <span class="sep">&#9656;</span>
-      <span>Accélérateurs</span>
-    </div>
-    <div class="section-header fade-in">
-      <h2>&#128640; Accélérateurs & Templates</h2>
-      <p>Templates et fichiers prêts à l'emploi. Téléchargez, personnalisez, utilisez. Chaque fichier inclut un onglet ou une slide Guide.</p>
-    </div>
-  `;
-
-  const iconMap = { xlsx: '&#128202;', pptx: '&#128198;', csv: '&#128196;', html: '&#9889;' };
-  const labelMap = { xlsx: 'Excel', pptx: 'PowerPoint', csv: 'CSV', html: 'HTML' };
-
-  for (const [format, meta] of Object.entries(ACCELERATOR_FORMAT_META)) {
-    const entries = ACCELERATORS_DATA.filter(acc => acc.format === format);
-    if (entries.length === 0) continue;
-    html += `
-      <section class="accelerator-group fade-in">
-        <div class="section-header" style="margin-bottom: 1.2rem;">
-          <h2>${meta.title}</h2>
-          <p>${meta.description}</p>
-        </div>
-    `;
-    for (const acc of entries) {
-      html += `
-        <div class="accelerator-card">
-          <div class="accelerator-icon ${acc.format}">${iconMap[acc.format]}</div>
-          <div class="accelerator-info">
-            <h3>${acc.name}</h3>
-            <p>${acc.desc}</p>
-          </div>
-          <a href="${acc.file}" class="download-btn" download>&#11015; ${labelMap[acc.format]}</a>
-        </div>
-      `;
-    }
-    html += `</section>`;
-  }
-
-  return html;
-}
-
-function renderApps() {
-  let html = `
-    <div class="breadcrumb">
-      <a href="#home">Accueil</a> <span class="sep">&#9656;</span>
-      <span>Mini-Apps</span>
-    </div>
-    <div class="section-header fade-in">
-      <h2>&#9889; Mini-Apps Interactives</h2>
-      <p>Applications web standalone. Ouvrez-les dans votre navigateur, zéro installation.</p>
-    </div>
-  `;
-
-  let currentSection = '';
-  for (const app of APPS_DATA) {
-    if (app.section !== currentSection) {
-      currentSection = app.section;
-      html += `
-        <div class="section-header fade-in" style="margin-top: 1.75rem;">
-          <h2>${app.section}</h2>
-          <p>${APP_SECTION_DESCRIPTIONS[app.section] || ''}</p>
-        </div>
-      `;
-    }
-    html += `
-      <div class="accelerator-card">
-        <div class="accelerator-icon html">&#9889;</div>
-        <div class="accelerator-info">
-          <h3>${app.name}</h3>
-          <p>${app.desc}</p>
-        </div>
-        <a href="${app.file}" class="download-btn" target="_blank" style="background: ${app.color}">&#9654; Ouvrir</a>
-      </div>
-    `;
-  }
-
-  return html;
-}
-
-function renderCheatsheets() {
-  let html = `
-    <div class="breadcrumb">
-      <a href="#home">Accueil</a> <span class="sep">&#9656;</span>
-      <span>Cheat Sheets</span>
-    </div>
-    <div class="section-header fade-in">
-      <h2>&#128203; Cheat Sheets</h2>
-      <p>Fiches mémo essentielles. Imprimez-les (Ctrl+P) et gardez-les sous la main.</p>
-    </div>
-
-    <div class="cheatsheet">
-      <h3>&#9997; Redaction de User Stories</h3>
-      <div class="cheatsheet-grid">
-        <div class="cheatsheet-item">
-          <h4>Format standard</h4>
-          <p><strong>En tant que</strong> [persona],<br><strong>je veux</strong> [action],<br><strong>afin de</strong> [benefice].</p>
-        </div>
-        <div class="cheatsheet-item">
-          <h4>Critères INVEST</h4>
-          <p><strong>I</strong>ndependante, <strong>N</strong>egociable, <strong>V</strong>alorisable, <strong>E</strong>stimable, <strong>S</strong>uffisamment petite, <strong>T</strong>estable</p>
-        </div>
-        <div class="cheatsheet-item">
-          <h4>Critères d'acceptance (Given/When/Then)</h4>
-          <p><strong>Etant donne</strong> [contexte],<br><strong>quand</strong> [action],<br><strong>alors</strong> [résultat attendu].</p>
-        </div>
-        <div class="cheatsheet-item">
-          <h4>Story Splitting patterns</h4>
-          <p>Par workflow step, par regles métier, par type de données, par interface, par performance, happy path vs edge cases.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="cheatsheet">
-      <h3>&#9878; Priorisation rapide</h3>
-      <div class="cheatsheet-grid">
-        <div class="cheatsheet-item">
-          <h4>RICE</h4>
-          <p><strong>R</strong>each x <strong>I</strong>mpact x <strong>C</strong>onfidence / <strong>E</strong>ffort<br>Impact: 3=massif, 2=haut, 1=moyen, 0.5=faible, 0.25=minimal</p>
-        </div>
-        <div class="cheatsheet-item">
-          <h4>MoSCoW</h4>
-          <p><strong>M</strong>ust have (&le;60%), <strong>S</strong>hould have (~20%), <strong>C</strong>ould have (~20%), <strong>W</strong>on't have (this time)</p>
-        </div>
-        <div class="cheatsheet-item">
-          <h4>WSJF</h4>
-          <p>Cost of Delay / Job Size<br>CoD = User Value + Time Criticality + Risk Reduction</p>
-        </div>
-        <div class="cheatsheet-item">
-          <h4>Value/Effort Matrix</h4>
-          <p>&#127775; Quick Wins (haute V, faible E)<br>&#128640; Big Bets (haute V, haut E)<br>&#128161; Fill-ins (faible V, faible E)<br>&#9940; Money Pits (faible V, haut E)</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="cheatsheet">
-      <h3>&#128200; Métriques essentielles</h3>
-      <div class="cheatsheet-grid">
-        <div class="cheatsheet-item">
-          <h4>HEART (Google)</h4>
-          <p><strong>H</strong>appiness (NPS, CSAT)<br><strong>E</strong>ngagement (DAU/MAU)<br><strong>A</strong>doption (signups, activation)<br><strong>R</strong>etention (churn, DAU/MAU)<br><strong>T</strong>ask success (complétion rate)</p>
-        </div>
-        <div class="cheatsheet-item">
-          <h4>AARRR (Pirate Metrics)</h4>
-          <p><strong>A</strong>cquisition → <strong>A</strong>ctivation → <strong>R</strong>etention → <strong>R</strong>evenue → <strong>R</strong>eferral<br>Concentrez-vous sur le maillon faible.</p>
-        </div>
-        <div class="cheatsheet-item">
-          <h4>Agile Delivery</h4>
-          <p>Velocity (SP/sprint), Lead Time, Cycle Time, Throughput, Sprint Burndown, Cumulative Flow, Defect Escape Rate</p>
-        </div>
-        <div class="cheatsheet-item">
-          <h4>SaaS Business</h4>
-          <p>MRR/ARR, Churn Rate, LTV, CAC, LTV:CAC Ratio (&ge;3:1), Net Revenue Retention, Payback Period</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="cheatsheet">
-      <h3>&#128197; Ceremonies Agile — Rôle du PO</h3>
-      <div class="cheatsheet-grid">
-        <div class="cheatsheet-item">
-          <h4>Sprint Planning</h4>
-          <p><strong>Avant :</strong> backlog groom&eacute;, stories ready<br><strong>Pendant :</strong> pr&eacute;senter le why, clarifier, ne pas imposer le how<br><strong>Output :</strong> sprint goal + sprint backlog</p>
-        </div>
-        <div class="cheatsheet-item">
-          <h4>Daily Standup</h4>
-          <p><strong>Rôle PO :</strong> écouter, débloquer, pas micro-manager<br><strong>Duree :</strong> 15 min max<br><strong>Apport :</strong> contexte business si besoin</p>
-        </div>
-        <div class="cheatsheet-item">
-          <h4>Sprint Review</h4>
-          <p><strong>Avant :</strong> inviter les stakeholders<br><strong>Pendant :</strong> demo du Done, collecter feedback<br><strong>Apres :</strong> adapter le backlog</p>
-        </div>
-        <div class="cheatsheet-item">
-          <h4>Refinement</h4>
-          <p><strong>Frequence :</strong> 1-2x par sprint<br><strong>Contenu :</strong> clarifier stories, estimer, splitter<br><strong>Objectif :</strong> 2 sprints de stories ready</p>
-        </div>
-      </div>
-    </div>
-  `;
-
-  return html;
-}
-
-// ---- Formation ----
-function renderFormationCard(key, theme) {
   return `
-    <div class="category-card" style="--card-accent: ${theme.color}" onclick="navigateTo('formation', '${key}')">
-      <div class="card-icon" style="color: ${theme.color}; background: ${theme.color}15">${theme.icon}</div>
-      <h3>${theme.title}</h3>
-      <p class="card-desc">${theme.tagline}</p>
-      <div class="formation-card-meta">
-        <span class="formation-pill">${theme.chapters.length} chapitres</span>
-        <span class="formation-pill">${theme.level}</span>
-        <span class="formation-pill">&#9201; ${theme.duration}</span>
+    <div class="page">
+      <section class="section" style="gap:16px">
+        <h1 class="home-title">Que voulez-vous faire&#8239;?</h1>
+        <div class="panel command">
+          <button class="command-input" data-action="open-palette">
+            ${icon('search', 18)}<span class="grow">Rechercher un outil, une méthode, un chapitre…</span><kbd>Ctrl K</kbd>
+          </button>
+          <div class="command-list">
+            ${QUICK_ACTIONS.map(a => `
+              <a class="command-item" href="${a.file}" target="_blank" rel="noopener" aria-keyshortcuts="${a.shortcut.toUpperCase()}">
+                ${icon(a.icon, 16)}<span class="label">${a.task}</span><span class="hint">${a.name}</span><kbd>${a.shortcut.toUpperCase()}</kbd>
+              </a>`).join('')}
+          </div>
+        </div>
+      </section>
+
+      <div class="home-grid">
+        <section class="section">
+          <div class="section-bar"><h2>Boîte à outils</h2><a href="#toolbox">Tout voir</a></div>
+          ${appsTable(APPS_DATA.filter(a => a.key !== 'json'))}
+        </section>
+        <section class="section">
+          <div class="section-bar"><h2>${started.length ? 'Ma formation' : 'Pour commencer'}</h2><a href="#formation">Parcours</a></div>
+          <div class="panel learn-card">${learnKeys.map(learnItem).join('')}</div>
+        </section>
       </div>
-      <span class="card-count">Commencer &#8594;</span>
-    </div>
-  `;
+
+      <section class="section">
+        <div class="section-bar"><h2>Explorer</h2></div>
+        <div class="explore">
+          <a class="panel" href="#tools"><span class="t">Référentiel d'outils ${icon('arrowRight', 14)}</span><span class="d">Jira, Productboard, Amplitude… analysés du point de vue du PO.</span><span class="n">${toolCount} outils · ${Object.keys(TOOL_CATEGORIES).length} catégories</span></a>
+          <a class="panel" href="#methods"><span class="t">Méthodes ${icon('arrowRight', 14)}</span><span class="d">Priorisation, discovery, métriques, agilité à l'échelle.</span><span class="n">${methodCount} méthodes</span></a>
+          <a class="panel" href="#accelerators"><span class="t">Templates ${icon('arrowRight', 14)}</span><span class="d">Classeurs Excel, supports PowerPoint et imports CSV.</span><span class="n">${ACCELERATORS_DATA.length} fichiers</span></a>
+        </div>
+      </section>
+    </div>`;
+}
+
+// ---------- Formation ----------
+function courseProgressCell(key) {
+  const s = courseSummary(key);
+  if (s.finished) return `<span class="course-progress"><span class="done">${icon('check', 13)} Terminé</span></span>`;
+  if (!s.started) return `<span class="course-progress">${plural(s.total, 'chapitre', 'chapitres')}</span>`;
+  return `<span class="course-progress"><span>${pad2(s.doneCount)}/${pad2(s.total)}</span><span class="progress"><span style="width:${Math.round(s.doneCount / s.total * 100)}%"></span></span></span>`;
 }
 
 function renderFormationOverview() {
-  let html = `
-    <div class="breadcrumb">
-      <a href="#home">Accueil</a> <span class="sep">&#9656;</span>
-      <span>Formation</span>
-    </div>
-    <div class="section-header fade-in">
-      <h2>&#127891; Formation</h2>
-      <p>Des parcours de cours structurés pour monter en compétence. Chaque thématique se parcourt chapitre par chapitre, avec points clés et exercices pratiques à réaliser dans nos mini-apps.</p>
-    </div>
-  `;
+  const keys = Object.keys(FORMATION_CATEGORIES);
+  const groups = {};
+  keys.forEach(k => { const t = FORMATION_CATEGORIES[k].track || 'Autres'; (groups[t] = groups[t] || []).push(k); });
+  const trackOrder = [...FORMATION_TRACKS.map(t => t.name), ...Object.keys(groups).filter(t => !FORMATION_TRACKS.some(x => x.name === t))];
 
-  const groups = formationGroupedByTrack();
-  for (const track of FORMATION_TRACKS) {
-    const themes = groups[track.name];
-    if (!themes || !themes.length) continue;
-    html += `
-      <div class="section-header fade-in" style="margin-top: 1.75rem;">
-        <h2>${track.icon} ${track.name}</h2>
-        <p>${track.desc}</p>
-      </div>
-      <div class="categories-grid">
-        ${themes.map(([key, theme]) => renderFormationCard(key, theme)).join('')}
-      </div>
-    `;
-  }
-  // Any theme without a known track
-  const known = new Set(FORMATION_TRACKS.map(t => t.name));
-  for (const [trackName, themes] of Object.entries(groups)) {
-    if (known.has(trackName)) continue;
-    html += `<div class="categories-grid">${themes.map(([key, theme]) => renderFormationCard(key, theme)).join('')}</div>`;
-  }
-  return html;
+  return `
+    <div class="page">
+      ${pageHead({ kicker: `${keys.length} parcours`, title: 'Formation', lead: "Des parcours structurés chapitre par chapitre, avec points clés, exercices dans les mini-apps et un quiz de mise en situation. Votre progression est enregistrée dans ce navigateur." })}
+      ${trackOrder.filter(t => groups[t]).map(t => {
+        const track = FORMATION_TRACKS.find(x => x.name === t);
+        return `
+          <section class="section">
+            <div class="section-bar"><h2>${t}</h2>${track ? `<p>${track.desc}</p>` : ''}</div>
+            <div class="panel rows course-list">
+              ${groups[t].map(k => {
+                const th = FORMATION_CATEGORIES[k];
+                return `
+                  <a class="row-link" href="#formation/${k}">
+                    <span class="tile-icon">${icon(COURSE_ICONS[k] || 'book', 16)}</span>
+                    <span style="min-width:0"><span class="title">${th.title}</span><span class="desc" style="display:block">${th.tagline}</span></span>
+                    ${courseProgressCell(k)}
+                    <span class="meta"><span>${th.level}</span><span>${th.duration}</span>${icon('chevron', 16, 'chev')}</span>
+                  </a>`;
+              }).join('')}
+            </div>
+          </section>`;
+      }).join('')}
+    </div>`;
 }
 
-function renderFormationTheme(themeKey, chapterSlug = null) {
-  const theme = FORMATION_CATEGORIES[themeKey];
-  if (!theme) return '<h2>Thématique non trouvée</h2>';
+function renderCourse(key) {
+  const s = courseSummary(key);
+  const th = s.theme;
+  const cta = s.finished
+    ? `<a class="btn btn-primary" href="#formation/${key}/${th.chapters[0].slug}">Revoir le parcours</a>`
+    : s.started
+      ? `<a class="btn btn-primary" href="#formation/${key}/${s.nextCh.slug}"><span class="num">${pad2(th.chapters.indexOf(s.nextCh) + 1)}</span> Reprendre ${icon('arrowRight', 14)}</a>`
+      : `<a class="btn btn-primary" href="#formation/${key}/${th.chapters[0].slug}">Commencer ${icon('arrowRight', 14)}</a>`;
 
-  let html = `
-    <div class="breadcrumb">
-      <a href="#home">Accueil</a> <span class="sep">&#9656;</span>
-      <a href="#formation">Formation</a> <span class="sep">&#9656;</span>
-      <span>${theme.title}</span>
-    </div>
-    <div class="formation-hero fade-in" style="--card-accent: ${theme.color}">
-      <div class="formation-hero-icon" style="color: ${theme.color}; background: ${theme.color}1a">${theme.icon}</div>
-      <div>
-        <h1>${theme.title}</h1>
-        <div class="formation-card-meta" style="margin: 0.4rem 0 0.7rem;">
-          <span class="formation-pill">${theme.chapters.length} chapitres</span>
-          <span class="formation-pill">${theme.level}</span>
-          <span class="formation-pill">&#9201; ${theme.duration}</span>
-        </div>
-        <p>${theme.description}</p>
+  return `
+    <div class="page">
+      <div class="course-hero">
+        ${pageHead({ kicker: `${th.track} · ${th.level} · ${th.duration}`, title: th.title, lead: th.description })}
+        <aside class="panel course-card">
+          <div class="stat"><span>Progression</span><b>${pad2(s.doneCount)}/${pad2(s.total)}</b></div>
+          <div class="segments">${th.chapters.map(ch => `<span class="${s.st.done.has(ch.slug) ? 'on' : ''}"></span>`).join('')}</div>
+          ${th.quiz ? `<div class="stat"><span>Quiz final</span><b>${s.st.quiz ? `${s.st.quiz.best}/${s.st.quiz.total}` : '—'}</b></div>` : ''}
+          ${cta}
+        </aside>
       </div>
-    </div>
-    <div class="formation-intro fade-in">${theme.intro}</div>
-  `;
-
-  // Table of contents
-  html += `
-    <div class="formation-toc fade-in">
-      <h3>&#128214; Plan du cours</h3>
-      <ol>
-  `;
-  theme.chapters.forEach((ch, i) => {
-    html += `<li><a href="#formation/${themeKey}/${ch.slug}"><span class="toc-num">${i + 1}</span><span class="toc-text"><strong>${ch.title}</strong><span>${ch.summary}</span></span></a></li>`;
-  });
-  if (theme.quiz && theme.quiz.length) {
-    html += `<li><a href="#formation/${themeKey}/quiz"><span class="toc-num">&#127919;</span><span class="toc-text"><strong>Quiz final</strong><span>${theme.quiz.length} mises en situation pour vérifier que vous savez appliquer le cours.</span></span></a></li>`;
-  }
-  html += `</ol></div>`;
-
-  // Chapters
-  theme.chapters.forEach((ch, i) => {
-    const isActive = ch.slug === chapterSlug;
-    html += `
-      <article class="formation-chapter${isActive ? ' is-active' : ''}" id="chapter-${ch.slug}" data-detail-slug="${ch.slug}">
-        <div class="formation-chapter-head">
-          <span class="formation-chapter-num" style="background: ${theme.color}">${i + 1}</span>
-          <h2>${ch.title}</h2>
+      <section class="prose" style="max-width:720px">${th.intro}</section>
+      <section class="section">
+        <div class="section-bar"><h2>Plan du parcours</h2><p>${plural(s.total, 'chapitre', 'chapitres')}${th.quiz ? ' · quiz final' : ''}</p></div>
+        <div class="panel rows">
+          ${th.chapters.map((ch, i) => {
+            const done = s.st.done.has(ch.slug);
+            return `
+              <a class="row-link plan-item${done ? ' is-done' : ''}" href="#formation/${key}/${ch.slug}">
+                <span class="n">${pad2(i + 1)}</span>
+                <span style="min-width:0"><span class="title">${ch.title}</span><span class="desc" style="display:block">${ch.summary}</span></span>
+                <span class="status">${done ? `${icon('check', 13)} Lu` : `${readingMinutes(ch.content)} min`}</span>
+              </a>`;
+          }).join('')}
+          ${th.quiz ? `
+            <a class="row-link plan-item${s.st.quiz ? ' is-done' : ''}" href="#formation/${key}/quiz">
+              <span class="n">${icon('target', 15)}</span>
+              <span><span class="title">Quiz final</span><span class="desc" style="display:block">${th.quiz.length} mises en situation pour vérifier que vous savez appliquer le cours.</span></span>
+              <span class="status">${s.st.quiz ? `${icon('check', 13)} ${s.st.quiz.best}/${s.st.quiz.total}` : `${th.quiz.length} questions`}</span>
+            </a>` : ''}
         </div>
-        <div class="formation-content">${ch.content}</div>
-        <div class="formation-keypoints">
-          <h4>&#128273; À retenir</h4>
-          <ul>${ch.keyPoints.map(k => `<li>${k}</li>`).join('')}</ul>
-        </div>
-        ${renderExercise(ch.exercise, theme.defaultApp)}
-      </article>
-    `;
-  });
-
-  html += renderQuiz(themeKey, theme);
-
-  // Completion note
-  const endApp = theme.defaultApp;
-  html += `
-    <div class="formation-end fade-in">
-      <h3>&#127942; Cours terminé</h3>
-      <p>Vous avez parcouru les ${theme.chapters.length} chapitres. Le meilleur ancrage reste la pratique : refaites les exercices sur un cas réel, et confrontez vos productions à un pair pour challenger vos choix.</p>
-      ${endApp ? `<a class="formation-cta" href="${endApp.file}" target="_blank">&#9654; Ouvrir ${endApp.name}</a>` : `<a class="formation-cta" href="#apps">&#9889; Voir les mini-apps</a>`}
-    </div>
-  `;
-
-  return html;
+      </section>
+    </div>`;
 }
 
 function renderExercise(ex, defaultApp) {
   if (!ex) return '';
   const app = ex.app || defaultApp || null;
   return `
-    <div class="formation-exercise">
-      <div class="formation-exercise-head">
-        <span class="formation-exercise-badge">&#9999; Exercice</span>
-        <h4>${ex.title}</h4>
+    <section class="panel exercise">
+      <div class="exercise-head">
+        <span class="eyebrow" style="color:var(--accent-text)">Exercice</span>
+        <h3>${ex.title}</h3>
+        <p>${ex.brief}</p>
       </div>
-      <p class="formation-exercise-brief">${ex.brief}</p>
-      <div class="formation-exercise-body">
-        <div class="formation-exercise-col">
-          <h5>&#129518; Étapes</h5>
-          <ol>${ex.steps.map(s => `<li>${s}</li>`).join('')}</ol>
-        </div>
-        <div class="formation-exercise-col">
-          <h5>&#9989; Critères de réussite</h5>
-          <ul class="formation-checklist">${ex.checklist.map(c => `<li>${c}</li>`).join('')}</ul>
-        </div>
+      <div class="exercise-body">
+        <div class="exercise-col"><span class="eyebrow">Étapes</span><ol>${ex.steps.map(st => `<li><span>${st}</span></li>`).join('')}</ol></div>
+        <div class="exercise-col"><span class="eyebrow">Critères de réussite</span><ul>${ex.checklist.map(c => `<li>${icon('check', 14)}<span>${c}</span></li>`).join('')}</ul></div>
       </div>
-      <div class="formation-exercise-footer">
-        <span class="formation-deliverable"><strong>Livrable :</strong> ${ex.deliverable}</span>
-        ${app ? `<a class="formation-cta" href="${app.file}" target="_blank">&#9654; Ouvrir ${app.name}</a>` : ''}
+      <div class="exercise-foot">
+        <span class="deliverable"><b>Livrable :</b> ${ex.deliverable}</span>
+        ${app ? `<a class="btn btn-sm" href="${app.file}" target="_blank" rel="noopener">Ouvrir ${app.name} ${icon('external', 14)}</a>` : ''}
       </div>
-    </div>
-  `;
+    </section>`;
 }
 
-// ---- Formation quiz ----
+function renderChapter(key, slug) {
+  const th = FORMATION_CATEGORIES[key];
+  const idx = th.chapters.findIndex(ch => ch.slug === slug);
+  if (idx < 0) return renderCourse(key);
+  const ch = th.chapters[idx];
+  setLastChapter(key, slug);
+
+  const sections = [];
+  const content = ch.content.replace(/<h4>([\s\S]*?)<\/h4>/g, (m, inner) => {
+    const id = `sec-${sections.length + 1}`;
+    sections.push({ id, title: stripTags(inner) });
+    return `<h4 id="${id}" class="section-title">${inner}</h4>`;
+  });
+  if (ch.exercise) sections.push({ id: 'sec-exercise', title: 'Exercice' });
+
+  const prev = idx > 0 ? th.chapters[idx - 1] : null;
+  const next = idx < th.chapters.length - 1 ? th.chapters[idx + 1] : null;
+  const nextHref = next ? `#formation/${key}/${next.slug}` : (th.quiz ? `#formation/${key}/quiz` : `#formation/${key}`);
+  const nextLabel = next ? `<span class="num">${pad2(idx + 2)}</span> ${next.title}` : (th.quiz ? 'Passer au quiz final' : 'Terminer le parcours');
+
+  return `
+    <div class="chapter">
+      <article style="display:flex;flex-direction:column;gap:28px;min-width:0">
+        <header class="chapter-head">
+          <span class="kicker">Chapitre ${pad2(idx + 1)} · ${readingMinutes(ch.content)} min de lecture</span>
+          <h1>${ch.title}</h1>
+          <p class="lead">${ch.summary}</p>
+        </header>
+        <div class="prose">${content}</div>
+        <section class="panel keypoints">
+          <span class="eyebrow">À retenir</span>
+          <ul>${ch.keyPoints.map(k => `<li>${icon('check', 14)}<span>${k}</span></li>`).join('')}</ul>
+        </section>
+        <div id="sec-exercise" style="scroll-margin-top:calc(var(--topbar-h) + 24px)">${renderExercise(ch.exercise, th.defaultApp)}</div>
+        <nav class="chapter-nav" aria-label="Navigation entre chapitres">
+          ${prev ? `<a class="prev" href="#formation/${key}/${prev.slug}">${icon('arrowLeft', 14)} ${prev.title}</a>` : `<a class="prev" href="#formation/${key}">${icon('arrowLeft', 14)} Présentation du parcours</a>`}
+          <button class="btn btn-primary" data-action="complete-chapter" data-course="${key}" data-slug="${slug}" data-next="${nextHref}">${nextLabel} ${icon('arrowRight', 14)}</button>
+        </nav>
+      </article>
+      ${sections.length ? `
+        <aside class="toc" aria-label="Sur cette page">
+          <span class="eyebrow">Sur cette page</span>
+          ${sections.map(s => `<button data-action="toc" data-target="${s.id}">${s.title}</button>`).join('')}
+        </aside>` : ''}
+    </div>`;
+}
+
+function renderQuizPage(key) {
+  const th = FORMATION_CATEGORIES[key];
+  if (!th.quiz || !th.quiz.length) return renderCourse(key);
+  const st = courseState(key);
+  return `
+    <div class="page" style="gap:32px">
+      ${pageHead({ kicker: `Quiz final · ${th.quiz.length} questions${st.quiz ? ` · meilleur score ${st.quiz.best}/${st.quiz.total}` : ''}`, title: 'Mettez le cours en pratique', lead: "Des mises en situation plutôt que des définitions. Une seule réponse est correcte ; l'explication s'affiche dès que vous avez choisi." })}
+      ${renderQuiz(key, th)}
+    </div>`;
+}
+
+// Quiz (ids kept stable: #quiz-<key>)
 function renderQuiz(themeKey, theme) {
   const quiz = theme.quiz;
-  if (!quiz || !quiz.length) return '';
   return `
-    <section class="formation-quiz fade-in" id="quiz-${themeKey}" data-detail-slug="quiz">
-      <div class="formation-quiz-head">
-        <span class="formation-exercise-badge">&#127919; Quiz final</span>
-        <h2>Mettez le cours en pratique</h2>
-        <p>${quiz.length} mises en situation. Une seule réponse est correcte à chaque fois ; l'explication s'affiche dès que vous avez choisi.</p>
-      </div>
+    <section class="quiz" id="quiz-${themeKey}">
       ${quiz.map((item, qi) => `
         <div class="quiz-question" data-qi="${qi}">
-          <p class="quiz-q"><span class="quiz-num">${qi + 1}</span><span>${item.q}</span></p>
+          <p class="quiz-q"><span class="quiz-num">${pad2(qi + 1)}</span><span>${item.q}</span></p>
           <div class="quiz-options">
-            ${item.options.map((opt, oi) => `<button type="button" class="quiz-option" data-oi="${oi}" onclick="answerQuiz('${themeKey}', ${qi}, ${oi})"><span class="quiz-letter">${String.fromCharCode(65 + oi)}</span><span>${opt}</span></button>`).join('')}
+            ${item.options.map((opt, oi) => `<button type="button" class="quiz-option" data-action="quiz-answer" data-course="${themeKey}" data-q="${qi}" data-o="${oi}"><span class="quiz-letter">${String.fromCharCode(65 + oi)}</span><span>${opt}</span></button>`).join('')}
           </div>
-          <div class="quiz-explanation"></div>
-        </div>
-      `).join('')}
-      <div class="quiz-footer">
-        <span class="quiz-score" aria-live="polite">Score : 0 / ${quiz.length}</span>
-        <button type="button" class="quiz-reset" onclick="resetQuiz('${themeKey}')">&#8635; Recommencer</button>
-      </div>
+          <div class="quiz-explanation" aria-live="polite"></div>
+        </div>`).join('')}
       <div class="quiz-result"></div>
-    </section>
-  `;
+      <div class="panel quiz-footer">
+        <span class="quiz-score" aria-live="polite">0/${quiz.length} · ${quiz.length} restantes</span>
+        <button type="button" class="btn btn-sm btn-ghost" data-action="quiz-reset" data-course="${themeKey}">${icon('refresh', 14)} Recommencer</button>
+      </div>
+    </section>`;
 }
 
 function answerQuiz(themeKey, qi, oi) {
@@ -878,20 +682,21 @@ function answerQuiz(themeKey, qi, oi) {
   const correct = oi === item.answer;
   block.classList.add('is-answered', correct ? 'is-right' : 'is-wrong');
   block.querySelectorAll('.quiz-option').forEach(btn => {
-    const idx = Number(btn.dataset.oi);
+    const idx = Number(btn.dataset.o);
     btn.disabled = true;
     if (idx === item.answer) btn.classList.add('is-correct');
     else if (idx === oi) btn.classList.add('is-chosen-wrong');
   });
   const expl = block.querySelector('.quiz-explanation');
-  expl.innerHTML = `<strong>${correct ? '&#9989; Bonne réponse.' : `&#10060; La bonne réponse était ${String.fromCharCode(65 + item.answer)}.`}</strong> ${item.explanation}`;
+  expl.innerHTML = `<strong>${correct ? 'Bonne réponse.' : `La bonne réponse était ${String.fromCharCode(65 + item.answer)}.`}</strong> ${item.explanation}`;
   expl.classList.add('is-visible');
 
   const answered = section.querySelectorAll('.quiz-question.is-answered').length;
   const right = section.querySelectorAll('.quiz-question.is-right').length;
-  section.querySelector('.quiz-score').textContent = `Score : ${right} / ${answered}` + (answered < quiz.length ? ` (${quiz.length - answered} restantes)` : '');
+  section.querySelector('.quiz-score').textContent = `${right}/${answered} correctes` + (answered < quiz.length ? ` · ${quiz.length - answered} restantes` : ' · terminé');
 
   if (answered === quiz.length) {
+    saveQuizScore(themeKey, right, quiz.length);
     const ratio = right / quiz.length;
     const verdict = ratio >= 0.85
       ? 'Excellent : vous maîtrisez les arbitrages du cours.'
@@ -899,8 +704,9 @@ function answerQuiz(themeKey, qi, oi) {
         ? 'Bonne base. Relisez les explications des questions manquées et les chapitres correspondants.'
         : 'Les notions sont encore fragiles : reprenez les chapitres, puis refaites le quiz.';
     const result = section.querySelector('.quiz-result');
-    result.innerHTML = `<strong>Résultat : ${right} / ${quiz.length}.</strong> ${verdict}`;
+    result.innerHTML = `<strong>Résultat : ${right}/${quiz.length}.</strong> ${verdict}`;
     result.classList.add('is-visible');
+    refreshSidebar();
   }
 }
 
@@ -911,258 +717,586 @@ function resetQuiz(themeKey) {
   document.getElementById(`quiz-${themeKey}`).scrollIntoView({ block: 'start', behavior: 'smooth' });
 }
 
-// ---- Filter Tools ----
-function filterTools(filter, btn) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-
-  document.querySelectorAll('.tool-card').forEach(card => {
-    const pricing = card.dataset.pricing;
-    const ideal = card.dataset.ideal || '';
-    let show = true;
-    if (filter === 'free') show = pricing === 'free';
-    else if (filter === 'freemium') show = pricing === 'freemium';
-    else if (filter === 'paid') show = pricing === 'paid';
-    else if (filter === 'po-métier') show = ideal.includes('po métier');
-    else if (filter === 'po-technique') show = ideal.includes('po technique');
-    card.style.display = show ? '' : 'none';
-  });
+// ---------- Boîte à outils ----------
+function templatesList(items) {
+  return `
+    <div class="panel rows">
+      ${items.map(a => `
+        <a class="row-link" href="${a.file}" download>
+          <span class="format-badge ${a.format}">${a.format.toUpperCase()}</span>
+          <span style="min-width:0"><span class="title">${a.name}</span><span class="desc" style="display:block">${a.desc}</span></span>
+          <span class="meta">${icon('download', 15)}</span>
+        </a>`).join('')}
+    </div>`;
 }
 
-// ---- Search ----
-function buildSearchIndex() {
-  const index = [];
-  for (const [key, cat] of Object.entries(TOOL_CATEGORIES)) {
-    for (const tool of cat.tools) {
-      index.push({
-        title: tool.name,
-        category: cat.title,
-        type: 'tool',
-        icon: tool.logo,
-        link: `#tools/${key}/${slugify(tool.name)}`,
-        searchText: `${tool.name} ${tool.tagline} ${tool.description} ${cat.title} ${tool.ideal.join(' ')} ${tool.intégrations.join(' ')}`.toLowerCase()
-      });
-    }
-  }
-  for (const [key, cat] of Object.entries(METHOD_CATEGORIES)) {
-    for (const method of cat.methods) {
-      index.push({
-        title: method.name,
-        category: cat.title,
-        type: 'method',
-        icon: cat.icon,
-        link: `#methods/${key}/${slugify(method.name)}`,
-        searchText: `${method.name} ${method.description} ${cat.title} ${method.when} ${method.tips.join(' ')}`.toLowerCase()
-      });
-    }
-  }
-  for (const [key, theme] of Object.entries(FORMATION_CATEGORIES)) {
-    for (const ch of theme.chapters) {
-      index.push({
-        title: ch.title,
-        category: `Formation · ${theme.title}`,
-        type: 'formation',
-        icon: theme.icon,
-        link: `#formation/${key}/${ch.slug}`,
-        searchText: `${ch.title} ${ch.summary} ${theme.title} ${ch.keyPoints.join(' ')} ${ch.exercise ? ch.exercise.title : ''}`.toLowerCase()
-      });
-    }
-  }
-  return index;
+function renderToolbox() {
+  return `
+    <div class="page">
+      ${pageHead({ title: 'Boîte à outils', lead: "Des mini-apps prêtes à l'emploi pour vos rituels, des templates à télécharger et des fiches mémo. Rien à installer." })}
+      <section class="section">
+        <div class="section-bar"><h2>Mini-apps</h2><a href="#apps">Détails</a></div>
+        ${appsTable(APPS_DATA)}
+      </section>
+      <section class="section">
+        <div class="section-bar"><h2>Templates</h2><a href="#accelerators">Tout voir</a></div>
+        ${templatesList(ACCELERATORS_DATA.slice(0, 5))}
+      </section>
+      <section class="section">
+        <div class="section-bar"><h2>Fiches mémo</h2></div>
+        <div class="panel rows">
+          <a class="row-link" href="#cheatsheets">
+            <span class="tile-icon">${icon('sheet', 16)}</span>
+            <span><span class="title">Fiches mémo imprimables</span><span class="desc" style="display:block">${CHEATSHEETS.map(c => c.title).join(' · ')}</span></span>
+            <span class="meta">${icon('chevron', 16, 'chev')}</span>
+          </a>
+        </div>
+      </section>
+    </div>`;
 }
 
-let searchIndex = [];
-
-function openSearch() {
-  const modal = document.getElementById('search-modal');
-  modal.classList.add('open');
-  const input = modal.querySelector('.search-modal-input');
-  input.value = '';
-  input.focus();
-  renderSearchResults('');
+function renderApps() {
+  const sections = [...new Set(APPS_DATA.map(a => a.section))];
+  return `
+    <div class="page">
+      ${pageHead({ kicker: `${APPS_DATA.length} mini-apps`, title: 'Mini-apps', lead: "Des applications web autonomes qui s'ouvrent dans un nouvel onglet. Les outils « temps réel » se partagent avec l'équipe par un simple lien." })}
+      ${sections.map(sec => `
+        <section class="section">
+          <div class="section-bar"><h2>${sec}</h2><p>${APP_SECTION_DESCRIPTIONS[sec] || ''}</p></div>
+          <div class="panel rows">
+            ${APPS_DATA.filter(a => a.section === sec).map(a => `
+              <a class="row-link" href="${a.file}" target="_blank" rel="noopener">
+                <span class="tile-icon">${icon(a.icon, 16)}</span>
+                <span style="min-width:0"><span class="title">${a.name}</span><span class="desc" style="display:block">${a.desc}</span></span>
+                <span class="meta">${appModeView(a)}${icon('external', 15)}</span>
+              </a>`).join('')}
+          </div>
+        </section>`).join('')}
+    </div>`;
 }
 
-function closeSearch() {
-  document.getElementById('search-modal').classList.remove('open');
+function renderAccelerators() {
+  return `
+    <div class="page">
+      ${pageHead({ kicker: `${ACCELERATORS_DATA.length} fichiers`, title: 'Templates', lead: "Fichiers prêts à l'emploi. Chacun inclut un onglet ou une slide Guide." })}
+      ${Object.entries(ACCELERATOR_FORMAT_META).map(([fmt, meta]) => `
+        <section class="section">
+          <div class="section-bar"><h2>${meta.title}</h2><p>${meta.description}</p></div>
+          ${templatesList(ACCELERATORS_DATA.filter(a => a.format === fmt))}
+        </section>`).join('')}
+    </div>`;
 }
 
-function renderSearchResults(query) {
-  const container = document.getElementById('search-results');
-  if (!query) {
-    container.innerHTML = '<div style="padding: 1.5rem; text-align: center; color: var(--text-tertiary);">Tapez pour rechercher parmi les outils et méthodes...</div>';
-    return;
-  }
-  const q = query.toLowerCase();
-  const results = searchIndex.filter(item => item.searchText.includes(q)).slice(0, 10);
+function renderCheatsheets() {
+  return `
+    <div class="page">
+      ${pageHead({ title: 'Fiches mémo', lead: "L'essentiel sur une page. Imprimez-les avec Ctrl P : la navigation disparaît à l'impression." })}
+      ${CHEATSHEETS.map(sheet => `
+        <section class="section">
+          <div class="section-bar"><h2>${sheet.title}</h2></div>
+          <div class="panel cheat-grid">
+            ${sheet.items.map(([t, d]) => `<div class="cheat-item"><h4>${t}</h4><p>${d}</p></div>`).join('')}
+          </div>
+        </section>`).join('')}
+    </div>`;
+}
 
-  if (results.length === 0) {
-    container.innerHTML = '<div style="padding: 1.5rem; text-align: center; color: var(--text-tertiary);">Aucun résultat</div>';
-    return;
+// ---------- Référentiel d'outils ----------
+const toolsFilter = { q: '', price: 'all', cat: 'all' };
+function allTools() {
+  const list = [];
+  for (const [catKey, cat] of Object.entries(TOOL_CATEGORIES)) {
+    for (const tool of cat.tools) list.push({ tool, catKey, cat });
   }
+  return list;
+}
+function filteredTools() {
+  const q = toolsFilter.q.trim().toLowerCase();
+  return allTools()
+    .filter(({ tool, catKey, cat }) =>
+      (toolsFilter.cat === 'all' || catKey === toolsFilter.cat) &&
+      (toolsFilter.price === 'all' || tool.pricing === toolsFilter.price) &&
+      (!q || `${tool.name} ${tool.tagline} ${cat.title} ${tool.ideal.join(' ')}`.toLowerCase().includes(q)))
+    .sort((a, b) => b.tool.score - a.tool.score);
+}
+function toolRows() {
+  const rows = filteredTools();
+  if (!rows.length) return `<tr><td colspan="5"><div class="empty">Aucun outil ne correspond à ces filtres.</div></td></tr>`;
+  return rows.map(({ tool, catKey, cat }) => `
+    <tr class="is-link" data-href="#tools/${catKey}/${legacySlug(tool.name)}">
+      <td><span class="cell-tool">${toolLogo(tool)}<span style="min-width:0"><span class="name">${tool.name}</span><span class="sub">${tool.tagline}</span></span></span></td>
+      <td class="muted">${cat.title}</td>
+      <td><span class="badge ${PRICING[tool.pricing].cls}">${PRICING[tool.pricing].label}</span></td>
+      <td>${scoreView(tool.score)}</td>
+      <td class="muted">${tool.ideal.slice(0, 2).join(', ')}</td>
+    </tr>`).join('');
+}
+function refreshToolRows() {
+  const body = $('#tools-body');
+  if (body) body.innerHTML = toolRows();
+  const count = $('#tools-count');
+  if (count) count.textContent = plural(filteredTools().length, 'outil', 'outils');
+}
 
-  container.innerHTML = results.map(r => `
-    <a class="search-result-item" href="${r.link}" onclick="closeSearch()" style="color: inherit; text-decoration: none;">
-      <span class="result-icon">${r.icon}</span>
-      <div>
-        <div class="result-title">${r.title}</div>
-        <div class="result-category">${r.category}</div>
+function renderToolsOverview() {
+  const total = allTools().length;
+  const priceChips = [['all', 'Tous'], ['free', 'Gratuit'], ['freemium', 'Freemium'], ['paid', 'Payant']];
+  return `
+    <div class="page">
+      ${pageHead({ kicker: `${total} outils · ${Object.keys(TOOL_CATEGORIES).length} catégories`, title: "Référentiel d'outils", lead: "Les outils du quotidien d'un PO, analysés et notés de son point de vue : forces, limites, intégrations et prix." })}
+      <div class="filters">
+        <label class="field">${icon('search', 15)}<input id="tools-q" type="search" placeholder="Filtrer les outils…" value="${escapeHtml(toolsFilter.q)}" aria-label="Filtrer les outils"></label>
+        <div class="chips" role="group" aria-label="Prix">
+          ${priceChips.map(([v, l]) => `<button class="chip${toolsFilter.price === v ? ' is-active' : ''}" data-action="tools-price" data-value="${v}" aria-pressed="${toolsFilter.price === v}">${l}</button>`).join('')}
+        </div>
+        <span class="mono" id="tools-count" style="margin-left:auto;font-size:12px;color:var(--text-3)">${plural(filteredTools().length, 'outil', 'outils')}</span>
       </div>
-    </a>
-  `).join('');
+      <div class="chips" role="group" aria-label="Catégorie">
+        <button class="chip${toolsFilter.cat === 'all' ? ' is-active' : ''}" data-action="tools-cat" data-value="all">Toutes</button>
+        ${Object.entries(TOOL_CATEGORIES).map(([k, c]) => `<button class="chip${toolsFilter.cat === k ? ' is-active' : ''}" data-action="tools-cat" data-value="${k}">${c.title}<span class="count">${c.tools.length}</span></button>`).join('')}
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Outil</th><th>Catégorie</th><th>Prix</th><th>Score PO</th><th>Idéal pour</th></tr></thead>
+          <tbody id="tools-body">${toolRows()}</tbody>
+        </table>
+      </div>
+    </div>`;
 }
 
-// ---- Sidebar ----
-function renderSidebar() {
-  let html = `
-    <div class="sidebar-section">
-      <div class="sidebar-section-title">Guide</div>
-      <a class="sidebar-link" href="#home">
-        <span class="link-icon">&#127968;</span> Accueil
-      </a>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-section-title">Accélérateurs</div>
-      <a class="sidebar-link" href="#apps"><span class="link-icon">&#9889;</span> Mini-Apps</a>
-      <a class="sidebar-link" href="#accelerators"><span class="link-icon">&#128196;</span> Templates</a>
-      <a class="sidebar-link" href="#cheatsheets"><span class="link-icon">&#128203;</span> Cheat Sheets</a>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-section-title">Outils</div>
-  `;
-  for (const [key, cat] of Object.entries(TOOL_CATEGORIES)) {
-    html += `<a class="sidebar-link" href="#tools/${key}"><span class="link-icon">${cat.icon}</span> ${cat.title}</a>`;
-  }
-  html += `</div><div class="sidebar-section"><div class="sidebar-section-title">Méthodes</div>`;
-  for (const [key, cat] of Object.entries(METHOD_CATEGORIES)) {
-    html += `<a class="sidebar-link" href="#methods/${key}"><span class="link-icon">${cat.icon}</span> ${cat.title}</a>`;
-  }
-  html += `</div>
-    <div class="sidebar-section">
-      <div class="sidebar-section-title">Formation</div>
-      <a class="sidebar-link" href="#formation"><span class="link-icon">&#127891;</span> Tous les parcours</a>
-  `;
-  for (const [key, theme] of Object.entries(FORMATION_CATEGORIES)) {
-    html += `<a class="sidebar-link sidebar-sublink" href="#formation/${key}"><span class="link-icon">${theme.icon}</span> ${theme.title}</a>`;
-  }
-  html += `</div>`;
-  return html;
+function renderToolCategory(catKey) {
+  const cat = TOOL_CATEGORIES[catKey];
+  if (!cat) return renderToolsOverview();
+  const keys = Object.keys(TOOL_CATEGORIES);
+  const i = keys.indexOf(catKey);
+  const prev = i > 0 ? keys[i - 1] : null;
+  const next = i < keys.length - 1 ? keys[i + 1] : null;
+
+  return `
+    <div class="page">
+      ${pageHead({ kicker: plural(cat.tools.length, 'outil', 'outils'), title: cat.title, lead: cat.description })}
+      <div class="chips" role="group" aria-label="Filtrer">
+        ${[['all', 'Tous'], ['free', 'Gratuit'], ['freemium', 'Freemium'], ['paid', 'Payant'], ['po métier', 'PO métier'], ['po technique', 'PO technique']]
+          .map(([v, l], j) => `<button class="chip${j === 0 ? ' is-active' : ''}" data-action="cat-filter" data-value="${v}">${l}</button>`).join('')}
+      </div>
+      <div class="tool-grid">
+        ${cat.tools.map(tool => `
+          <article class="panel tool-card" data-detail-slug="${legacySlug(tool.name)}" data-pricing="${tool.pricing}" data-ideal="${tool.ideal.map(x => x.toLowerCase()).join('|')}">
+            <div class="tool-card-head">
+              ${toolLogo(tool, true)}
+              <div style="min-width:0"><div class="name">${tool.name}</div><div class="tagline">${tool.tagline}</div></div>
+              ${scoreView(tool.score)}
+            </div>
+            <div class="chips"><span class="badge ${PRICING[tool.pricing].cls}">${PRICING[tool.pricing].label}</span>${tool.ideal.map(x => `<span class="badge">${x}</span>`).join('')}</div>
+            <p class="desc">${tool.description}</p>
+            <div class="proscons">
+              <div class="pro"><span class="eyebrow">Forces</span><ul>${tool.pros.map(p => `<li>${icon('check', 13)}<span>${p}</span></li>`).join('')}</ul></div>
+              <div class="con"><span class="eyebrow">Limites</span><ul>${tool.cons.map(c => `<li>${icon('x', 13)}<span>${c}</span></li>`).join('')}</ul></div>
+            </div>
+            <div class="tool-card-foot">
+              <div class="mono-chips">${tool.intégrations.slice(0, 6).map(x => `<span>${x}</span>`).join('')}</div>
+              ${tool.url ? `<a class="ext-link" href="${tool.url}" target="_blank" rel="noopener">Site officiel ${icon('external', 13)}</a>` : ''}
+            </div>
+          </article>`).join('')}
+      </div>
+      <section class="section">
+        <div class="section-bar"><h2>Comparatif</h2></div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>Outil</th><th>Prix</th><th>Score PO</th><th>Idéal pour</th><th>Intégrations clés</th></tr></thead>
+            <tbody>
+              ${[...cat.tools].sort((a, b) => b.score - a.score).map(t => `
+                <tr><td><span class="cell-tool" style="min-width:160px">${toolLogo(t)}<span class="name">${t.name}</span></span></td>
+                <td><span class="badge ${PRICING[t.pricing].cls}">${PRICING[t.pricing].label}</span></td>
+                <td>${scoreView(t.score)}</td><td class="muted">${t.ideal.slice(0, 2).join(', ')}</td><td class="muted">${t.intégrations.slice(0, 3).join(', ')}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <nav class="pager">
+        ${prev ? `<a class="panel" href="#tools/${prev}"><span class="l">Précédent</span><span class="t">${TOOL_CATEGORIES[prev].title}</span></a>` : ''}
+        ${next ? `<a class="panel next" href="#tools/${next}"><span class="l">Suivant</span><span class="t">${TOOL_CATEGORIES[next].title}</span></a>` : ''}
+      </nav>
+    </div>`;
 }
 
-function updateActiveSidebar() {
-  const hash = window.location.hash || '#home';
-  document.querySelectorAll('.sidebar-link').forEach(link => {
-    const href = link.getAttribute('href');
-    const isActive = hash === href || (href !== '#home' && hash.startsWith(`${href}/`));
-    link.classList.toggle('active', isActive);
+// ---------- Méthodes ----------
+function renderMethodsOverview() {
+  return `
+    <div class="page">
+      ${pageHead({ title: 'Méthodes', lead: "Les approches de priorisation, de discovery, de mesure et d'agilité à l'échelle, avec le moment où les utiliser et les conseils de terrain." })}
+      <div class="panel rows">
+        ${Object.entries(METHOD_CATEGORIES).map(([k, c]) => `
+          <a class="row-link" href="#methods/${k}">
+            <span class="tile-icon">${icon(METHOD_CATEGORY_ICONS[k] || 'compass', 16)}</span>
+            <span style="min-width:0"><span class="title">${c.title}</span><span class="desc" style="display:block">${c.description}</span></span>
+            <span class="meta"><span>${plural(c.methods.length, 'méthode', 'méthodes')}</span>${icon('chevron', 16, 'chev')}</span>
+          </a>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderMethodCategory(key) {
+  const cat = METHOD_CATEGORIES[key];
+  if (!cat) return renderMethodsOverview();
+  const keys = Object.keys(METHOD_CATEGORIES);
+  const i = keys.indexOf(key);
+  const prev = i > 0 ? keys[i - 1] : null;
+  const next = i < keys.length - 1 ? keys[i + 1] : null;
+  return `
+    <div class="page">
+      ${pageHead({ kicker: plural(cat.methods.length, 'méthode', 'méthodes'), title: cat.title, lead: cat.description })}
+      ${key === 'scaling' ? `
+        <div class="panel feature-row">
+          <span class="tile-icon">${icon('file', 16)}</span>
+          <span class="txt"><b>Guide complet : agilité à l'échelle</b><span>SAFe, LeSS, modèle Spotify et bonnes pratiques de passage à l'échelle, en PDF.</span></span>
+          <a class="btn btn-sm" href="../accelerators/agilite-echelle-guide.pdf" target="_blank" rel="noopener">Ouvrir le PDF ${icon('external', 14)}</a>
+        </div>` : ''}
+      ${cat.methods.map(m => `
+        <article class="panel method-card" data-detail-slug="${legacySlug(m.name)}">
+          <div class="method-top">
+            <div class="method-intro"><h3>${m.name}</h3><p>${m.description}</p></div>
+            <div class="method-when"><span class="eyebrow">Quand l'utiliser</span><span>${m.when}</span></div>
+          </div>
+          <div class="method-body">
+            <div class="method-col"><span class="eyebrow">Déroulé</span><ol class="steps">${m.steps.map(s => `<li><span>${s}</span></li>`).join('')}</ol></div>
+            <div class="method-col"><span class="eyebrow">Conseils de terrain</span><ul class="tips">${m.tips.map(t => `<li><span>${t}</span></li>`).join('')}</ul></div>
+          </div>
+        </article>`).join('')}
+      <nav class="pager">
+        ${prev ? `<a class="panel" href="#methods/${prev}"><span class="l">Précédent</span><span class="t">${METHOD_CATEGORIES[prev].title}</span></a>` : ''}
+        ${next ? `<a class="panel next" href="#methods/${next}"><span class="l">Suivant</span><span class="t">${METHOD_CATEGORIES[next].title}</span></a>` : ''}
+      </nav>
+    </div>`;
+}
+
+// ---------- Command palette ----------
+const TYPE_META = {
+  action: { label: 'Actions rapides', order: 0 },
+  resume: { label: 'Reprendre', order: 1 },
+  page: { label: 'Aller à', order: 2 },
+  app: { label: 'Mini-apps', order: 3 },
+  course: { label: 'Parcours', order: 4 },
+  chapter: { label: 'Chapitres', order: 5 },
+  tool: { label: 'Outils', order: 6 },
+  method: { label: 'Méthodes', order: 7 },
+  template: { label: 'Templates', order: 8 },
+};
+let searchIndex = [];
+let paletteItems = [];
+let paletteActive = 0;
+
+function buildSearchIndex() {
+  const idx = [];
+  const pages = [
+    ['Accueil', '#home', 'home'], ['Formation', '#formation', 'book'], ['Boîte à outils', '#toolbox', 'grid'],
+    ["Référentiel d'outils", '#tools', 'layers'], ['Méthodes', '#methods', 'compass'], ['Mini-apps', '#apps', 'grid'],
+    ['Templates', '#accelerators', 'file'], ['Fiches mémo', '#cheatsheets', 'sheet'],
+  ];
+  pages.forEach(([t, h, i]) => idx.push({ type: 'page', title: t, sub: '', href: h, icon: i, text: t.toLowerCase() }));
+  APPS_DATA.forEach(a => idx.push({ type: 'app', title: a.name, sub: a.short, href: a.file, external: true, icon: a.icon, text: `${a.name} ${a.desc} ${a.task || ''}`.toLowerCase() }));
+  for (const [k, th] of Object.entries(FORMATION_CATEGORIES)) {
+    idx.push({ type: 'course', title: th.title, sub: `${th.track} · ${th.level}`, href: `#formation/${k}`, icon: COURSE_ICONS[k] || 'book', text: `${th.title} ${th.tagline}`.toLowerCase() });
+    th.chapters.forEach((ch, i) => idx.push({ type: 'chapter', title: ch.title, sub: `${th.title} · chapitre ${pad2(i + 1)}`, href: `#formation/${k}/${ch.slug}`, icon: 'book', text: `${ch.title} ${ch.summary} ${ch.keyPoints.join(' ')}`.toLowerCase() }));
+  }
+  for (const [k, cat] of Object.entries(TOOL_CATEGORIES)) {
+    cat.tools.forEach(t => idx.push({ type: 'tool', title: t.name, sub: `${cat.title} · ${t.tagline}`, href: `#tools/${k}/${legacySlug(t.name)}`, icon: TOOL_CATEGORY_ICONS[k] || 'layers', text: `${t.name} ${t.tagline} ${cat.title} ${t.ideal.join(' ')} ${t.intégrations.join(' ')}`.toLowerCase() }));
+  }
+  for (const [k, cat] of Object.entries(METHOD_CATEGORIES)) {
+    cat.methods.forEach(m => idx.push({ type: 'method', title: m.name, sub: cat.title, href: `#methods/${k}/${legacySlug(m.name)}`, icon: METHOD_CATEGORY_ICONS[k] || 'compass', text: `${m.name} ${m.description} ${cat.title} ${m.when}`.toLowerCase() }));
+  }
+  ACCELERATORS_DATA.forEach(a => idx.push({ type: 'template', title: a.name, sub: `${a.format.toUpperCase()} · ${a.desc}`, href: a.file, download: true, icon: 'file', text: `${a.name} ${a.desc} ${a.format}`.toLowerCase() }));
+  return idx;
+}
+
+function defaultPaletteItems() {
+  const items = QUICK_ACTIONS.map(a => ({ type: 'action', title: a.task, sub: a.name, href: a.file, external: true, icon: a.icon }));
+  const inProgress = Object.keys(FORMATION_CATEGORIES).map(courseSummary).filter(s => s.started && !s.finished)
+    .sort((a, b) => b.st.updated - a.st.updated).slice(0, 2);
+  inProgress.forEach(s => {
+    const k = Object.keys(FORMATION_CATEGORIES).find(key => FORMATION_CATEGORIES[key] === s.theme);
+    items.push({ type: 'resume', title: s.nextCh.title, sub: `${s.theme.title} · chapitre ${pad2(s.theme.chapters.indexOf(s.nextCh) + 1)}`, href: `#formation/${k}/${s.nextCh.slug}`, icon: 'book' });
   });
+  searchIndex.filter(i => i.type === 'page').slice(0, 5).forEach(i => items.push(i));
+  return items;
 }
 
-// ---- Router Handler ----
-function handleRoute() {
-  const { page, subpage, detail } = getRoute();
-  const main = document.getElementById('main-content');
+function searchPalette(query) {
+  const q = query.trim().toLowerCase();
+  const words = q.split(/\s+/).filter(Boolean);
+  const scored = [];
+  for (const item of searchIndex) {
+    const title = item.title.toLowerCase();
+    if (!words.every(w => item.text.includes(w) || title.includes(w))) continue;
+    let score = 1;
+    if (title.startsWith(q)) score = 4;
+    else if (title.includes(q)) score = 3;
+    else if (words.every(w => title.includes(w))) score = 2;
+    scored.push({ item, score });
+  }
+  scored.sort((a, b) => b.score - a.score || TYPE_META[a.item.type].order - TYPE_META[b.item.type].order);
+  const perType = {};
+  return scored.filter(({ item }) => (perType[item.type] = (perType[item.type] || 0) + 1) <= 6).slice(0, 30).map(s => s.item)
+    .sort((a, b) => TYPE_META[a.type].order - TYPE_META[b.type].order);
+}
 
+function highlight(title, query) {
+  const safe = escapeHtml(title);
+  const q = query.trim();
+  if (!q) return safe;
+  const i = title.toLowerCase().indexOf(q.toLowerCase());
+  if (i < 0) return safe;
+  return `${escapeHtml(title.slice(0, i))}<mark>${escapeHtml(title.slice(i, i + q.length))}</mark>${escapeHtml(title.slice(i + q.length))}`;
+}
+
+function renderPalette(query = '') {
+  paletteItems = query.trim() ? searchPalette(query) : defaultPaletteItems();
+  paletteActive = 0;
+  const box = $('#palette-results');
+  if (!paletteItems.length) {
+    box.innerHTML = `<div class="palette-empty">Aucun résultat pour « ${escapeHtml(query)} ».</div>`;
+    return;
+  }
+  let html = '';
+  let lastType = null;
+  paletteItems.forEach((it, i) => {
+    if (it.type !== lastType) { html += `<div class="palette-group">${TYPE_META[it.type].label}</div>`; lastType = it.type; }
+    html += `
+      <div class="palette-item${i === 0 ? ' is-active' : ''}" role="option" id="pal-${i}" data-index="${i}" aria-selected="${i === 0}">
+        ${icon(it.icon, 16)}
+        <span class="txt"><span class="t">${highlight(it.title, query)}</span>${it.sub ? `<span class="s">${escapeHtml(stripTags(it.sub))}</span>` : ''}</span>
+        ${it.external ? icon('external', 14) : it.download ? icon('download', 14) : `<span class="enter">${icon('enter', 14)}</span>`}
+      </div>`;
+  });
+  box.innerHTML = html;
+}
+
+function setPaletteActive(i) {
+  if (!paletteItems.length) return;
+  paletteActive = (i + paletteItems.length) % paletteItems.length;
+  document.querySelectorAll('.palette-item').forEach(el => {
+    const on = Number(el.dataset.index) === paletteActive;
+    el.classList.toggle('is-active', on);
+    el.setAttribute('aria-selected', on);
+    if (on) el.scrollIntoView({ block: 'nearest' });
+  });
+  $('#palette-input').setAttribute('aria-activedescendant', `pal-${paletteActive}`);
+}
+
+function activatePaletteItem(i) {
+  const it = paletteItems[i];
+  if (!it) return;
+  closePalette();
+  if (it.external) window.open(it.href, '_blank', 'noopener');
+  else if (it.download) { const a = document.createElement('a'); a.href = it.href; a.download = ''; document.body.appendChild(a); a.click(); a.remove(); }
+  else window.location.hash = it.href.slice(1);
+}
+
+let lastFocus = null;
+function openPalette() {
+  lastFocus = document.activeElement;
+  const p = $('#palette');
+  p.classList.add('is-open');
+  const input = $('#palette-input');
+  input.value = '';
+  renderPalette('');
+  requestAnimationFrame(() => input.focus());
+}
+function closePalette() {
+  $('#palette').classList.remove('is-open');
+  if (lastFocus && lastFocus.focus) lastFocus.focus();
+}
+const paletteOpen = () => $('#palette').classList.contains('is-open');
+
+// ---------- Rendering / routing ----------
+function refreshSidebar() { $('#sidebar').innerHTML = renderSidebar(getRoute()); }
+
+let tocObserver = null;
+function setupChapterEnhancements() {
+  if (tocObserver) { tocObserver.disconnect(); tocObserver = null; }
+  const buttons = [...document.querySelectorAll('.toc button')];
+  if (!buttons.length || !('IntersectionObserver' in window)) return;
+  const targets = buttons.map(b => document.getElementById(b.dataset.target)).filter(Boolean);
+  tocObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      buttons.forEach(b => b.classList.toggle('is-active', b.dataset.target === e.target.id));
+    });
+  }, { rootMargin: '-15% 0px -70% 0px' });
+  targets.forEach(t => tocObserver.observe(t));
+}
+
+function updateReadProgress() {
+  const bar = $('#read-progress');
+  if (!bar) return;
+  if (!document.querySelector('.chapter')) { bar.style.width = '0'; return; }
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  bar.style.width = `${max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0}%`;
+}
+
+function handleRoute() {
+  const route = getRoute();
+  const { page, subpage, detail } = route;
   let content;
-  if (page === 'home' || page === '') {
-    content = renderHome();
-  } else if (page === 'tools' && !subpage) {
-    content = renderToolsOverview();
-  } else if (page === 'tools' && subpage) {
-    content = renderToolCategory(subpage, detail);
-  } else if (page === 'methods' && !subpage) {
-    content = renderMethodsOverview();
-  } else if (page === 'methods' && subpage) {
-    content = renderMethodCategory(subpage, detail);
-  } else if (page === 'accelerators') {
-    content = renderAccelerators();
-  } else if (page === 'apps') {
-    content = renderApps();
-  } else if (page === 'cheatsheets') {
-    content = renderCheatsheets();
-  } else if (page === 'formation' && !subpage) {
-    content = renderFormationOverview();
-  } else if (page === 'formation' && subpage) {
-    content = renderFormationTheme(subpage, detail);
+  let title = 'PO Toolkit';
+
+  if (page === 'formation' && subpage && FORMATION_CATEGORIES[subpage]) {
+    const th = FORMATION_CATEGORIES[subpage];
+    if (detail === 'quiz') { content = renderQuizPage(subpage); title = `Quiz · ${th.title}`; }
+    else if (detail) { content = renderChapter(subpage, detail); const ch = th.chapters.find(c => c.slug === detail); title = ch ? ch.title : th.title; }
+    else { content = renderCourse(subpage); title = th.title; }
+  } else if (page === 'formation') { content = renderFormationOverview(); title = 'Formation'; }
+  else if (page === 'toolbox') { content = renderToolbox(); title = 'Boîte à outils'; }
+  else if (page === 'apps') { content = renderApps(); title = 'Mini-apps'; }
+  else if (page === 'accelerators') { content = renderAccelerators(); title = 'Templates'; }
+  else if (page === 'cheatsheets') { content = renderCheatsheets(); title = 'Fiches mémo'; }
+  else if (page === 'tools' && subpage && TOOL_CATEGORIES[subpage]) { content = renderToolCategory(subpage); title = TOOL_CATEGORIES[subpage].title; }
+  else if (page === 'tools') { content = renderToolsOverview(); title = "Référentiel d'outils"; }
+  else if (page === 'methods' && subpage && METHOD_CATEGORIES[subpage]) { content = renderMethodCategory(subpage); title = METHOD_CATEGORIES[subpage].title; }
+  else if (page === 'methods') { content = renderMethodsOverview(); title = 'Méthodes'; }
+  else { content = renderHome(); }
+
+  const main = $('#main-content');
+  main.innerHTML = content;
+  $('#crumbs').innerHTML = crumbsFor(route);
+  refreshSidebar();
+  document.title = title === 'PO Toolkit' ? 'PO Toolkit — la boîte à outils du Product Owner' : `${stripTags(title)} · PO Toolkit`;
+  closeMobileNav();
+  setupChapterEnhancements();
+
+  const target = detail && detail !== 'quiz' && page !== 'formation' ? document.querySelector(`[data-detail-slug="${CSS.escape(detail)}"]`) : null;
+  if (target) {
+    target.classList.add('is-target');
+    requestAnimationFrame(() => target.scrollIntoView({ block: 'start', behavior: 'smooth' }));
   } else {
-    content = renderHome();
+    window.scrollTo({ top: 0 });
+  }
+  updateReadProgress();
+}
+
+// ---------- Mobile navigation ----------
+function openMobileNav() {
+  $('#sidebar').classList.add('is-open');
+  $('#scrim').classList.add('is-open');
+  $('#menu-btn').setAttribute('aria-expanded', 'true');
+}
+function closeMobileNav() {
+  $('#sidebar').classList.remove('is-open');
+  $('#scrim').classList.remove('is-open');
+  $('#menu-btn').setAttribute('aria-expanded', 'false');
+}
+
+// ---------- Events ----------
+function onClick(e) {
+  const actionEl = e.target.closest('[data-action]');
+  if (actionEl) {
+    const { action } = actionEl.dataset;
+    if (action === 'open-palette') { openPalette(); return; }
+    if (action === 'toc') {
+      const t = document.getElementById(actionEl.dataset.target);
+      if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    if (action === 'complete-chapter') {
+      markChapterDone(actionEl.dataset.course, actionEl.dataset.slug);
+      window.location.hash = actionEl.dataset.next.slice(1);
+      return;
+    }
+    if (action === 'quiz-answer') { answerQuiz(actionEl.dataset.course, Number(actionEl.dataset.q), Number(actionEl.dataset.o)); return; }
+    if (action === 'quiz-reset') { resetQuiz(actionEl.dataset.course); return; }
+    if (action === 'tools-price' || action === 'tools-cat') {
+      toolsFilter[action === 'tools-price' ? 'price' : 'cat'] = actionEl.dataset.value;
+      actionEl.parentElement.querySelectorAll('.chip').forEach(c => {
+        const on = c === actionEl;
+        c.classList.toggle('is-active', on);
+        c.setAttribute('aria-pressed', on);
+      });
+      refreshToolRows();
+      return;
+    }
+    if (action === 'cat-filter') {
+      const v = actionEl.dataset.value;
+      actionEl.parentElement.querySelectorAll('.chip').forEach(c => c.classList.toggle('is-active', c === actionEl));
+      document.querySelectorAll('.tool-card').forEach(card => {
+        const show = v === 'all' || card.dataset.pricing === v || card.dataset.ideal.split('|').includes(v);
+        card.hidden = !show;
+      });
+      return;
+    }
   }
 
-  main.innerHTML = `<div class="page-content">${content}</div>`;
-  updateActiveSidebar();
-
-  if (detail) {
-    scrollToRouteDetail(detail);
+  const row = e.target.closest('tr[data-href], tr[data-open]');
+  if (row && !e.target.closest('a, button')) {
+    if (row.dataset.href) window.location.hash = row.dataset.href.slice(1);
+    else window.open(row.dataset.open, '_blank', 'noopener');
     return;
   }
 
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const palItem = e.target.closest('.palette-item');
+  if (palItem) { activatePaletteItem(Number(palItem.dataset.index)); return; }
+
+  if (e.target.id === 'palette') closePalette();
 }
 
-// ---- Init ----
+function isTyping(el) {
+  return el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+}
+
+function onKeydown(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    paletteOpen() ? closePalette() : openPalette();
+    return;
+  }
+  if (paletteOpen()) {
+    if (e.key === 'Escape') { e.preventDefault(); closePalette(); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); setPaletteActive(paletteActive + 1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setPaletteActive(paletteActive - 1); }
+    else if (e.key === 'Enter') { e.preventDefault(); activatePaletteItem(paletteActive); }
+    return;
+  }
+  if (e.key === 'Escape') { closeMobileNav(); return; }
+  if (e.ctrlKey || e.metaKey || e.altKey || isTyping(document.activeElement)) return;
+  if (e.key === '/') { e.preventDefault(); openPalette(); return; }
+  if (getRoute().page === 'home') {
+    const app = QUICK_ACTIONS.find(a => a.shortcut === e.key.toLowerCase());
+    if (app) { e.preventDefault(); window.open(app.file, '_blank', 'noopener'); }
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  Object.assign(window, { navigateTo, filterTools, closeSearch });
+  setTheme(currentTheme(), false);
+  $('#menu-btn').innerHTML = icon('menu', 16);
+  $('#search-trigger').innerHTML = `${icon('search', 14)}<span class="label">Rechercher</span><kbd>Ctrl K</kbd>`;
+  $('#palette-icon').innerHTML = icon('search', 18);
 
-  // Theme
-  setTheme(getTheme());
-
-  // Sidebar
-  document.getElementById('sidebar').innerHTML = renderSidebar();
-
-  // Search
   searchIndex = buildSearchIndex();
-
-  // Route
   handleRoute();
   window.addEventListener('hashchange', handleRoute);
 
-  // Theme toggle
-  document.querySelector('.theme-toggle').addEventListener('click', () => {
-    setTheme(getTheme() === 'dark' ? 'light' : 'dark');
-  });
+  $('#theme-toggle').addEventListener('click', () => setTheme(currentTheme() === 'dark' ? 'light' : 'dark'));
+  $('#search-trigger').addEventListener('click', openPalette);
+  $('#menu-btn').addEventListener('click', () => ($('#sidebar').classList.contains('is-open') ? closeMobileNav() : openMobileNav()));
+  $('#scrim').addEventListener('click', closeMobileNav);
 
-  // Search modal
-  const searchBox = document.querySelector('.search-box');
-  searchBox.addEventListener('click', openSearch);
-  searchBox.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      openSearch();
+  document.addEventListener('click', onClick);
+  document.addEventListener('keydown', onKeydown);
+  $('#palette-input').addEventListener('input', e => renderPalette(e.target.value));
+  $('#palette-results').addEventListener('mousemove', e => {
+    const it = e.target.closest('.palette-item');
+    if (it && Number(it.dataset.index) !== paletteActive) setPaletteActive(Number(it.dataset.index));
+  });
+  document.addEventListener('input', e => {
+    if (e.target.id === 'tools-q') { toolsFilter.q = e.target.value; refreshToolRows(); }
+  });
+  // Tool logo fallback (remote icons can fail)
+  document.addEventListener('error', e => {
+    const img = e.target;
+    if (img.tagName === 'IMG' && img.dataset.fallback) {
+      const parent = img.parentElement;
+      parent.textContent = img.dataset.fallback;
     }
-  });
-  document.getElementById('search-modal').addEventListener('click', (e) => {
-    if (e.target.id === 'search-modal') closeSearch();
-  });
-  document.getElementById('search-input').addEventListener('input', (e) => {
-    renderSearchResults(e.target.value);
-  });
-
-  // Keyboard shortcuts
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-      e.preventDefault();
-      openSearch();
-    }
-    if (e.key === 'Escape') closeSearch();
-  });
-
-  // Mobile menu
-  document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
-    document.getElementById('sidebar').classList.toggle('open');
-  });
-
-  // Back to top
-  const backToTop = document.querySelector('.back-to-top');
-  window.addEventListener('scroll', () => {
-    backToTop.classList.toggle('visible', window.scrollY > 400);
-  });
-  backToTop.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-
-  // Close sidebar on link click (mobile)
-  document.getElementById('sidebar').addEventListener('click', (e) => {
-    if (e.target.closest('.sidebar-link') && window.innerWidth <= 768) {
-      document.getElementById('sidebar').classList.remove('open');
-    }
-  });
+  }, true);
+  window.addEventListener('scroll', updateReadProgress, { passive: true });
+  window.addEventListener('resize', updateReadProgress, { passive: true });
 });

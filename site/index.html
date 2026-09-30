@@ -3,50 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PO Toolkit — Le guide de référence du Product Owner</title>
-  <meta name="description" content="Guide complet et objectif des outils, méthodes et accélérateurs du Product Owner. Outils analysés, templates téléchargeables et mini-apps interactives.">
+  <title>PO Toolkit — la boîte à outils du Product Owner</title>
+  <meta name="description" content="Outils, méthodes, mini-apps et parcours de formation pour Product Owners et Product Managers.">
+  <script>
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('po-toolkit-theme'); } catch (e) {}
+      if (t !== 'light' && t !== 'dark') t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#128640;</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23222530'/%3E%3Crect x='11' y='11' width='10' height='10' rx='2.5' fill='%23e8663d'/%3E%3C/svg%3E">
 </head>
 <body>
-  <!-- Header -->
-  <header class="header">
-    <div style="display: flex; align-items: center; gap: 1rem;">
-      <button class="mobile-menu-btn" aria-label="Menu">&#9776;</button>
-      <a href="#home" class="header-logo">
-        <div class="logo-icon">PO</div>
-        <span>Toolkit</span>
-      </a>
-    </div>
-    <div class="header-actions">
-      <div class="search-box" role="button" tabindex="0" aria-label="Rechercher">
-        <span class="search-icon">&#128269;</span>
-        <input type="text" placeholder="Rechercher un outil, une méthode..." readonly>
-        <kbd>Ctrl+K</kbd>
-      </div>
-      <button class="theme-toggle" aria-label="Changer le theme">&#9790;</button>
-    </div>
-  </header>
+  <a class="skip-link" href="#main-content">Aller au contenu</a>
+  <div class="app">
+    <nav class="sidebar" id="sidebar" aria-label="Navigation principale"></nav>
+    <div class="scrim" id="scrim"></div>
 
-  <!-- Sidebar -->
-  <nav class="sidebar" id="sidebar"></nav>
-
-  <!-- Main Content -->
-  <main class="main" id="main-content"></main>
-
-  <!-- Search Modal -->
-  <div class="search-modal" id="search-modal">
-    <div class="search-modal-content">
-      <input type="text" class="search-modal-input" id="search-input" placeholder="Rechercher un outil, une méthode, un framework..." autofocus>
-      <div class="search-results" id="search-results"></div>
+    <div class="main">
+      <header class="topbar">
+        <button class="icon-btn menu-btn" id="menu-btn" aria-label="Ouvrir le menu" aria-controls="sidebar" aria-expanded="false"></button>
+        <div class="crumbs" id="crumbs"></div>
+        <div class="topbar-spacer"></div>
+        <button class="search-trigger" id="search-trigger" aria-label="Rechercher (Ctrl K)"></button>
+        <button class="icon-btn" id="theme-toggle" aria-label="Changer de thème"></button>
+        <div class="read-progress" id="read-progress"></div>
+      </header>
+      <main class="content" id="main-content" tabindex="-1"></main>
     </div>
   </div>
 
-  <!-- Back to Top -->
-  <button class="back-to-top" aria-label="Retour en haut">&#8593;</button>
+  <div class="palette" id="palette" role="dialog" aria-modal="true" aria-label="Recherche">
+    <div class="palette-box">
+      <label class="palette-input">
+        <span id="palette-icon"></span>
+        <input id="palette-input" type="text" placeholder="Rechercher un outil, une méthode, un chapitre…" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="palette-results">
+        <kbd>Échap</kbd>
+      </label>
+      <div class="palette-results" id="palette-results" role="listbox"></div>
+      <div class="palette-foot">
+        <span><kbd>↑</kbd><kbd>↓</kbd> naviguer</span>
+        <span><kbd>↵</kbd> ouvrir</span>
+        <span><kbd>Échap</kbd> fermer</span>
+      </div>
+    </div>
+  </div>
 
   <script src="data.js"></script>
   <script src="formation-data.js"></script>

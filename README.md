@@ -24,12 +24,16 @@ Activation a faire une seule fois dans GitHub:
 - **Des dizaines d'outils** analyses objectivement par categorie
 - **Methodes detaillees** (priorisation, discovery, metriques, scaling)
 - **Cheat sheets** interactives et imprimables
-- Recherche (Ctrl+K), dark mode, filtres par pricing/profil PO
+- Navigation en 5 entrees (Accueil, Formation, Boite a outils, Referentiel d'outils, Methodes) avec sous-navigation contextuelle dans la sidebar
+- Accueil oriente taches : raccourcis clavier vers les mini-apps (R, P, E, S, M, I), progression de formation
+- Palette de commande (Ctrl+K ou /) : recherche groupee, navigation au clavier
+- Referentiel d'outils en tableau filtrable (texte, prix, categorie)
+- Design system « Atelier » (Geist / Geist Mono, icones SVG au trait, theme clair/sombre suivant le systeme), responsive et accessible (focus visibles, reduced motion, impression)
 - 100% statique, ouvrable hors-ligne
 
 ### Formation (parcours de cours)
 
-Section de cours structures, accessible depuis la sidebar « Formation ». Chaque thematique se parcourt chapitre par chapitre, avec points cles et exercices pratiques renvoyant vers les mini-apps. Chaque parcours se termine par un quiz final de mises en situation (correction immediate, explication et score ; donnees dans la propriete `quiz` de chaque thematique).
+Section de cours structures, accessible depuis la sidebar « Formation ». Chaque thematique a une page de presentation, puis se parcourt chapitre par chapitre (une page par chapitre, plan du parcours dans la sidebar, sommaire « Sur cette page » avec suivi de lecture, progression enregistree dans le navigateur), avec points cles et exercices pratiques renvoyant vers les mini-apps. Chaque parcours se termine par un quiz final de mises en situation (correction immediate, explication et score ; donnees dans la propriete `quiz` de chaque thematique).
 
 | Thematique | Contenu |
 |------------|---------|
