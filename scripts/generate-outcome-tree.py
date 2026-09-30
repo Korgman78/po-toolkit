@@ -10,99 +10,20 @@ from pathlib import Path
 
 from pptx import Presentation
 from pptx.dml.color import RGBColor
-from pptx.enum.shapes import MSO_CONNECTOR, MSO_SHAPE
-from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
-from pptx.util import Inches, Pt
+from pptx.enum.text import MSO_ANCHOR
+from pptx.util import Inches
+
+from pptx_style import (
+    ACCENT, ACCENT_SOFT, BLUE, BLUE_SOFT, INK, LINE, MUTED, PAPER, PLUM, SAGE, SAGE_SOFT, STOP, WHITE,
+    box, connect, header, text,
+)
 
 OUT = Path(__file__).resolve().parent.parent / "accelerators" / "pptx" / "outcome-tree-ai-native.pptx"
-
-FONT = "Segoe UI"
-INK = RGBColor(0x2A, 0x24, 0x20)
-MUTED = RGBColor(0x7A, 0x70, 0x68)
-PAPER = RGBColor(0xFB, 0xF8, 0xF4)
-WHITE = RGBColor(0xFF, 0xFF, 0xFF)
-LINE = RGBColor(0xE4, 0xDC, 0xD2)
-ACCENT = RGBColor(0xD9, 0x5F, 0x36)
-ACCENT_SOFT = RGBColor(0xFC, 0xEC, 0xE4)
-SAGE = RGBColor(0x4E, 0x8A, 0x6B)
-SAGE_SOFT = RGBColor(0xE7, 0xF1, 0xEA)
-BLUE = RGBColor(0x3F, 0x6E, 0xB0)
-BLUE_SOFT = RGBColor(0xE8, 0xEE, 0xF7)
-PLUM = RGBColor(0x8A, 0x57, 0x8F)
-PLUM_SOFT = RGBColor(0xF3, 0xEA, 0xF3)
-STOP = RGBColor(0xB4, 0x3C, 0x2E)
 
 prs = Presentation()
 prs.slide_width = Inches(13.333)
 prs.slide_height = Inches(7.5)
 BLANK = prs.slide_layouts[6]
-
-
-def box(slide, x, y, w, h, fill=WHITE, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE, radius=0.08, line_w=0.75):
-    s = slide.shapes.add_shape(shape, Inches(x), Inches(y), Inches(w), Inches(h))
-    if shape == MSO_SHAPE.ROUNDED_RECTANGLE:
-        s.adjustments[0] = radius
-    s.fill.solid()
-    s.fill.fore_color.rgb = fill
-    if line is None:
-        s.line.fill.background()
-    else:
-        s.line.color.rgb = line
-        s.line.width = Pt(line_w)
-    s.shadow.inherit = False
-    tf = s.text_frame
-    tf.clear()
-    return s
-
-
-def text(slide_or_shape, runs, x=None, y=None, w=None, h=None, align=PP_ALIGN.LEFT, anchor=MSO_ANCHOR.TOP, margin=0.08):
-    """runs = list of paragraphs; each paragraph = list of (text, size, color, bold)."""
-    if x is not None:
-        shape = slide_or_shape.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
-    else:
-        shape = slide_or_shape
-    tf = shape.text_frame
-    tf.word_wrap = True
-    tf.vertical_anchor = anchor
-    for side in ("left", "right", "top", "bottom"):
-        setattr(tf, f"margin_{side}", Inches(margin))
-    tf.clear()
-    for i, para in enumerate(runs):
-        p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
-        p.alignment = align
-        p.space_after = Pt(2)
-        for t, size, color, bold in para:
-            r = p.add_run()
-            r.text = t
-            r.font.name = FONT
-            r.font.size = Pt(size)
-            r.font.color.rgb = color
-            r.font.bold = bold
-    return shape
-
-
-def background(slide):
-    box(slide, 0, 0, 13.333, 7.5, fill=PAPER, line=None, shape=MSO_SHAPE.RECTANGLE)
-    box(slide, 0, 0, 13.333, 0.08, fill=ACCENT, line=None, shape=MSO_SHAPE.RECTANGLE)
-
-
-def header(slide, kicker, title, subtitle):
-    background(slide)
-    text(slide, [[(kicker.upper(), 10, ACCENT, True)]], 0.6, 0.32, 10, 0.3)
-    text(slide, [[(title, 24, INK, True)]], 0.6, 0.58, 12, 0.55)
-    if subtitle:
-        text(slide, [[(subtitle, 11.5, MUTED, False)]], 0.6, 1.1, 12, 0.35)
-
-
-def connect(slide, parent, child):
-    x1 = parent.left + parent.width // 2
-    y1 = parent.top + parent.height
-    x2 = child.left + child.width // 2
-    y2 = child.top
-    c = slide.shapes.add_connector(MSO_CONNECTOR.ELBOW, x1, y1, x2, y2)
-    c.line.color.rgb = RGBColor(0xC9, 0xBE, 0xB2)
-    c.line.width = Pt(1.25)
-    return c
 
 
 def node(slide, x, y, w, h, label, title, detail, fill, color, size=10):

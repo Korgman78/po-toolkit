@@ -51,13 +51,15 @@ Section de cours structures, accessible depuis la sidebar « Formation ». Chaqu
 | `prioritization-matrices.xlsx` | Excel | Workbook multi-methodes avec onglets RICE, WSJF, ICE, MoSCoW et Value vs Effort |
 | `release-plan.xlsx` | Excel | Release planning + velocity tracker |
 | `capacity-planning.xlsx` | Excel | Calcul charge/capacite par sprint |
-| `product-canvas.pptx` | PowerPoint | Canvas visuel (vision, personas, KPIs) |
-| `sprint-review-template.pptx` | PowerPoint | 4 slides pre-formatees pour Sprint Review |
-| `definition-of-ready-done.pptx` | PowerPoint | Checklists DoR et DoD affichables |
-| `stakeholder-mapping.pptx` | PowerPoint | Matrice pouvoir/interet |
+| `product-canvas.pptx` | PowerPoint | Canvas produit en 10 blocs (vision, utilisateurs, problemes, valeur, metriques, hypotheses) : guide, canvas vierge et exemple complet |
+| `sprint-review-template.pptx` | PowerPoint | Guide, couverture, objectif et resultats, demo, retours recueillis, prochaines etapes |
+| `definition-of-ready-done.pptx` | PowerPoint | Checklists DoR et DoD regroupees par theme, a cocher, format affiche A3 |
+| `stakeholder-mapping.pptx` | PowerPoint | Matrice pouvoir / interet avec strategie par quadrant, et plan de communication |
 | `outcome-tree-ai-native.pptx` | PowerPoint | Outcome tree agile AI-native : OKR de portefeuille, outcomes d'ART et d'equipe, paris ; exemple complet, fiche pari (indicateur avance, critere d'arret, role de l'IA) et revue Sense & Respond. Genere par `scripts/generate-outcome-tree.py` |
 | `jira-import-template.csv` | CSV | Import bulk dans Jira |
 | `ado-import-template.csv` | CSV | Import bulk dans Azure DevOps |
+
+Les templates PowerPoint (hors bibliotheque de slides) sont generes par `scripts/generate-pptx-templates.py` et `scripts/generate-outcome-tree.py`, qui partagent la charte `scripts/pptx_style.py` : `python scripts/generate-pptx-templates.py`.
 
 ### Mini-Apps HTML interactives
 | App | Description |
