@@ -7,3 +7,6 @@ accelerators/html/ably-config.js
 # OS / editor noise
 Thumbs.db
 .DS_Store
+
+__pycache__/
+*.pyc
