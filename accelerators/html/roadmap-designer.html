@@ -475,7 +475,7 @@
           </div>
           <div class="form-grid portfolio-controls">
             <div class="field">
-              <label for="start-month">Debut</label>
+              <label for="start-month">Début</label>
               <input id="start-month" type="month">
             </div>
             <div class="field">
@@ -512,11 +512,11 @@
       </section>
 
       <section class="panel">
-        <div class="panel-head"><h2>Donnees</h2></div>
+        <div class="panel-head"><h2>Données</h2></div>
         <div class="panel-body">
-          <button class="btn danger" id="reset-btn" title="Reinitialiser">
+          <button class="btn danger" id="reset-btn" title="Réinitialiser">
             <svg viewBox="0 0 24 24"><path d="M6 7h12v2H6V7Zm2 4h2v8H8v-8Zm6 0h2v8h-2v-8ZM9 4h6l1 1h4v2H4V5h4l1-1Z"/></svg>
-            Reinitialiser
+            Réinitialiser
           </button>
         </div>
       </section>
@@ -547,7 +547,7 @@
 <div class="overlay" id="modal-overlay" role="dialog" aria-modal="true">
   <div class="modal">
     <div class="modal-head">
-      <h2 id="modal-title">Edition</h2>
+      <h2 id="modal-title">Édition</h2>
       <button class="mini-btn" id="close-modal" title="Fermer">
         <svg viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></svg>
       </button>
@@ -820,7 +820,7 @@
   function renderFilters() {
     const current = { status: els.statusFilter.value, priority: els.priorityFilter.value, owner: els.ownerFilter.value };
     els.statusFilter.innerHTML = `<option value="">Tous les statuts</option>${STATUSES.map((s) => `<option value="${s.id}">${s.label}</option>`).join('')}`;
-    els.priorityFilter.innerHTML = `<option value="">Toutes priorites</option>${PRIORITIES.map((p) => `<option value="${p}">${p}</option>`).join('')}`;
+    els.priorityFilter.innerHTML = `<option value="">Toutes priorités</option>${PRIORITIES.map((p) => `<option value="${p}">${p}</option>`).join('')}`;
     const owners = [...new Set([
       ...state.epics.map((epic) => epic.owner).filter(Boolean),
       ...allFeatures().map((item) => item.owner).filter(Boolean)
@@ -863,7 +863,7 @@
         <div class="empty-state">
           <div>
             <h2>Aucune feature</h2>
-            <p>Modifiez les filtres ou creez une nouvelle epic pour continuer.</p>
+            <p>Modifiez les filtres ou créez une nouvelle epic pour continuer.</p>
             <button class="btn primary" onclick="window.roadmapDesigner.openEpic()">Nouvelle epic</button>
           </div>
         </div>`;
@@ -898,13 +898,13 @@
         <button class="feature" draggable="true" data-feature-id="${item.id}" data-epic-id="${epic.id}"
           style="grid-column:${start + 2} / ${end + 3};grid-row:${level + 1};--feature-color:${meta.color};"
           title="${escapeHtml(item.title)}">
-          <span class="resize-handle left" data-resize-side="left" title="Reduire ou etendre par la gauche"></span>
+          <span class="resize-handle left" data-resize-side="left" title="Réduire ou étendre par la gauche"></span>
           <span class="feature-main">
             <span class="feature-title">${escapeHtml(item.title)}</span>
             <span class="feature-meta">${escapeHtml(item.owner || epic.owner || 'Owner')} - Score ${Number(item.score || 0)} - ${escapeHtml(item.metric || meta.label)}</span>
           </span>
           <span class="feature-chip">${escapeHtml(item.priority)} / ${Number(item.score || 0)}</span>
-          <span class="resize-handle right" data-resize-side="right" title="Reduire ou etendre par la droite"></span>
+          <span class="resize-handle right" data-resize-side="right" title="Réduire ou étendre par la droite"></span>
         </button>`;
     }).join('');
     return `
@@ -919,7 +919,7 @@
               <button class="mini-btn" data-action="add-feature" data-epic-id="${epic.id}" title="Ajouter feature">
                 <svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z"/></svg>
               </button>
-              <button class="mini-btn" data-action="edit-epic" data-epic-id="${epic.id}" title="Editer epic">
+              <button class="mini-btn" data-action="edit-epic" data-epic-id="${epic.id}" title="Modifier l'epic">
                 <svg viewBox="0 0 24 24"><path d="M4 17.2V20h2.8L17.1 9.7l-2.8-2.8L4 17.2ZM18.4 8.4l1.2-1.2a1 1 0 0 0 0-1.4l-1.4-1.4a1 1 0 0 0-1.4 0l-1.2 1.2 2.8 2.8Z"/></svg>
               </button>
             </div>
@@ -1097,8 +1097,8 @@
         <div class="field"><label for="modal-feature-epic">Epic</label><select id="modal-feature-epic" name="epicId">${state.epics.map((epicItem) => `<option value="${epicItem.id}" ${epicItem.id === epic.id ? 'selected' : ''}>${escapeHtml(epicItem.title)}</option>`).join('')}</select></div>
         <div class="field"><label for="modal-feature-owner">Owner</label><input id="modal-feature-owner" name="owner" value="${escapeHtml(item.owner)}"></div>
         <div class="field"><label for="modal-feature-status">Statut</label><select id="modal-feature-status" name="status">${STATUSES.map((status) => `<option value="${status.id}" ${status.id === item.status ? 'selected' : ''}>${status.label}</option>`).join('')}</select></div>
-        <div class="field"><label for="modal-feature-priority">Priorite</label><select id="modal-feature-priority" name="priority">${PRIORITIES.map((priority) => `<option value="${priority}" ${priority === item.priority ? 'selected' : ''}>${priority}</option>`).join('')}</select></div>
-        <div class="field"><label for="modal-feature-start">Debut</label><select id="modal-feature-start" name="start">${months.map((month) => `<option value="${month}" ${month === item.start ? 'selected' : ''}>${month}</option>`).join('')}</select></div>
+        <div class="field"><label for="modal-feature-priority">Priorité</label><select id="modal-feature-priority" name="priority">${PRIORITIES.map((priority) => `<option value="${priority}" ${priority === item.priority ? 'selected' : ''}>${priority}</option>`).join('')}</select></div>
+        <div class="field"><label for="modal-feature-start">Début</label><select id="modal-feature-start" name="start">${months.map((month) => `<option value="${month}" ${month === item.start ? 'selected' : ''}>${month}</option>`).join('')}</select></div>
         <div class="field"><label for="modal-feature-end">Fin</label><select id="modal-feature-end" name="end">${months.map((month) => `<option value="${month}" ${month === item.end ? 'selected' : ''}>${month}</option>`).join('')}</select></div>
         <div class="field"><label for="modal-feature-confidence">Confiance</label><input id="modal-feature-confidence" name="confidence" type="number" min="0" max="100" value="${Number(item.confidence || 0)}"></div>
         <div class="field"><label for="modal-feature-effort">Effort</label><input id="modal-feature-effort" name="effort" type="number" min="0" max="999" value="${Number(item.effort || 0)}"></div>
@@ -1125,7 +1125,7 @@
       } else {
         state.epics.push({ id: uid('epic'), title: data.title, owner: data.owner, objective: data.objective, color: data.color, features: [] });
       }
-      saveState('Epic sauvegardee');
+      saveState('Epic sauvegardée');
     }
     if (modal.type === 'feature') {
       const sourceEpic = state.epics.find((item) => item.id === modal.epicId);
@@ -1151,7 +1151,7 @@
         sourceEpic.features = sourceEpic.features.filter((featureItem) => featureItem.id !== modal.featureId);
         targetEpic.features.push(item);
       }
-      saveState('Feature sauvegardee');
+      saveState('Feature sauvegardée');
     }
     closeModal();
     render();
@@ -1162,12 +1162,12 @@
       const epic = state.epics.find((item) => item.id === modal.epicId);
       if (!confirm(`Supprimer "${epic.title}" et ses features ?`)) return;
       state.epics = state.epics.filter((item) => item.id !== modal.epicId);
-      saveState('Epic supprimee');
+      saveState('Epic supprimée');
     }
     if (modal.type === 'feature' && modal.featureId) {
       const epic = state.epics.find((item) => item.id === modal.epicId);
       epic.features = epic.features.filter((item) => item.id !== modal.featureId);
-      saveState('Feature supprimee');
+      saveState('Feature supprimée');
     }
     closeModal();
     render();
@@ -1184,7 +1184,7 @@
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
-    showToast('Export JSON pret');
+    showToast('Export JSON prêt');
   }
 
   function importJson(file) {
@@ -1193,7 +1193,7 @@
     reader.onload = () => {
       try {
         state = normalizeState(JSON.parse(reader.result));
-        saveState('Import JSON termine');
+        saveState('Import JSON terminé');
         render();
       } catch (error) {
         console.warn(error);
@@ -1206,7 +1206,7 @@
   }
 
   function resetData() {
-    if (!confirm('Reinitialiser la roadmap locale ?')) return;
+    if (!confirm('Réinitialiser la roadmap locale ?')) return;
     state = createDemoState();
     saveState('Roadmap reinitialisee');
     render();

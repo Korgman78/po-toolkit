@@ -442,7 +442,7 @@ function render() {
     <div class="main-header">
       <h2>${m.icon} ${m.name}</h2>
       <div style="display:flex; gap:0.5rem;">
-        <button class="btn-secondary" onclick="resetAll()">Reinitialiser</button>
+        <button class="btn-secondary" onclick="resetAll()">Réinitialiser</button>
         <button class="btn-primary" onclick="exportResults()">Exporter</button>
       </div>
     </div>
@@ -534,7 +534,7 @@ function removeCriterion(id) {
 }
 
 function resetAll() {
-  if (!confirm('Reinitialiser toutes les donnees ?')) return;
+  if (!confirm('Réinitialiser toutes les données ?')) return;
   items = [];
   customCriteria = [];
   criteriaWeights = {};

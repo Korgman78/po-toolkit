@@ -104,6 +104,7 @@ const ACCELERATORS_DATA = [
   { name: "Sprint Review", desc: "Support pré-formaté : démo, métriques et prochaines étapes. Slide Guide incluse.", format: "pptx", file: "../accelerators/pptx/sprint-review-template.pptx" },
   { name: "Definition of Ready / Done", desc: "Checklists DoR et DoD prêtes à afficher, format poster A3.", format: "pptx", file: "../accelerators/pptx/definition-of-ready-done.pptx" },
   { name: "Stakeholder Map", desc: "Matrice pouvoir/intérêt pour cartographier les parties prenantes.", format: "pptx", file: "../accelerators/pptx/stakeholder-mapping.pptx" },
+  { name: "Outcome tree agile AI-native", desc: "Arbre OKR → outcomes d'ART → outcomes d'équipe → paris, avec exemple complet, fiche pari (indicateur avancé, critère d'arrêt, rôle de l'IA) et revue Sense & Respond.", format: "pptx", file: "../accelerators/pptx/outcome-tree-ai-native.pptx" },
   { name: "Bibliothèque de slides", desc: "225 slides : diagrammes, timelines, matrices, pyramides, process flows, tableaux.", format: "pptx", file: "../accelerators/pptx/Slides Library_A4.pptx" },
   { name: "Import Jira", desc: "CSV pré-formaté pour un import en masse dans Jira, colonnes mappées.", format: "csv", file: "../accelerators/csv/jira-import-template.csv" },
   { name: "Import Azure DevOps", desc: "CSV pré-formaté pour un import en masse dans Azure DevOps.", format: "csv", file: "../accelerators/csv/ado-import-template.csv" },
@@ -176,6 +177,14 @@ function stripTags(html) {
   const div = document.createElement('div');
   div.innerHTML = html;
   return div.textContent || '';
+}
+function tint(key) {
+  let h = 0;
+  for (const ch of String(key)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return `tint-${(h % 6) + 1}`;
+}
+function tile(iconName, key, small = false) {
+  return `<span class="tile-icon ${tint(key)}${small ? ' tile-sm' : ''}">${icon(iconName, small ? 14 : 16)}</span>`;
 }
 function plural(n, one, many) { return `${n} ${n > 1 ? many : one}`; }
 
@@ -286,12 +295,12 @@ function renderSidebar(route) {
   let html = `
     <a class="brand" href="#home" aria-label="PO Toolkit, accueil">
       <span class="brand-mark"><span></span></span>
-      <span class="brand-name">po/toolkit</span>
+      <span class="brand-name">PO Toolkit</span>
     </a>
     <div class="nav">
       ${nav.map(n => `
         <a class="nav-link${section === n.id ? ' is-active' : ''}" href="${n.href}"${section === n.id ? ' aria-current="page"' : ''}>
-          ${icon(n.icon, 16)}<span class="label">${n.label}</span>${n.count ? `<span class="nav-count">${n.count}</span>` : ''}
+          ${icon(n.icon, 16)}<span class="label">${n.label}</span>
         </a>`).join('')}
     </div>
   `;
@@ -325,7 +334,7 @@ function renderSidebar(route) {
         <div class="side-list">
           ${Object.entries(TOOL_CATEGORIES).map(([k, c]) => `
             <a class="side-item${route.subpage === k ? ' is-active' : ''}" href="#tools/${k}">
-              <span>${c.title}</span><span class="count">${c.tools.length}</span></a>`).join('')}
+              <span>${c.title}</span></a>`).join('')}
         </div>
       </div>`;
   } else if (section === 'methods') {
@@ -335,7 +344,7 @@ function renderSidebar(route) {
         <div class="side-list">
           ${Object.entries(METHOD_CATEGORIES).map(([k, c]) => `
             <a class="side-item${route.subpage === k ? ' is-active' : ''}" href="#methods/${k}">
-              <span>${c.title}</span><span class="count">${c.methods.length}</span></a>`).join('')}
+              <span>${c.title}</span></a>`).join('')}
         </div>
       </div>`;
   } else if (section === 'toolbox') {
@@ -346,7 +355,7 @@ function renderSidebar(route) {
       <div class="side-section">
         <span class="eyebrow">Boîte à outils</span>
         <div class="side-list">
-          ${items.map(([p, l, n]) => `<a class="side-item${route.page === p ? ' is-active' : ''}" href="#${p}"><span>${l}</span><span class="count">${n}</span></a>`).join('')}
+          ${items.map(([p, l]) => `<a class="side-item${route.page === p ? ' is-active' : ''}" href="#${p}"><span>${l}</span></a>`).join('')}
         </div>
       </div>`;
   }
@@ -415,7 +424,7 @@ function appsTable(apps) {
         <tbody>
           ${apps.map(a => `
             <tr class="is-link" data-open="${a.file}">
-              <td><span class="cell-tool"><span class="tile-icon">${icon(a.icon, 16)}</span><span class="name">${a.name}</span></span></td>
+              <td><span class="cell-tool">${tile(a.icon, a.key)}<span class="name">${a.name}</span></span></td>
               <td class="muted">${a.short}</td>
               <td>${appModeView(a)}</td>
               <td class="right"><a class="btn btn-sm btn-ghost" href="${a.file}" target="_blank" rel="noopener" aria-label="Ouvrir ${a.name}">Ouvrir ${icon('external', 14)}</a></td>
@@ -454,7 +463,7 @@ function renderHome() {
   return `
     <div class="page">
       <section class="section" style="gap:16px">
-        <h1 class="home-title">Que voulez-vous faire&#8239;?</h1>
+        <h1 class="home-title"><span class="hello">${new Date().getHours() >= 18 || new Date().getHours() < 5 ? 'Bonsoir.' : 'Bonjour.'}</span> Que voulez-vous faire aujourd'hui&#8239;?</h1>
         <div class="panel command">
           <button class="command-input" data-action="open-palette">
             ${icon('search', 18)}<span class="grow">Rechercher un outil, une méthode, un chapitre…</span><kbd>Ctrl K</kbd>
@@ -462,7 +471,7 @@ function renderHome() {
           <div class="command-list">
             ${QUICK_ACTIONS.map(a => `
               <a class="command-item" href="${a.file}" target="_blank" rel="noopener" aria-keyshortcuts="${a.shortcut.toUpperCase()}">
-                ${icon(a.icon, 16)}<span class="label">${a.task}</span><span class="hint">${a.name}</span><kbd>${a.shortcut.toUpperCase()}</kbd>
+                ${tile(a.icon, a.key, true)}<span class="label">${a.task}</span><span class="hint">${a.name}</span><kbd>${a.shortcut.toUpperCase()}</kbd>
               </a>`).join('')}
           </div>
         </div>
@@ -482,9 +491,9 @@ function renderHome() {
       <section class="section">
         <div class="section-bar"><h2>Explorer</h2></div>
         <div class="explore">
-          <a class="panel" href="#tools"><span class="t">Référentiel d'outils ${icon('arrowRight', 14)}</span><span class="d">Jira, Productboard, Amplitude… analysés du point de vue du PO.</span><span class="n">${toolCount} outils · ${Object.keys(TOOL_CATEGORIES).length} catégories</span></a>
-          <a class="panel" href="#methods"><span class="t">Méthodes ${icon('arrowRight', 14)}</span><span class="d">Priorisation, discovery, métriques, agilité à l'échelle.</span><span class="n">${methodCount} méthodes</span></a>
-          <a class="panel" href="#accelerators"><span class="t">Templates ${icon('arrowRight', 14)}</span><span class="d">Classeurs Excel, supports PowerPoint et imports CSV.</span><span class="n">${ACCELERATORS_DATA.length} fichiers</span></a>
+          <a class="panel" href="#tools">${tile('layers', 'tools')}<span class="t">Référentiel d'outils ${icon('arrowRight', 14)}</span><span class="d">Jira, Productboard, Amplitude… analysés du point de vue du PO.</span><span class="n">${toolCount} outils · ${Object.keys(TOOL_CATEGORIES).length} catégories</span></a>
+          <a class="panel" href="#methods">${tile('compass', 'methods-x')}<span class="t">Méthodes ${icon('arrowRight', 14)}</span><span class="d">Priorisation, discovery, métriques, agilité à l'échelle.</span><span class="n">${methodCount} méthodes</span></a>
+          <a class="panel" href="#accelerators">${tile('file', 'templates')}<span class="t">Templates ${icon('arrowRight', 14)}</span><span class="d">Classeurs Excel, supports PowerPoint et imports CSV.</span><span class="n">${ACCELERATORS_DATA.length} fichiers</span></a>
         </div>
       </section>
     </div>`;
@@ -517,7 +526,7 @@ function renderFormationOverview() {
                 const th = FORMATION_CATEGORIES[k];
                 return `
                   <a class="row-link" href="#formation/${k}">
-                    <span class="tile-icon">${icon(COURSE_ICONS[k] || 'book', 16)}</span>
+                    ${tile(COURSE_ICONS[k] || 'book', k)}
                     <span style="min-width:0"><span class="title">${th.title}</span><span class="desc" style="display:block">${th.tagline}</span></span>
                     ${courseProgressCell(k)}
                     <span class="meta"><span>${th.level}</span><span>${th.duration}</span>${icon('chevron', 16, 'chev')}</span>
@@ -739,15 +748,16 @@ function renderToolbox() {
         <div class="section-bar"><h2>Mini-apps</h2><a href="#apps">Détails</a></div>
         ${appsTable(APPS_DATA)}
       </section>
-      <section class="section">
-        <div class="section-bar"><h2>Templates</h2><a href="#accelerators">Tout voir</a></div>
-        ${templatesList(ACCELERATORS_DATA.slice(0, 5))}
-      </section>
+      ${Object.entries(ACCELERATOR_FORMAT_META).map(([fmt, meta]) => `
+        <section class="section">
+          <div class="section-bar"><h2>Templates · ${meta.title}</h2><p>${meta.description}</p></div>
+          ${templatesList(ACCELERATORS_DATA.filter(a => a.format === fmt))}
+        </section>`).join('')}
       <section class="section">
         <div class="section-bar"><h2>Fiches mémo</h2></div>
         <div class="panel rows">
           <a class="row-link" href="#cheatsheets">
-            <span class="tile-icon">${icon('sheet', 16)}</span>
+            ${tile('sheet', 'cheatsheets')}
             <span><span class="title">Fiches mémo imprimables</span><span class="desc" style="display:block">${CHEATSHEETS.map(c => c.title).join(' · ')}</span></span>
             <span class="meta">${icon('chevron', 16, 'chev')}</span>
           </a>
@@ -767,7 +777,7 @@ function renderApps() {
           <div class="panel rows">
             ${APPS_DATA.filter(a => a.section === sec).map(a => `
               <a class="row-link" href="${a.file}" target="_blank" rel="noopener">
-                <span class="tile-icon">${icon(a.icon, 16)}</span>
+                ${tile(a.icon, a.key)}
                 <span style="min-width:0"><span class="title">${a.name}</span><span class="desc" style="display:block">${a.desc}</span></span>
                 <span class="meta">${appModeView(a)}${icon('external', 15)}</span>
               </a>`).join('')}
@@ -854,7 +864,7 @@ function renderToolsOverview() {
       </div>
       <div class="chips" role="group" aria-label="Catégorie">
         <button class="chip${toolsFilter.cat === 'all' ? ' is-active' : ''}" data-action="tools-cat" data-value="all">Toutes</button>
-        ${Object.entries(TOOL_CATEGORIES).map(([k, c]) => `<button class="chip${toolsFilter.cat === k ? ' is-active' : ''}" data-action="tools-cat" data-value="${k}">${c.title}<span class="count">${c.tools.length}</span></button>`).join('')}
+        ${Object.entries(TOOL_CATEGORIES).map(([k, c]) => `<button class="chip${toolsFilter.cat === k ? ' is-active' : ''}" data-action="tools-cat" data-value="${k}">${c.title}</button>`).join('')}
       </div>
       <div class="table-wrap">
         <table class="table">
@@ -929,7 +939,7 @@ function renderMethodsOverview() {
       <div class="panel rows">
         ${Object.entries(METHOD_CATEGORIES).map(([k, c]) => `
           <a class="row-link" href="#methods/${k}">
-            <span class="tile-icon">${icon(METHOD_CATEGORY_ICONS[k] || 'compass', 16)}</span>
+            ${tile(METHOD_CATEGORY_ICONS[k] || 'compass', k)}
             <span style="min-width:0"><span class="title">${c.title}</span><span class="desc" style="display:block">${c.description}</span></span>
             <span class="meta"><span>${plural(c.methods.length, 'méthode', 'méthodes')}</span>${icon('chevron', 16, 'chev')}</span>
           </a>`).join('')}
@@ -949,7 +959,7 @@ function renderMethodCategory(key) {
       ${pageHead({ kicker: plural(cat.methods.length, 'méthode', 'méthodes'), title: cat.title, lead: cat.description })}
       ${key === 'scaling' ? `
         <div class="panel feature-row">
-          <span class="tile-icon">${icon('file', 16)}</span>
+          ${tile('file', 'pdf')}
           <span class="txt"><b>Guide complet : agilité à l'échelle</b><span>SAFe, LeSS, modèle Spotify et bonnes pratiques de passage à l'échelle, en PDF.</span></span>
           <a class="btn btn-sm" href="../accelerators/agilite-echelle-guide.pdf" target="_blank" rel="noopener">Ouvrir le PDF ${icon('external', 14)}</a>
         </div>` : ''}

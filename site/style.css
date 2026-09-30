@@ -1,82 +1,102 @@
 /* ============================================================
-   PO Toolkit — design system « Atelier »
-   Geist + Geist Mono, gris froids, un accent vermillon.
+   PO Toolkit — design system « Atelier chaleureux »
+   Neutres crème, accent terracotta, titres en serif (Newsreader),
+   interface en Geist, touches de couleur douces par thème.
    ============================================================ */
 
 /* ---------- Tokens ---------- */
 :root {
   color-scheme: light;
-  --bg: oklch(0.985 0.003 250);
-  --surface: oklch(1 0 0);
-  --surface-2: oklch(0.97 0.004 255);
-  --surface-3: oklch(0.945 0.005 255);
-  --border: oklch(0.91 0.005 255);
-  --border-soft: oklch(0.94 0.004 255);
-  --border-strong: oklch(0.86 0.006 255);
-  --text: oklch(0.21 0.012 255);
-  --text-2: oklch(0.42 0.012 255);
-  --text-3: oklch(0.55 0.01 255);
-  --text-4: oklch(0.66 0.008 255);
-  --accent: oklch(0.64 0.17 38);
-  --accent-text: oklch(0.55 0.17 38);
-  --accent-hover: oklch(0.49 0.16 38);
-  --accent-soft: oklch(0.965 0.02 45);
-  --accent-border: oklch(0.88 0.05 45);
-  --ink: oklch(0.21 0.012 255);
-  --on-ink: oklch(0.985 0.003 255);
-  --success: oklch(0.6 0.14 150);
-  --success-soft: oklch(0.965 0.03 150);
+  --bg: oklch(0.978 0.009 78);
+  --sidebar-bg: oklch(0.958 0.013 76);
+  --surface: oklch(0.996 0.004 80);
+  --surface-2: oklch(0.968 0.01 76);
+  --surface-3: oklch(0.94 0.014 74);
+  --border: oklch(0.9 0.013 72);
+  --border-soft: oklch(0.935 0.011 74);
+  --border-strong: oklch(0.85 0.017 70);
+  --text: oklch(0.26 0.02 52);
+  --text-2: oklch(0.43 0.022 55);
+  --text-3: oklch(0.55 0.02 58);
+  --text-4: oklch(0.66 0.017 62);
+  --accent: oklch(0.63 0.155 42);
+  --accent-text: oklch(0.54 0.15 40);
+  --accent-hover: oklch(0.56 0.155 40);
+  --accent-soft: oklch(0.955 0.03 55);
+  --accent-border: oklch(0.86 0.06 50);
+  --on-accent: oklch(0.99 0.006 60);
+  --ink: oklch(0.29 0.025 50);
+  --on-ink: oklch(0.985 0.006 80);
+  --success: oklch(0.58 0.12 155);
+  --success-soft: oklch(0.955 0.03 150);
   --warn: oklch(0.72 0.14 75);
-  --warn-soft: oklch(0.975 0.035 85);
+  --warn-soft: oklch(0.965 0.04 85);
   --warn-text: oklch(0.48 0.1 65);
-  --danger: oklch(0.58 0.19 25);
-  --danger-soft: oklch(0.965 0.02 25);
-  --shadow-sm: 0 1px 2px oklch(0.2 0.01 255 / 0.05);
-  --shadow-md: 0 4px 16px -4px oklch(0.2 0.02 255 / 0.12);
-  --shadow-lg: 0 24px 64px -16px oklch(0.2 0.02 255 / 0.32);
-  --overlay: oklch(0.2 0.01 255 / 0.32);
+  --danger: oklch(0.57 0.17 28);
+  --danger-soft: oklch(0.96 0.025 30);
+  --shadow-sm: 0 1px 2px oklch(0.35 0.04 55 / 0.06), 0 2px 8px -4px oklch(0.35 0.04 55 / 0.08);
+  --shadow-md: 0 8px 24px -10px oklch(0.35 0.05 55 / 0.2);
+  --shadow-lg: 0 24px 64px -16px oklch(0.3 0.05 50 / 0.3);
+  --overlay: oklch(0.25 0.03 55 / 0.3);
+
+  /* Teintes douces pour les pastilles (même clarté et chroma, teinte variable) */
+  --t1-bg: oklch(0.94 0.04 45);  --t1-fg: oklch(0.55 0.14 42);
+  --t2-bg: oklch(0.945 0.045 85); --t2-fg: oklch(0.56 0.12 75);
+  --t3-bg: oklch(0.94 0.04 150); --t3-fg: oklch(0.5 0.11 152);
+  --t4-bg: oklch(0.94 0.035 200); --t4-fg: oklch(0.5 0.09 205);
+  --t5-bg: oklch(0.94 0.035 260); --t5-fg: oklch(0.5 0.12 262);
+  --t6-bg: oklch(0.94 0.04 330); --t6-fg: oklch(0.52 0.13 335);
 
   --font-sans: 'Geist', ui-sans-serif, 'Segoe UI', system-ui, sans-serif;
+  --font-serif: 'Newsreader', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
   --font-mono: 'Geist Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
-  --radius-sm: 5px;
-  --radius: 8px;
-  --radius-lg: 12px;
-  --sidebar-w: 248px;
-  --topbar-h: 56px;
+  --radius-sm: 7px;
+  --radius: 11px;
+  --radius-lg: 16px;
+  --sidebar-w: 256px;
+  --topbar-h: 58px;
   --ease: cubic-bezier(0.2, 0, 0, 1);
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg: oklch(0.17 0.006 255);
-  --surface: oklch(0.205 0.007 255);
-  --surface-2: oklch(0.225 0.008 255);
-  --surface-3: oklch(0.255 0.008 255);
-  --border: oklch(0.29 0.008 255);
-  --border-soft: oklch(0.25 0.008 255);
-  --border-strong: oklch(0.36 0.01 255);
-  --text: oklch(0.955 0.004 255);
-  --text-2: oklch(0.8 0.008 255);
-  --text-3: oklch(0.66 0.01 255);
-  --text-4: oklch(0.52 0.01 255);
-  --accent: oklch(0.7 0.16 42);
-  --accent-text: oklch(0.77 0.13 45);
-  --accent-hover: oklch(0.82 0.11 48);
-  --accent-soft: oklch(0.26 0.04 40);
-  --accent-border: oklch(0.4 0.08 40);
-  --ink: oklch(0.955 0.004 255);
-  --on-ink: oklch(0.18 0.006 255);
-  --success: oklch(0.72 0.14 150);
-  --success-soft: oklch(0.25 0.04 150);
-  --warn: oklch(0.78 0.13 80);
-  --warn-soft: oklch(0.26 0.04 80);
-  --warn-text: oklch(0.84 0.1 82);
-  --danger: oklch(0.7 0.17 25);
-  --danger-soft: oklch(0.26 0.05 25);
+  --bg: oklch(0.2 0.012 55);
+  --sidebar-bg: oklch(0.18 0.012 55);
+  --surface: oklch(0.235 0.013 55);
+  --surface-2: oklch(0.255 0.014 55);
+  --surface-3: oklch(0.285 0.015 55);
+  --border: oklch(0.32 0.015 55);
+  --border-soft: oklch(0.28 0.014 55);
+  --border-strong: oklch(0.39 0.017 55);
+  --text: oklch(0.95 0.01 75);
+  --text-2: oklch(0.82 0.014 70);
+  --text-3: oklch(0.68 0.016 65);
+  --text-4: oklch(0.54 0.016 60);
+  --accent: oklch(0.7 0.15 45);
+  --accent-text: oklch(0.77 0.12 50);
+  --accent-hover: oklch(0.74 0.14 47);
+  --accent-soft: oklch(0.3 0.05 45);
+  --accent-border: oklch(0.44 0.08 45);
+  --on-accent: oklch(0.2 0.02 50);
+  --ink: oklch(0.93 0.012 75);
+  --on-ink: oklch(0.2 0.012 55);
+  --success: oklch(0.73 0.12 150);
+  --success-soft: oklch(0.29 0.04 150);
+  --warn: oklch(0.8 0.12 80);
+  --warn-soft: oklch(0.3 0.045 80);
+  --warn-text: oklch(0.86 0.09 82);
+  --danger: oklch(0.72 0.15 28);
+  --danger-soft: oklch(0.3 0.05 28);
   --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.3);
-  --shadow-md: 0 6px 20px -6px oklch(0 0 0 / 0.5);
+  --shadow-md: 0 8px 24px -10px oklch(0 0 0 / 0.55);
   --shadow-lg: 0 24px 64px -16px oklch(0 0 0 / 0.7);
-  --overlay: oklch(0.1 0.01 255 / 0.6);
+  --overlay: oklch(0.12 0.01 55 / 0.6);
+  --t1-bg: oklch(0.32 0.06 42);  --t1-fg: oklch(0.82 0.1 48);
+  --t2-bg: oklch(0.33 0.05 80);  --t2-fg: oklch(0.85 0.1 85);
+  --t3-bg: oklch(0.32 0.05 152); --t3-fg: oklch(0.82 0.09 152);
+  --t4-bg: oklch(0.32 0.045 205); --t4-fg: oklch(0.82 0.07 205);
+  --t5-bg: oklch(0.32 0.05 262); --t5-fg: oklch(0.82 0.08 262);
+  --t6-bg: oklch(0.32 0.05 335); --t6-fg: oklch(0.83 0.09 335);
 }
 
 /* ---------- Base ---------- */
@@ -644,3 +664,64 @@ kbd, .kbd {
   .content { padding: 0; }
   .panel { box-shadow: none; }
 }
+
+/* ============================================================
+   Ambiance chaleureuse : titres en serif, étiquettes en sans-serif,
+   pastilles colorées, états actifs doux.
+   ============================================================ */
+.brand-name { font-family: var(--font-serif); font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }
+.brand-mark { border-radius: 7px; }
+
+.sidebar { background: var(--sidebar-bg); }
+.nav-link { height: 34px; border-radius: 9px; }
+.nav-link:hover { background: color-mix(in oklch, var(--surface) 70%, transparent); }
+.nav-link.is-active { background: var(--surface); box-shadow: var(--shadow-sm); color: var(--text); }
+.nav-link.is-active .icon { color: var(--accent-text); }
+.side-item { border-radius: 8px; }
+.side-item:hover { background: color-mix(in oklch, var(--surface) 70%, transparent); }
+.side-item.is-active { background: var(--surface); box-shadow: var(--shadow-sm); }
+.side-title { font-family: var(--font-serif); font-size: 17px; font-weight: 600; }
+.topbar { background: color-mix(in oklch, var(--bg) 84%, transparent); }
+
+.eyebrow, .table th, .course-table th, .pattern-tag, .course-sources strong, .palette-group {
+  font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+}
+.kicker { font-family: var(--font-sans); font-size: 13px; font-weight: 600; letter-spacing: 0.01em; }
+.row-link .meta, .pager .l, .course-progress, .plan-item .status { font-family: var(--font-sans); }
+
+.page-head h1, .home-title, .chapter-head h1 { font-family: var(--font-serif); font-weight: 500; letter-spacing: -0.015em; }
+.page-head h1 { font-size: 40px; line-height: 1.1; }
+.home-title { font-size: 42px; line-height: 1.1; }
+.home-title .hello { color: var(--accent-text); }
+.chapter-head h1 { font-size: 44px; line-height: 1.08; }
+.chapter-head .lead, .page-head .lead { font-size: 17.5px; }
+.section-bar h2 { font-family: var(--font-serif); font-size: 22px; font-weight: 500; letter-spacing: -0.01em; }
+.prose h4, .prose .section-title { font-family: var(--font-serif); font-size: 26px; font-weight: 500; letter-spacing: -0.01em; }
+.exercise-head h3, .method-intro h3 { font-family: var(--font-serif); font-size: 21px; font-weight: 500; }
+.tool-card-head .name { font-size: 16px; }
+
+.panel { border-color: var(--border-soft); }
+.btn-primary { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--on-accent); }
+.btn-primary .num { color: color-mix(in oklch, var(--on-accent) 75%, var(--accent)); }
+.chip { border-color: var(--border); }
+.chip.is-active { background: var(--accent-soft); border-color: var(--accent-border); color: var(--accent-text); font-weight: 500; }
+.score-bar span { background: var(--accent); }
+.segments span.on, .progress > span { background: var(--accent); }
+
+/* Pastilles colorées */
+.tile-icon { border: 0; border-radius: 9px; }
+.tile-sm { width: 26px; height: 26px; border-radius: 7px; }
+.tint-1 { background: var(--t1-bg); color: var(--t1-fg); }
+.tint-2 { background: var(--t2-bg); color: var(--t2-fg); }
+.tint-3 { background: var(--t3-bg); color: var(--t3-fg); }
+.tint-4 { background: var(--t4-bg); color: var(--t4-fg); }
+.tint-5 { background: var(--t5-bg); color: var(--t5-fg); }
+.tint-6 { background: var(--t6-bg); color: var(--t6-fg); }
+.command-item .tile-icon .icon, .command-item:hover .tile-icon .icon { color: inherit; }
+.command-item { height: 46px; }
+
+.explore a { gap: 12px; }
+.explore a:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.row-link:hover, .table tbody tr.is-link:hover { background: color-mix(in oklch, var(--accent-soft) 55%, var(--surface)); }
+.learn-item:hover { background: color-mix(in oklch, var(--accent-soft) 55%, var(--surface)); }

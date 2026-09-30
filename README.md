@@ -28,7 +28,7 @@ Activation a faire une seule fois dans GitHub:
 - Accueil oriente taches : raccourcis clavier vers les mini-apps (R, P, E, S, M, I), progression de formation
 - Palette de commande (Ctrl+K ou /) : recherche groupee, navigation au clavier
 - Referentiel d'outils en tableau filtrable (texte, prix, categorie)
-- Design system « Atelier » (Geist / Geist Mono, icones SVG au trait, theme clair/sombre suivant le systeme), responsive et accessible (focus visibles, reduced motion, impression)
+- Design system « Atelier chaleureux » (neutres creme, accent terracotta, titres en serif Newsreader, interface en Geist, pastilles colorees, icones SVG au trait, theme clair/sombre suivant le systeme), responsive et accessible (focus visibles, reduced motion, impression)
 - 100% statique, ouvrable hors-ligne
 
 ### Formation (parcours de cours)
@@ -55,6 +55,7 @@ Section de cours structures, accessible depuis la sidebar « Formation ». Chaqu
 | `sprint-review-template.pptx` | PowerPoint | 4 slides pre-formatees pour Sprint Review |
 | `definition-of-ready-done.pptx` | PowerPoint | Checklists DoR et DoD affichables |
 | `stakeholder-mapping.pptx` | PowerPoint | Matrice pouvoir/interet |
+| `outcome-tree-ai-native.pptx` | PowerPoint | Outcome tree agile AI-native : OKR de portefeuille, outcomes d'ART et d'equipe, paris ; exemple complet, fiche pari (indicateur avance, critere d'arret, role de l'IA) et revue Sense & Respond. Genere par `scripts/generate-outcome-tree.py` |
 | `jira-import-template.csv` | CSV | Import bulk dans Jira |
 | `ado-import-template.csv` | CSV | Import bulk dans Azure DevOps |
 

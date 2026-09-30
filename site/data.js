@@ -1331,147 +1331,147 @@ const METHODS_DATA = {
       {
         name: "RICE Scoring",
         description: "Framework de priorisation quantitatif développé par Intercom. Score = (Reach x Impact x Confidence) / Effort.",
-        steps: ["Estimer le Reach (combien d'utilisateurs touches)", "Evaluer l'Impact (1-3)", "Definir la Confidence (% de certitude)", "Estimer l'Effort (en person-months)", "Calculer le score RICE"],
-        when: "Backlog avec beaucoup d'items a comparer objectivement. Ideal pour enlever le biais.",
-        tips: ["Definissez des periodes fixes pour le Reach (ex: par trimestre)", "Soyez honnete sur la Confidence", "Revoyez les scores régulièrement"]
+        steps: ["Estimer le Reach (combien d'utilisateurs touchés)", "Évaluer l'Impact (1-3)", "Définir la Confidence (% de certitude)", "Estimer l'Effort (en person-months)", "Calculer le score RICE"],
+        when: "Backlog avec beaucoup d'items à comparer objectivement. Idéal pour enlever le biais.",
+        tips: ["Définissez des périodes fixes pour le Reach (ex: par trimestre)", "Soyez honnête sur la Confidence", "Revoyez les scores régulièrement"]
       },
       {
         name: "MoSCoW",
         description: "Classification en 4 catégories : Must have, Should have, Could have, Won't have (this time). Simple et efficace pour les MVP et les releases.",
         steps: ["Lister toutes les features/stories", "Classer chaque item en M/S/C/W", "Valider avec les stakeholders", "Must = non-négociable", "Should + Could = si le temps le permet"],
         when: "Planification de MVP, release planning, négociation de scope avec les stakeholders.",
-        tips: ["Les Must ne doivent pas depasser 60% du scope", "Won't ≠ jamais, c'est 'pas cette fois'", "Impliquez les stakeholders dans la classification"]
+        tips: ["Les Must ne doivent pas dépasser 60% du scope", "Won't ≠ jamais, c'est 'pas cette fois'", "Impliquez les stakeholders dans la classification"]
       },
       {
         name: "WSJF (SAFe)",
-        description: "Weighted Shortest Job First. Priorise par le ratio valeur/taille. WSJF = Cost of Delay / Job Duration. Utilise dans SAFe.",
+        description: "Weighted Shortest Job First. Priorise par le ratio valeur/taille. WSJF = Cost of Delay / Job Duration. Utilisé dans SAFe.",
         steps: ["Estimer la User Business Value", "Estimer la Time Criticality", "Estimer le Risk Reduction / Opportunity", "Calculer le Cost of Delay (somme des 3)", "Diviser par la taille du job", "Prioriser par WSJF décroissant"],
-        when: "PI Planning SAFe, priorisation de features à l'echelle, arbitrage entre équipes.",
-        tips: ["Utilisez le Planning Poker pour les estimations", "Normalisez les echelles (1-21 Fibonacci)", "Le consensus est plus important que la précision"]
+        when: "PI Planning SAFe, priorisation de features à l'échelle, arbitrage entre équipes.",
+        tips: ["Utilisez le Planning Poker pour les estimations", "Normalisez les échelles (1-21 Fibonacci)", "Le consensus est plus important que la précision"]
       },
       {
         name: "Kano Model",
         description: "Classifie les features selon leur impact sur la satisfaction client : Must-be, One-dimensional, Attractive, Indifferent, Reverse.",
         steps: ["Identifier les features candidates", "Poser la question fonctionnelle et dysfonctionnelle", "Analyser les réponses pour classifier", "Prioriser : Must-be d'abord, puis Performance, puis Attractive"],
-        when: "Discovery produit, comprehension des attentes utilisateurs, différenciation produit.",
+        when: "Discovery produit, compréhension des attentes utilisateurs, différenciation produit.",
         tips: ["Les Must-be n'augmentent pas la satisfaction, mais leur absence la détruit", "Les Attractive features sont vos différenciateurs", "Les classifications changent avec le temps (Attractive → Must-be)"]
       },
       {
         name: "Value vs Effort Matrix",
         description: "Matrice 2x2 simple : Valeur (haute/basse) x Effort (haut/bas). Quick wins = haute valeur + faible effort.",
-        steps: ["Lister les items du backlog", "Evaluer la valeur business de chaque item", "Estimer l'effort de réalisation", "Placer dans la matrice 2x2", "Prioriser : Quick Wins → Big Bets → Fill-ins → Eviter"],
-        when: "Atelier de priorisation rapide, alignement equipe, premier tri du backlog.",
-        tips: ["Commencez toujours par les Quick Wins", "Les Big Bets nécessitent une validation avant engagement", "Ne négligez pas les Money Pits (haute effort, basse valeur) — supprimez-les"]
+        steps: ["Lister les items du backlog", "Évaluer la valeur business de chaque item", "Estimer l'effort de réalisation", "Placer dans la matrice 2x2", "Prioriser : Quick Wins → Big Bets → Fill-ins → Éviter"],
+        when: "Atelier de priorisation rapide, alignement équipe, premier tri du backlog.",
+        tips: ["Commencez toujours par les Quick Wins", "Les Big Bets nécessitent une validation avant engagement", "Ne négligez pas les Money Pits (effort élevé, valeur faible) — supprimez-les"]
       },
       {
         name: "Story Mapping",
-        description: "Technique de Jeff Patton pour organisér le backlog en parcours utilisateur. Axe horizontal = flux, axe vertical = priorité.",
-        steps: ["Definir les activités utilisateur (backbone)", "Decomposer en tâches utilisateur", "Organiser les stories sous chaque tache", "Tracer les lignes de release horizontales", "Le MVP est au-dessus de la première ligne"],
-        when: "Planification de release, définition de MVP, comprehension du parcours utilisateur global.",
-        tips: ["Faites-le en atelier avec toute l'equipe", "Le backbone raconte une histoire", "Chaque release doit etre un produit utilisable"]
+        description: "Technique de Jeff Patton pour organiser le backlog en parcours utilisateur. Axe horizontal = flux, axe vertical = priorité.",
+        steps: ["Définir les activités utilisateur (backbone)", "Décomposer en tâches utilisateur", "Organiser les stories sous chaque tâche", "Tracer les lignes de release horizontales", "Le MVP est au-dessus de la première ligne"],
+        when: "Planification de release, définition de MVP, compréhension du parcours utilisateur global.",
+        tips: ["Faites-le en atelier avec toute l'équipe", "Le backbone raconte une histoire", "Chaque release doit être un produit utilisable"]
       }
     ]
   },
   "discovery": {
     title: "Discovery & Recherche Produit",
     icon: "&#128269;",
-    description: "Méthodes pour explorer le probleme avant de construire la solution. Valider les hypotheses et comprendre les besoins reels.",
+    description: "Méthodes pour explorer le problème avant de construire la solution. Valider les hypothèses et comprendre les besoins réels.",
     methods: [
       {
         name: "Design Thinking",
-        description: "Approche centree utilisateur en 5 phases pour résoudre des problemes complexes de manière creative et itérative.",
-        steps: ["Empathize : comprendre les utilisateurs", "Define : formuler le probleme", "Ideate : générer des solutions", "Prototype : créer des prototypes rapides", "Test : valider avec les utilisateurs"],
-        when: "Nouveaux produits, refonte d'experience, innovation.",
-        tips: ["Restez dans le probleme avant de sauter aux solutions", "Testez tot et souvent", "Le prototype peut etre un post-it ou un wireframe papier"]
+        description: "Approche centrée utilisateur en 5 phases pour résoudre des problèmes complexes de manière creative et itérative.",
+        steps: ["Empathize : comprendre les utilisateurs", "Define : formuler le problème", "Ideate : générer des solutions", "Prototype : créer des prototypes rapides", "Test : valider avec les utilisateurs"],
+        when: "Nouveaux produits, refonte d'expérience, innovation.",
+        tips: ["Restez dans le problème avant de sauter aux solutions", "Testez tôt et souvent", "Le prototype peut être un post-it ou un wireframe papier"]
       },
       {
         name: "Lean Startup (Build-Measure-Learn)",
-        description: "Approche itérative pour valider rapidement les hypotheses produit avec un minimum d'investissement.",
-        steps: ["Formuler une hypothese", "Construire un MVP (minimum viable)", "Mesurer les résultats", "Apprendre et pivoter ou perseverer"],
-        when: "Validation de nouvelles idées produit, nouveaux marches, fonctionnalités incertaines.",
-        tips: ["Le MVP n'est pas un produit bâclé, c'est le minimum pour apprendre", "Definissez les métriques AVANT de construire", "Soyez prêts a pivoter"]
+        description: "Approche itérative pour valider rapidement les hypothèses produit avec un minimum d'investissement.",
+        steps: ["Formuler une hypothèse", "Construire un MVP (minimum viable)", "Mesurer les résultats", "Apprendre et pivoter ou persévérer"],
+        when: "Validation de nouvelles idées produit, nouveaux marchés, fonctionnalités incertaines.",
+        tips: ["Le MVP n'est pas un produit bâclé, c'est le minimum pour apprendre", "Définissez les métriques AVANT de construire", "Soyez prêts à pivoter"]
       },
       {
         name: "Jobs-to-be-Done (JTBD)",
-        description: "Framework qui se concentre sur le 'job' que l'utilisateur essaie d'accomplir, pas sur ses caracteristiques demographiques.",
-        steps: ["Identifier le job fonctionnel", "Identifier les jobs sociaux et emotionnels", "Mapper les outcomes desires", "Identifier les solutions actuelles (hiring/firing)", "Concevoir pour le job, pas pour le persona"],
-        when: "Comprehension profonde des motivations, innovation produit, positionnement.",
-        tips: ["'Les gens n'achetent pas une perceuse, ils achetent un trou dans le mur'", "Les jobs sont stables dans le temps, les solutions changent", "Interviewez en demandant 'racontez-moi la dernière fois que...'"]
+        description: "Framework qui se concentre sur le 'job' que l'utilisateur essaie d'accomplir, pas sur ses caractéristiques démographiques.",
+        steps: ["Identifier le job fonctionnel", "Identifier les jobs sociaux et émotionnels", "Mapper les outcomes désirés", "Identifier les solutions actuelles (hiring/firing)", "Concevoir pour le job, pas pour le persona"],
+        when: "Compréhension profonde des motivations, innovation produit, positionnement.",
+        tips: ["'Les gens n'achètent pas une perceuse, ils achètent un trou dans le mur'", "Les jobs sont stables dans le temps, les solutions changent", "Interviewez en demandant 'racontez-moi la dernière fois que...'"]
       },
       {
         name: "Opportunity Solution Tree",
-        description: "Framework de Teresa Torres pour structurer la discovery continue. Relie l'outcome desire aux opportunites et solutions testables.",
-        steps: ["Definir l'outcome desire (mesurable)", "Identifier les opportunites (besoins/pain points)", "Generer des solutions pour chaque opportunite", "Definir des experiments pour valider", "Itérer en continu"],
-        when: "Discovery continue, alignement équipe sur les opportunites, cadrage produit.",
-        tips: ["Un outcome clair aligne toute l'equipe", "Explorez plusieurs opportunites avant de converger", "Chaque solution doit etre testable avec un experiment"]
+        description: "Framework de Teresa Torres pour structurer la discovery continue. Relie l'outcome désiré aux opportunités et solutions testables.",
+        steps: ["Définir l'outcome désiré (mesurable)", "Identifier les opportunités (besoins/pain points)", "Générer des solutions pour chaque opportunité", "Définir des experiments pour valider", "Itérer en continu"],
+        when: "Discovery continue, alignement équipe sur les opportunités, cadrage produit.",
+        tips: ["Un outcome clair aligne toute l'équipe", "Explorez plusieurs opportunités avant de converger", "Chaque solution doit être testable avec un experiment"]
       },
       {
         name: "Lean UX Canvas",
-        description: "Canvas pour aligner l'équipe sur le probleme, les hypotheses et les métriques de succes avant de designer.",
-        steps: ["Business problem statement", "Business outcomes vises", "Utilisateurs cibles", "Outcomes utilisateurs et benefices", "Hypotheses", "Solutions les plus importantes", "Méthode de validation"],
-        when: "Kick-off de projet, alignement equipe, cadrage de sprint discovery.",
-        tips: ["Remplissez-le en equipe, pas seul", "Les hypotheses sont le coeur du canvas", "Revisitez-le régulièrement"]
+        description: "Canvas pour aligner l'équipe sur le problème, les hypothèses et les métriques de succès avant de designer.",
+        steps: ["Business problem statement", "Business outcomes visés", "Utilisateurs cibles", "Outcomes utilisateurs et bénéfices", "Hypothèses", "Solutions les plus importantes", "Méthode de validation"],
+        when: "Kick-off de projet, alignement équipe, cadrage de sprint discovery.",
+        tips: ["Remplissez-le en équipe, pas seul", "Les hypothèses sont le coeur du canvas", "Revisitez-le régulièrement"]
       }
     ]
   },
   "metrics": {
     title: "Métriques & KPIs Produit",
     icon: "&#128200;",
-    description: "Frameworks de métriques pour mesurer le succes produit et prendre des decisions basees sur les données.",
+    description: "Frameworks de métriques pour mesurer le succès produit et prendre des décisions basées sur les données.",
     methods: [
       {
         name: "HEART Framework (Google)",
-        description: "Framework de Google pour mesurer la qualité de l'UX a travers 5 dimensions : Happiness, Engagement, Adoption, Retention, Task success.",
-        steps: ["Happiness : satisfaction, NPS, CSAT", "Engagement : fréquence, intensite d'usage", "Adoption : nouveaux utilisateurs, activation", "Retention : churn, retention cohort", "Task success : taux de complétion, erreurs, temps"],
-        when: "Mise en place de KPIs produit, evaluation d'une feature, reporting exécutif.",
-        tips: ["Choisissez 1-2 métriques par dimension, pas toutes", "Definissez des Goals, Signals, Metrics (GSM) pour chaque", "Adaptez les dimensions a votre contexte"]
+        description: "Framework de Google pour mesurer la qualité de l'UX à travers 5 dimensions : Happiness, Engagement, Adoption, Retention, Task success.",
+        steps: ["Happiness : satisfaction, NPS, CSAT", "Engagement : fréquence, intensité d'usage", "Adoption : nouveaux utilisateurs, activation", "Retention : churn, retention cohort", "Task success : taux de complétion, erreurs, temps"],
+        when: "Mise en place de KPIs produit, évaluation d'une feature, reporting exécutif.",
+        tips: ["Choisissez 1-2 métriques par dimension, pas toutes", "Définissez des Goals, Signals, Metrics (GSM) pour chaque", "Adaptez les dimensions à votre contexte"]
       },
       {
         name: "AARRR (Pirate Metrics)",
         description: "Funnel de métriques startup par Dave McClure : Acquisition, Activation, Retention, Revenue, Referral.",
-        steps: ["Acquisition : d'ou viennent les utilisateurs ?", "Activation : vivent-ils le 'aha moment' ?", "Retention : reviennent-ils ?", "Revenue : paient-ils ?", "Referral : en parlent-ils ?"],
+        steps: ["Acquisition : d'où viennent les utilisateurs ?", "Activation : vivent-ils le 'aha moment' ?", "Retention : reviennent-ils ?", "Revenue : paient-ils ?", "Referral : en parlent-ils ?"],
         when: "Startups, produits B2C, growth product management.",
         tips: ["Concentrez-vous sur l'étape la plus faible du funnel", "Le 'aha moment' est critique pour l'activation", "La retention est la métrique reine"]
       },
       {
         name: "North Star Metric",
-        description: "Une seule métrique qui capture la valeur fondamentale que votre produit delivre aux utilisateurs. Aligne toute l'entreprise.",
-        steps: ["Identifier la valeur coeur du produit", "Choisir LA métrique qui la represente le mieux", "Decomposer en input metrics actionnables", "Aligner les équipes sur cette métrique", "Tracker et communiquer régulièrement"],
-        when: "Alignement stratégique, focus equipe, simplification du reporting.",
-        tips: ["Airbnb : nuits reservees. Spotify : temps d'ecoute. Slack : messages envoyes", "La NSM doit etre actionnable et prédictive du revenu", "Les input metrics sont ce sur quoi les équipes agissent"]
+        description: "Une seule métrique qui capture la valeur fondamentale que votre produit délivre aux utilisateurs. Aligne toute l'entreprise.",
+        steps: ["Identifier la valeur coeur du produit", "Choisir LA métrique qui la représente le mieux", "Décomposer en input metrics actionnables", "Aligner les équipes sur cette métrique", "Tracker et communiquer régulièrement"],
+        when: "Alignement stratégique, focus équipe, simplification du reporting.",
+        tips: ["Airbnb : nuits réservées. Spotify : temps d'écoute. Slack : messages envoyés", "La NSM doit être actionnable et prédictive du revenu", "Les input metrics sont ce sur quoi les équipes agissent"]
       },
       {
         name: "OKRs (Objectives & Key Results)",
-        description: "Framework de goal-setting par Andy Grove (Intel), popularise par Google. Objectifs qualitatifs + résultats clés mesurables.",
-        steps: ["Definir un Objectif ambitieux et inspirant", "Definir 2-5 Key Results mesurables", "Aligner les OKRs équipe sur les OKRs entreprise", "Tracker les KR régulièrement (weekly/bi-weekly)", "Scorer en fin de cycle (0.0-1.0, viser 0.7)"],
-        when: "Planification trimestrielle, alignement stratégie/execution, communication des priorités.",
-        tips: ["Un bon objectif est inspirant, pas une métrique", "Les KR doivent etre mesurables et temporels", "0.7 = succes. 1.0 = pas assez ambitieux"]
+        description: "Framework de goal-setting par Andy Grove (Intel), popularisé par Google. Objectifs qualitatifs + résultats clés mesurables.",
+        steps: ["Définir un Objectif ambitieux et inspirant", "Définir 2-5 Key Results mesurables", "Aligner les OKRs équipe sur les OKRs entreprise", "Tracker les KR régulièrement (weekly/bi-weekly)", "Scorer en fin de cycle (0.0-1.0, viser 0.7)"],
+        when: "Planification trimestrielle, alignement stratégie/exécution, communication des priorités.",
+        tips: ["Un bon objectif est inspirant, pas une métrique", "Les KR doivent être mesurables et temporels", "0.7 = succès. 1.0 = pas assez ambitieux"]
       }
     ]
   },
   "scaling": {
     title: "Agile à l'Échelle",
     icon: "&#128200;",
-    description: "Frameworks pour scaler l'agilite au-dela d'une seule équipe. Le rôle du PO evolue significativement.",
+    description: "Frameworks pour scaler l'agilité au-delà d'une seule équipe. Le rôle du PO évolue significativement.",
     methods: [
       {
         name: "SAFe (Scaled Agile Framework)",
-        description: "Framework de scaling le plus adopte en entreprise. 4 niveaux : Team, Program, Large Solution, Portfolio. Le PO est au niveau Team, le PM au niveau Program.",
-        steps: ["Team Level : PO gere le backlog equipe", "Program Level : PM gere le Program Backlog", "ART (Agile Release Train) synchronise les équipes", "PI Planning tous les 8-12 semaines", "Inspect & Adapt pour l'amélioration continue"],
+        description: "Framework de scaling le plus adopté en entreprise. 4 niveaux : Team, Program, Large Solution, Portfolio. Le PO est au niveau Team, le PM au niveau Program.",
+        steps: ["Team Level : PO gère le backlog équipe", "Program Level : PM gère le Program Backlog", "ART (Agile Release Train) synchronise les équipes", "PI Planning tous les 8-12 semaines", "Inspect & Adapt pour l'amélioration continue"],
         when: "Grandes organisations (50+ développéurs), besoin de coordination inter-équipes.",
-        tips: ["Le PO dans SAFe a un scope plus restreint que dans Scrum pur", "Le PI Planning est l'événement cle — préparez-le bien", "Attention à la bureaucratie : gardez l'esprit agile"]
+        tips: ["Le PO dans SAFe a un scope plus restreint que dans Scrum pur", "Le PI Planning est l'événement clé — préparez-le bien", "Attention à la bureaucratie : gardez l'esprit agile"]
       },
       {
         name: "LeSS (Large-Scale Scrum)",
         description: "Approche minimaliste du scaling : c'est Scrum, mais avec plusieurs équipes sur un seul produit. Un seul PO, un seul backlog.",
-        steps: ["Un seul Product Owner pour le produit", "Un seul Product Backlog", "Sprint Planning en 2 parties (commune + par equipe)", "Sprint Review commune", "Rétrospectives a plusieurs niveaux"],
+        steps: ["Un seul Product Owner pour le produit", "Un seul Product Backlog", "Sprint Planning en 2 parties (commune + par équipe)", "Sprint Review commune", "Rétrospectives à plusieurs niveaux"],
         when: "2-8 équipes sur un même produit, organisation qui veut rester proche de Scrum.",
-        tips: ["Le PO unique est un vrai defi — il doit deleguer la clarification", "Les équipes sont feature teams, pas component teams", "Moins de processus = plus de responsabilisation"]
+        tips: ["Le PO unique est un vrai défi — il doit déléguer la clarification", "Les équipes sont feature teams, pas component teams", "Moins de processus = plus de responsabilisation"]
       },
       {
         name: "Spotify Model",
         description: "Organisation en Squads, Tribes, Chapters et Guilds. Pas un framework prescriptif mais un modèle d'organisation inspire de Spotify.",
-        steps: ["Squads : équipes autonomes (comme une mini-startup)", "Tribes : regroupement de squads sur un domaine", "Chapters : communautés de pratique par competence", "Guilds : communautés d'interet transverses"],
+        steps: ["Squads : équipes autonomes (comme une mini-startup)", "Tribes : regroupement de squads sur un domaine", "Chapters : communautés de pratique par compétence", "Guilds : communautés d'intérêt transverses"],
         when: "Organisations qui veulent l'autonomie des équipes avec l'alignement global.",
         tips: ["Spotify eux-mêmes ne suivent plus ce modèle à la lettre", "L'autonomie sans alignement = chaos", "Commencez par les squads, ajoutez les layers progressivement"]
       }

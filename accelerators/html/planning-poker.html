@@ -475,9 +475,9 @@ function getCurrentStoryRecap() {
       `Moyenne: ${stats.avg.toFixed(2)}`,
       `Mediane: ${stats.median}`,
       `Min/Max: ${stats.min} / ${stats.max}`,
-      `Ecart: ${stats.spread}`,
+      `Écart : ${stats.spread}`,
     ].join('\n')
-    : 'Pas assez de votes numeriques.';
+    : 'Pas assez de votes numériques.';
   return [
     '--- Story en cours ---',
     `Story: ${story}`,
@@ -514,7 +514,7 @@ function buildSessionExportText() {
     'PLANNING POKER - EXPORT SESSION',
     '================================',
     `Session ID: ${sessionId}`,
-    `Genere le: ${generatedAt}`,
+    `Généré le : ${generatedAt}`,
     '',
     'Participants',
     '------------',
