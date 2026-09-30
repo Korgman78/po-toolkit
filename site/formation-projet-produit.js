@@ -47,6 +47,96 @@
       tagline: "Comprendre pourquoi tant d'organisations « agiles » fonctionnent encore en mode projet — et comment en sortir, y compris avec du réglementaire.",
       description: "Un parcours pour les PO de grands groupes où l'agilité reste plaquée sur une logique projet : ce qui distingue vraiment le mode produit, pourquoi le mode projet résiste (financement, gouvernance, comptabilité), son coût caché, le cas des équipes socles et des projets réglementaires (exemple de la directive crédit à la consommation), le financement Lean, le pilotage par la direction et les leviers d'action à portée d'un PO.",
       intro: "<p>Dans beaucoup de grands groupes, l'agilité a été déployée <em>dans les équipes</em> : sprints, daily, PI Planning, Product Owners. Mais le financement, la gouvernance et le critère de succès sont restés ceux du <strong>mode projet</strong> : un budget accordé pour un périmètre et une date, une équipe constituée pour l'occasion, un succès mesuré à « livré dans les temps et le budget », puis une bascule vers le run. Les équipes « socles » traitent les demandes des projets comme une file d'attente.</p><p>Ce n'est pas un échec des équipes : c'est la conséquence logique d'un système où <strong>l'argent et les décisions circulent par projet</strong>. Tant que ce système ne change pas, les cérémonies agiles n'y changent pas grand-chose.</p><p>Ce parcours vous aide à comprendre ce décalage, à le mesurer, et à agir à votre niveau. Il ne prétend pas que le mode projet doit disparaître partout : un projet réglementaire à date imposée garde des contraintes de projet. L'enjeu est de <strong>ne plus tout traiter comme un projet</strong>, et d'appliquer les bonnes pratiques de livraison même quand le cadre reste projet.</p>",
+      quiz: [
+        {
+          "q": "Une équipe constituée pour 9 mois a livré dans les délais et le budget, puis a été dissoute. Six mois plus tard, l'application a 12 % d'adoption et personne n'est chargé de l'améliorer. De quoi est-ce le symptôme ?",
+          "options": [
+            "Du mode projet : le succès a été mesuré sur le délai et le budget, pas sur les résultats, et le produit est devenu orphelin.",
+            "D'un mauvais recueil des besoins en début de projet.",
+            "D'un manque de communication auprès des utilisateurs.",
+            "D'une mauvaise estimation initiale."
+          ],
+          "answer": 0,
+          "explanation": "Le mode projet optimise délai, budget et périmètre, et s'arrête à la livraison, c'est-à-dire au moment où l'on commence à apprendre. Une équipe durable aurait mesuré l'adoption et itéré."
+        },
+        {
+          "q": "Vous mesurez qu'un ticket passe en moyenne 3 jours en travail actif sur un lead time de 40 jours. Que calculer, et comment l'utiliser ?",
+          "options": [
+            "Une vélocité de 3 points par jour.",
+            "Un taux d'utilisation des équipes de 7,5 %, signe qu'elles sont sous-occupées.",
+            "Une Flow Efficiency d'environ 7,5 % : l'essentiel du délai est de l'attente (dépendances, comités, files), ce qui montre qu'il faut s'attaquer aux attentes plutôt que faire travailler les équipes plus vite.",
+            "Un coût du retard de 37 jours."
+          ],
+          "answer": 2,
+          "explanation": "La Flow Efficiency (temps actif ÷ temps total) est l'argument le plus parlant pour une direction : elle montre que le problème n'est pas l'effort des équipes mais le système qui les fait attendre."
+        },
+        {
+          "q": "L'équipe socle API reçoit des demandes de 14 projets et a 4 mois de file d'attente. Quelle évolution propose Team Topologies ?",
+          "options": [
+            "Recruter pour vider la file.",
+            "En faire une équipe plateforme qui offre ses capacités en libre-service (X-as-a-Service), avec une roadmap produit dont les clients sont les autres équipes.",
+            "Prioriser les projets selon leur budget.",
+            "Répartir ses membres dans les équipes projet."
+          ],
+          "answer": 1,
+          "explanation": "Un socle alimenté par les projets devient une file d'attente. En mode plateforme, il réduit la charge cognitive des autres équipes au lieu de traiter leurs tickets un par un."
+        },
+        {
+          "q": "Une directive impose des changements sur 6 produits à une date fixe. Quelle organisation limite le plus le risque ?",
+          "options": [
+            "Un epic de portefeuille daté, une capacité réservée dans chaque équipe produit, un découpage exigence × produit, la conformité associée à chaque incrément, un déploiement précoce et une activation à la date.",
+            "Une équipe projet dédiée qui livre tout en une fois, juste avant la date.",
+            "Attendre les textes d'application définitifs avant de commencer.",
+            "Sous-traiter l'ensemble à un intégrateur au forfait."
+          ],
+          "answer": 0,
+          "explanation": "Le vrai risque d'un projet réglementaire n'est pas le besoin, mais l'intégration et la recette en bloc à la fin. Le réglementaire est un type de travail normal (risque) que les équipes produit savent absorber."
+        },
+        {
+          "q": "Une équipe reçoit : « livrer les 8 features de la roadmap du T3 ». Selon Marty Cagan, que devrait-elle recevoir pour devenir une équipe produit ?",
+          "options": [
+            "Une liste de features mieux spécifiée.",
+            "Plus de développeurs.",
+            "Un Scrum Master dédié.",
+            "Un problème à résoudre et un résultat à atteindre, avec la liberté de trouver les solutions."
+          ],
+          "answer": 3,
+          "explanation": "Une équipe de features livre une liste ; une équipe produit est responsable d'un résultat. La différence n'est pas le nom de l'équipe, mais ce dont elle est redevable."
+        },
+        {
+          "q": "La DSI veut passer aux Lean Budgets. Quelle première étape est la plus réaliste ?",
+          "options": [
+            "Supprimer tous les comités projet dès le prochain exercice budgétaire.",
+            "Stabiliser les équipes et piloter une chaîne de valeur, financée en capacité avec des garde-fous, où les projets deviennent des epics.",
+            "Renommer les projets en produits.",
+            "Attendre que la finance le propose d'elle-même."
+          ],
+          "answer": 1,
+          "explanation": "La transition est progressive : un pilote produit des preuves. Renommer sans changer le financement est l'un des pièges listés par le cours."
+        },
+        {
+          "q": "Dans votre SI, chaque feature traverse quatre équipes (front, back, socle données, intégration) et demande trois semaines de coordination. Quelle loi explique cette situation ?",
+          "options": [
+            "La loi de Parkinson.",
+            "La loi de Brooks.",
+            "La loi de Pareto.",
+            "La loi de Conway : l'architecture reproduit l'organisation en silos et en projets qui l'a construite."
+          ],
+          "answer": 3,
+          "explanation": "Selon la loi de Conway, les systèmes reflètent la structure de communication des organisations qui les conçoivent. Changer durablement l'architecture suppose souvent de changer aussi l'organisation des équipes."
+        },
+        {
+          "q": "La direction craint de perdre toute visibilité si l'on abandonne le reporting projet. Que proposer ?",
+          "options": [
+            "Un tableau de bord en quatre blocs (engagements datés, résultats, flux, risques et arbitrages), qui cohabite avec le reporting projet pendant la transition.",
+            "Garder le reporting projet tel quel.",
+            "Supprimer le reporting : les équipes produit sont autonomes.",
+            "Un reporting hebdomadaire des story points par équipe."
+          ],
+          "answer": 0,
+          "explanation": "Le mode produit ne supprime pas la visibilité, il change ce qu'on regarde. Faire cohabiter les deux pendant la transition rassure et permet de comparer."
+        }
+      ],
       chapters: [
         {
           slug: "pp-definitions",

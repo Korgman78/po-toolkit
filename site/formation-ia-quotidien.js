@@ -70,6 +70,118 @@
       tagline: "Aller au-delà de « rédiger ses US avec ChatGPT » : faire de l'IA un vrai levier de discovery, d'analyse, de décision et d'automatisation — avec des méthodes vérifiables.",
       description: "Un parcours avancé pour les PO/PM qui utilisent déjà l'IA et veulent en tirer davantage : choisir quoi déléguer, construire un contexte produit réutilisable, analyser des milliers de verbatims sans perdre la trace, interroger ses données en langage naturel, s'en servir comme contradicteur et outil de prévision, prototyper sans danger, automatiser ses routines, piloter une fonctionnalité IA par les évals, et garder la main face aux risques (confidentialité, injection de prompt, AI Act, atrophie du jugement). Chaque chapitre s'appuie sur des études ou des cas publics.",
       intro: "<p>La plupart des formations « IA pour PO » s'arrêtent à la rédaction : générer une user story, reformuler un mail, résumer une réunion. C'est utile, mais c'est la partie la moins intéressante. Le travail d'un PO/PM, c'est surtout <strong>comprendre</strong> (des utilisateurs, des données, un marché), <strong>décider</strong> (quoi faire, quoi arrêter) et <strong>faire avancer</strong> un système humain et technique. C'est là que l'IA change réellement la donne — et là aussi qu'elle peut vous tromper le plus.</p><p>Ce parcours part des usages qui ont fait leurs preuves, chez des entreprises qui ont publié leurs résultats (Uber, Pinterest, Anthropic, Intercom…) ou dans des études contrôlées (Harvard/BCG, Procter & Gamble, METR, Tetlock). Pour chaque usage, il donne la méthode, les chiffres disponibles, et surtout les <strong>garde-fous</strong> : comment vérifier ce que produit l'IA, et quand ne pas l'utiliser.</p><p>Le fil conducteur : l'IA ne remplace pas le jugement du PO, elle en augmente la portée. Elle permet de lire 5 000 verbatims au lieu de 50, de tester trois prototypes au lieu d'un, de confronter une décision à dix objections au lieu de deux. Mais la question, la vérification et la décision restent les vôtres.</p><div class='callout callout-tip'><strong>Prérequis :</strong> utiliser régulièrement un assistant IA (Claude, ChatGPT, Gemini, Copilot…). Le parcours « IA & SAFe » traite l'impact de l'IA sur l'organisation et les rôles ; celui-ci se concentre sur votre pratique individuelle.</div>",
+      quiz: [
+        {
+          "q": "Selon la grille « facilité de vérification × coût de l'erreur », quelle tâche relève de « déléguer puis vérifier systématiquement » ?",
+          "options": [
+            "Mettre en forme le compte rendu d'une réunion à laquelle vous avez assisté.",
+            "Proposer des pistes de segmentation client.",
+            "Extraire la liste des exigences d'un texte réglementaire de 80 pages.",
+            "Arbitrer une priorité entre deux directeurs métier."
+          ],
+          "answer": 2,
+          "explanation": "Une extraction se vérifie point par point contre le texte, mais une erreur est coûteuse (une exigence manquée). Le compte rendu se délègue simplement, la segmentation se co-produit, et l'arbitrage reste au PO."
+        },
+        {
+          "q": "Vous avez donné 3 000 tickets à un assistant, qui conclut : « les clients se plaignent surtout de la lenteur ». Quel est le principal défaut, et comment le corriger ?",
+          "options": [
+            "Le modèle est trop petit : il faut en prendre un plus puissant.",
+            "La synthèse n'est ni chiffrée ni traçable : il faut extraire des attributs ticket par ticket, compter, citer des verbatims exacts, et contrôler un échantillon aléatoire.",
+            "Il faut demander un résumé plus long.",
+            "Il faut traduire les tickets en anglais."
+          ],
+          "answer": 1,
+          "explanation": "La méthode Clio découpe le travail en étapes simples et vérifiables. « Surtout » ne se vérifie pas ; « 312 tickets sur 3 000, dont ces exemples » se vérifie."
+        },
+        {
+          "q": "Un cabinet présente une étude : « 500 utilisateurs synthétiques valident le concept à 82 % ». Quelle réaction est la mieux fondée ?",
+          "options": [
+            "C'est à rejeter comme preuve : les réponses synthétiques sont trop homogènes, complaisantes et instables. Au mieux, elles fournissent des hypothèses à tester avec de vrais utilisateurs.",
+            "C'est fiable : l'échantillon est large.",
+            "C'est fiable si le modèle utilisé est récent.",
+            "Il suffit de passer à 5 000 utilisateurs synthétiques."
+          ],
+          "answer": 0,
+          "explanation": "Augmenter le nombre de personas ne corrige pas la faible variance ni la complaisance (Bisbee et al., NN/g). La taille de l'échantillon ne donne aucune fidélité."
+        },
+        {
+          "q": "Un outil text-to-SQL vous annonce 12 430 clients actifs ; le dashboard officiel en affiche 9 800. Quelle est la première chose à faire ?",
+          "options": [
+            "Faire confiance à l'IA, plus récente que le dashboard.",
+            "Faire la moyenne des deux chiffres.",
+            "Reformuler la question jusqu'à obtenir 9 800.",
+            "Lire la requête et comparer les définitions : sens de « actif », comptes de test, jointure qui multiplie les lignes, période."
+          ],
+          "answer": 3,
+          "explanation": "Comme l'ont montré Uber et Pinterest, la difficulté est sémantique (bonne table, bonne définition). Reformuler jusqu'à obtenir le chiffre attendu est le piège du « chiffre trouvé »."
+        },
+        {
+          "q": "Vous demandez à l'IA si votre idée est bonne ; elle dit oui. Vous demandez « tu es sûr ? » et elle change d'avis. Quelle pratique donne un avis plus utile ?",
+          "options": [
+            "Lui demander d'être honnête.",
+            "Présenter les options sans révéler votre préférence, demander le meilleur argument contre, utiliser une nouvelle conversation et comparer avec un autre modèle.",
+            "Lui poser la question trois fois et garder la réponse majoritaire.",
+            "Utiliser uniquement le modèle le plus récent."
+          ],
+          "answer": 1,
+          "explanation": "La complaisance (sycophancy) vient de l'entraînement sur les préférences humaines : le modèle suit les signaux de l'utilisateur. Il faut retirer ces signaux et demander explicitement la contradiction."
+        },
+        {
+          "q": "Un workflow de veille lit les sites des concurrents, a accès au Google Drive interne pour comparer avec votre roadmap, et envoie un résumé par e-mail à une liste qui inclut des consultants externes. Quel est le problème ?",
+          "options": [
+            "Aucun, si le modèle est fiable.",
+            "Le coût en tokens.",
+            "Le risque de contenus concurrents protégés par le droit d'auteur.",
+            "Il réunit la triade mortelle (données privées, contenu non fiable, communication externe) : une page web piégée pourrait faire exfiltrer la roadmap. Il faut retirer au moins un des trois éléments."
+          ],
+          "answer": 3,
+          "explanation": "Une injection de prompt cachée dans une page web peut donner des instructions à l'agent. Tant que les trois éléments sont réunis, le risque de fuite existe, quel que soit le modèle."
+        },
+        {
+          "q": "Un chatbot de support fonctionne parfaitement lors d'une démo sur 10 questions choisies. Le sponsor veut le lancer. Quelle condition poser ?",
+          "options": [
+            "Un jeu d'évals couvrant cas typiques, cas limites, questions pièges et sujets sensibles (tarifs, juridique), avec un seuil de réussite chiffré défini à l'avance.",
+            "Aucune : la démo est concluante.",
+            "Un test par l'équipe pendant une journée.",
+            "Un avertissement indiquant que les réponses peuvent être fausses, qui dégage la responsabilité de l'entreprise."
+          ],
+          "answer": 0,
+          "explanation": "L'affaire Air Canada montre qu'un avertissement ne suffit pas : l'entreprise est responsable de ce que dit son chatbot. Une démo sur des questions choisies ne dit rien du comportement sur des milliers de vraies questions."
+        },
+        {
+          "q": "Modèle « Éco » : 0,002 € par demande, 60 % de réussite. Modèle « Premium » : 0,01 € par demande, 95 % de réussite. Chaque échec est transféré à un conseiller, pour un coût de 4 €. Quel modèle est le plus économique ?",
+          "options": [
+            "Éco, car il est cinq fois moins cher par demande.",
+            "Les deux se valent.",
+            "Premium : environ 0,21 € par demande (0,01 + 5 % × 4 €), contre environ 1,60 € pour Éco (0,002 + 40 % × 4 €).",
+            "Impossible à dire sans connaître la latence."
+          ],
+          "answer": 2,
+          "explanation": "Il faut raisonner en coût par tâche réussie, en incluant le coût des échecs. Le coût d'inférence est souvent négligeable face au coût d'une erreur."
+        },
+        {
+          "q": "Vous utilisez un LLM comme juge pour comparer deux versions de réponses de votre assistant. Il préfère presque toujours la plus longue. Que faire ?",
+          "options": [
+            "Rien : les réponses longues sont plus complètes.",
+            "Raccourcir toutes les réponses.",
+            "Supprimer l'évaluation automatique.",
+            "Tenir compte des biais connus du juge (longueur, position, auto-préférence) : alterner l'ordre de présentation, préciser les critères, et calibrer le juge sur des cas notés par des humains."
+          ],
+          "answer": 3,
+          "explanation": "Un bon juge est d'accord avec les humains dans plus de 80 % des cas, mais ses biais sont documentés (Zheng et al.). On le calibre et on vérifie régulièrement son accord avec des notes humaines."
+        },
+        {
+          "q": "Selon l'étude Microsoft Research / Carnegie Mellon (CHI 2025), quel facteur est associé à moins d'esprit critique quand on utilise l'IA ?",
+          "options": [
+            "Une forte confiance dans l'IA pour la tâche concernée.",
+            "Une utilisation quotidienne de l'IA.",
+            "Une forte confiance en ses propres compétences.",
+            "Le fait d'utiliser plusieurs modèles."
+          ],
+          "answer": 0,
+          "explanation": "Plus on fait confiance à l'IA pour une tâche, moins on vérifie ; plus on a confiance en ses propres compétences, plus on exerce son esprit critique. Garder des tâches « à la main » entretient ces compétences."
+        }
+      ],
       chapters: [
         {
           slug: "iaq-frontiere",

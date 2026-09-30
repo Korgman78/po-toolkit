@@ -1150,6 +1150,96 @@ const FORMATION_DATA = {
     tagline: "Comprendre, lire et challenger une architecture applicative.",
     description: "Une introduction approfondie aux patterns d'architecture applicative et d'intégration : couches, styles (monolithe, microservices), communication synchrone et événementielle, données, patterns d'intégration et bonnes pratiques. Pensé pour le PO qui doit dialoguer avec les architectes, lire un schéma et arbitrer en connaissance de cause.",
     intro: "<p>Un Product Owner n'écrit pas le code, mais il prend chaque jour des décisions qui touchent l'architecture : découper une feature, ouvrir une API à un partenaire, accepter de la dette technique, arbitrer un délai contre une refonte. Ne pas comprendre l'architecture, c'est subir ces arbitrages au lieu de les piloter.</p><p>Ce cours ne fait pas de vous un architecte. Il vous donne le <strong>vocabulaire</strong>, les <strong>patterns</strong> et les <strong>réflexes de lecture</strong> pour comprendre comment un système est structuré, repérer les bons et les mauvais choix, et tenir une conversation d'égal à égal avec votre équipe technique.</p><p>Chaque chapitre se termine par un exercice à réaliser dans la mini-app <strong>Schémas &amp; Workflows</strong> : vous modéliserez de vraies architectures pour ancrer les concepts. Suivez les chapitres dans l'ordre — chacun s'appuie sur le précédent.</p>",
+    quiz: [
+      {
+        "q": "Une startup de 6 développeurs cherche encore son marché. Le CTO propose de découper le produit en 12 microservices « pour être prêts à scaler ». Quelle position est la plus défendable ?",
+        "options": [
+          "Accepter : les microservices sont le standard moderne et éviteront une refonte plus tard.",
+          "Proposer un monolithe modulaire découpé par domaines métier, et n'extraire un service que lorsqu'un besoin concret (charge, autonomie d'une équipe) le justifie.",
+          "Découper par couche technique : un service front, un service métier, un service données.",
+          "Partir en microservices mais avec une base de données partagée pour limiter la complexité."
+        ],
+        "answer": 1,
+        "explanation": "Le monolithe est le bon défaut : les microservices apportent surtout un bénéfice organisationnel (équipes autonomes) au prix d'une forte complexité technique. Le découpage par couche et la base partagée mènent tous deux au « monolithe distribué »."
+      },
+      {
+        "q": "À la validation d'une commande, le service Commande appelle en synchrone le service d'e-mail de confirmation. Quand ce dernier tombe, plus aucune commande ne peut être validée. Que proposer ?",
+        "options": [
+          "Augmenter les timeouts et le nombre de tentatives de l'appel.",
+          "Passer l'appel en gRPC, plus performant que REST.",
+          "Intégrer l'envoi d'e-mail dans le service Commande.",
+          "Publier un événement « CommandeValidée » que le service d'e-mail consomme de façon asynchrone."
+        ],
+        "answer": 3,
+        "explanation": "L'appel synchrone crée un couplage temporel : la commande dépend de la disponibilité de l'e-mail, qui n'est pourtant pas nécessaire à sa validation. L'asynchrone découple dans le temps ; gRPC resterait synchrone."
+      },
+      {
+        "q": "Pour aller plus vite, le service A lit directement les tables du service B. Six mois plus tard, l'équipe B ne peut plus modifier son schéma sans casser A. Quel est le diagnostic ?",
+        "options": [
+          "Le symptôme d'une base partagée : B doit exposer ses données via une API et rester seul maître de sa base.",
+          "Un problème de performance, à régler avec des index.",
+          "Un besoin de CQRS pour séparer lectures et écritures.",
+          "Une situation normale, prix à payer pour la cohérence forte."
+        ],
+        "answer": 0,
+        "explanation": "La base partagée est un anti-pattern de couplage maximal : le schéma interne de B est devenu un contrat implicite. Le principe « database-per-service » impose d'accéder aux données d'un service uniquement via son API."
+      },
+      {
+        "q": "Il faut remplacer un système de facturation de 15 ans, branché sur 40 flux. La direction veut une refonte complète livrée en une fois dans 18 mois. Quel pattern défendre ?",
+        "options": [
+          "Saga, pour gérer la transaction entre l'ancien et le nouveau système.",
+          "Circuit Breaker, pour couper l'ancien système quand le nouveau est prêt.",
+          "Strangler Fig : une façade route progressivement les fonctions vers le nouveau système, avec une couche anti-corruption vers l'ancien modèle.",
+          "Backend for Frontend, pour masquer l'ancien système aux interfaces."
+        ],
+        "answer": 2,
+        "explanation": "Le Strangler Fig remplace un legacy morceau par morceau, sans big bang : chaque bascule est petite et réversible. La couche anti-corruption évite que le modèle de l'ancien système contamine le nouveau."
+      },
+      {
+        "q": "Une commande est bien enregistrée en base, mais le service plante juste avant de publier l'événement « CommandeCréée » : la logistique n'est jamais prévenue. Quel pattern évite ce cas ?",
+        "options": [
+          "Circuit Breaker sur le bus d'événements.",
+          "Cohérence forte entre la base et le bus.",
+          "Idempotence du consommateur logistique.",
+          "Outbox : l'événement est écrit dans la même transaction que la commande, puis publié par un processus séparé."
+        ],
+        "answer": 3,
+        "explanation": "L'Outbox garantit qu'un événement à publier n'est jamais perdu : il est enregistré atomiquement avec la donnée métier. L'idempotence du consommateur est utile ensuite (en cas de double publication), mais ne résout pas la perte."
+      },
+      {
+        "q": "Une réservation de voyage enchaîne vol, hôtel et voiture, dans trois services qui ont chacun leur base. L'hôtel échoue alors que le vol est déjà réservé. Quel mécanisme prévoir ?",
+        "options": [
+          "Une saga : chaque étape a une action de compensation (annuler le vol) déclenchée en cas d'échec.",
+          "Une transaction unique qui verrouille les trois bases jusqu'à la fin.",
+          "Des tentatives infinies sur l'hôtel jusqu'à ce qu'il réponde.",
+          "Une base partagée entre les trois services."
+        ],
+        "answer": 0,
+        "explanation": "La saga remplace la transaction distribuée par une suite d'étapes compensables. Le PO a un rôle clé : définir ce que signifie « compenser » côté client (remboursement, message, délai)."
+      },
+      {
+        "q": "Pour le solde de points de fidélité, l'équipe propose une cohérence à terme : le solde se met à jour quelques secondes après l'achat. Qui doit trancher, et sur quelle base ?",
+        "options": [
+          "L'architecte seul : c'est une question purement technique.",
+          "Personne : la cohérence forte est toujours obligatoire pour de l'argent ou des points.",
+          "Le PO, avec l'équipe, en évaluant l'impact d'un décalage pour l'utilisateur (par exemple : peut-il utiliser ses points au paiement suivant immédiatement ?).",
+          "Personne : la cohérence à terme est toujours préférable car plus performante."
+        ],
+        "answer": 2,
+        "explanation": "Cohérence forte ou à terme est un arbitrage produit, pas seulement technique. La bonne question porte sur les parcours où le décalage se voit et sur ce qu'il coûte à l'utilisateur."
+      },
+      {
+        "q": "Le service externe de recommandations devient lent ; les pages produit attendent sa réponse et les timeouts s'enchaînent jusqu'à saturer le site. Quelle réponse ?",
+        "options": [
+          "Une Outbox pour ne pas perdre les recommandations.",
+          "Un Circuit Breaker qui coupe les appels après plusieurs échecs, avec un affichage dégradé de la page sans recommandations.",
+          "Du CQRS sur le catalogue produit.",
+          "Un Strangler Fig pour remplacer le service de recommandations."
+        ],
+        "answer": 1,
+        "explanation": "Le Circuit Breaker échoue vite pour éviter l'effet domino. La décision produit associée est le mode dégradé : que montre-t-on quand une dépendance non critique est indisponible ?"
+      }
+    ],
     chapters: [
       {
         slug: "fondamentaux",

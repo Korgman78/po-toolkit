@@ -28,6 +28,96 @@
       tagline: "Comprendre comment le code passe du poste du développeur à la production — et pourquoi ça change tout pour le produit.",
       description: "Un parcours complet pour comprendre l'intégration et la livraison continues : Git et stratégies de branches, anatomie d'un pipeline, tests automatisés, environnements, stratégies de déploiement, feature flags, sécurité, métriques DORA et rôle du PO. Pensé pour un Product Owner qui veut comprendre les pratiques des stacks modernes (GitHub, GitLab, Docker, Kubernetes…) sans devenir développeur.",
       intro: "<p>Il y a encore quelques années, beaucoup d'entreprises livraient leur logiciel <strong>quatre fois par an</strong>, lors de « mises en production » nocturnes, stressantes et risquées. Aujourd'hui, les équipes les plus performantes déploient <strong>plusieurs fois par jour</strong>, avec moins d'incidents. Ce qui a rendu cela possible porte un nom : la <strong>CI/CD</strong> (Continuous Integration / Continuous Delivery).</p><p>Pour un PO, la CI/CD n'est pas un sujet « de dev » : elle détermine <em>à quelle vitesse une idée atteint les utilisateurs</em>, combien coûte une erreur, et même la manière de découper le backlog et de piloter une release. Un PO qui comprend le pipeline sait pourquoi on lui demande des stories plus petites, pourquoi un « build rouge » passe avant sa feature, et comment utiliser les feature flags pour découpler la livraison technique du lancement commercial.</p><p>Ce parcours ne vous apprendra pas à écrire un pipeline. Il vous donne le <strong>vocabulaire</strong>, les <strong>concepts</strong> et les <strong>bonnes pratiques d'entreprise</strong> pour comprendre ce que fait votre équipe, poser les bonnes questions et faire de la livraison un levier produit. Chaque chapitre se termine par un exercice pratique ; suivez-les dans l'ordre.</p>",
+      quiz: [
+        {
+          "q": "L'équipe travaille sur des branches de 3 semaines, et chaque release commence par deux jours de fusions douloureuses. Quel levier est le plus efficace ?",
+          "options": [
+            "Adopter un GitFlow plus strict avec une branche de release.",
+            "Allonger le gel de code avant chaque release.",
+            "Réduire la taille des lots : stories plus petites, branches de moins de deux jours, fonctionnalités incomplètes cachées derrière des feature flags.",
+            "Ajouter des testeurs manuels en fin de sprint."
+          ],
+          "answer": 2,
+          "explanation": "Le problème vient de la taille des lots : plus une branche vit longtemps, plus la fusion est douloureuse. Des branches courtes supposent des stories petites, et c'est là que le PO agit directement."
+        },
+        {
+          "q": "Une évolution réglementaire doit être active le 20 novembre ; le code peut être prêt en septembre. Quelle stratégie ?",
+          "options": [
+            "Attendre novembre pour déployer, afin d'éviter tout risque.",
+            "Déployer le 19 novembre au soir.",
+            "Créer une branche de release dédiée maintenue jusqu'en novembre.",
+            "Déployer en production dès que c'est prêt, derrière un feature flag, et l'activer à la date réglementaire."
+          ],
+          "answer": 3,
+          "explanation": "Le déploiement est une décision technique, la release une décision métier : on les découple. Déployer tôt permet de tester en conditions réelles, et l'activation à la date devient un simple changement de configuration."
+        },
+        {
+          "q": "Les tests de bout en bout échouent au hasard une fois sur cinq ; l'équipe relance le pipeline jusqu'à ce qu'il passe. Quel est le vrai risque ?",
+          "options": [
+            "L'équipe n'a plus confiance dans les résultats : un vrai défaut finira par être ignoré comme « encore un test instable ». Il faut isoler ces tests et les corriger en priorité.",
+            "Le temps perdu à relancer.",
+            "Le coût des machines du pipeline.",
+            "Aucun, tant que le pipeline finit par passer."
+          ],
+          "answer": 0,
+          "explanation": "Les tests instables (flaky) détruisent la confiance, qui est la raison d'être de la CI. Un signal qu'on a appris à ignorer ne protège plus de rien."
+        },
+        {
+          "q": "La recette valide un paquet, puis l'équipe reconstruit un nouveau paquet à partir du même code pour la production. Quel est le problème ?",
+          "options": [
+            "Aucun : c'est le même code source.",
+            "La reconstruction prend trop de temps.",
+            "Ce qui est déployé n'est pas exactement ce qui a été testé (dépendances, options de build) : il faut construire une fois et promouvoir le même artefact.",
+            "Ce n'est un problème que si l'équipe utilise des conteneurs."
+          ],
+          "answer": 2,
+          "explanation": "« Build once, deploy many » : le même artefact est promu d'environnement en environnement. Reconstruire, c'est courir le risque d'embarquer une autre version d'une dépendance que celle qui a été testée."
+        },
+        {
+          "q": "La direction veut classer les équipes selon leur fréquence de déploiement et récompenser la première. Quelle est la meilleure réaction ?",
+          "options": [
+            "Accepter : c'est une métrique DORA reconnue.",
+            "Expliquer que les métriques DORA servent à s'améliorer, pas à comparer. Utilisées comme objectif, elles seront manipulées (découper artificiellement les déploiements), et elles doivent se lire ensemble, vitesse et stabilité.",
+            "Accepter, mais en ajoutant le nombre de story points livrés.",
+            "Refuser toute mesure."
+          ],
+          "answer": 1,
+          "explanation": "Quand une mesure devient un objectif, elle cesse d'être une bonne mesure (loi de Goodhart). Chez les équipes performantes, vitesse et stabilité progressent ensemble : regarder l'une sans l'autre est trompeur."
+        },
+        {
+          "q": "Une nouvelle version renomme une colonne de la base ; si on doit revenir en arrière, l'ancienne version ne fonctionnera plus. Quelle pratique aurait évité ce blocage ?",
+          "options": [
+            "Une migration en plusieurs temps rétro-compatible : ajouter la nouvelle colonne, écrire dans les deux, migrer, basculer, puis supprimer l'ancienne.",
+            "Faire la migration un vendredi soir, quand il y a peu de trafic.",
+            "Désactiver les retours en arrière.",
+            "Tester la migration uniquement en production."
+          ],
+          "answer": 0,
+          "explanation": "Les migrations de données doivent rester compatibles avec la version précédente pour que le retour en arrière soit possible. Ce découpage en étapes ajoute des stories, que le PO doit prévoir."
+        },
+        {
+          "q": "Un déploiement canary sur 5 % du trafic fait passer le taux d'erreur de 0,3 % à 2 %. Que faire ?",
+          "options": [
+            "Continuer : seuls 5 % des utilisateurs sont touchés.",
+            "Passer à 100 % pour avoir des données plus fiables.",
+            "Attendre une semaine pour voir si le taux baisse.",
+            "Stopper la progression et revenir en arrière, puis analyser : c'est exactement le rôle du canary."
+          ],
+          "answer": 3,
+          "explanation": "Le canary sert à exposer peu d'utilisateurs pour détecter tôt un problème. Définir à l'avance les seuils d'arrêt (taux d'erreur, latence, métrique métier) fait partie du plan de release du PO."
+        },
+        {
+          "q": "Votre produit compte 150 feature flags, dont 90 activés à 100 % depuis plus de six mois. Qu'est-ce que cela révèle ?",
+          "options": [
+            "Une bonne maturité en livraison progressive.",
+            "Une dette : chaque flag ajoute des chemins de code à tester et à comprendre. Il faut une date de retrait dès la création et un nettoyage régulier dans le backlog.",
+            "Rien de particulier : les flags ne coûtent rien.",
+            "Qu'il faut les convertir en variables d'environnement."
+          ],
+          "answer": 1,
+          "explanation": "Chaque flag est une dette dès sa création. Un flag à 100 % depuis des mois n'a plus d'utilité mais continue de complexifier le code et les tests."
+        }
+      ],
       chapters: [
         {
           slug: "cicd-pourquoi",

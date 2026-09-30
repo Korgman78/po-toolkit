@@ -29,7 +29,7 @@ Activation a faire une seule fois dans GitHub:
 
 ### Formation (parcours de cours)
 
-Section de cours structures, accessible depuis la sidebar « Formation ». Chaque thematique se parcourt chapitre par chapitre, avec points cles et exercices pratiques renvoyant vers les mini-apps.
+Section de cours structures, accessible depuis la sidebar « Formation ». Chaque thematique se parcourt chapitre par chapitre, avec points cles et exercices pratiques renvoyant vers les mini-apps. Chaque parcours se termine par un quiz final de mises en situation (correction immediate, explication et score ; donnees dans la propriete `quiz` de chaque thematique).
 
 | Thematique | Contenu |
 |------------|---------|

@@ -64,6 +64,96 @@
       tagline: "Comment les LLM bousculent l'agilité à l'échelle — et à quoi ressemble une organisation agile AI-native.",
       description: "Un parcours fondé sur la recherche (DORA, METR, Harvard/BCG, Stanford/MIT, Microsoft) et sur des cas réels (Amazon, Shopify, LinkedIn, Moderna, Klarna) pour comprendre ce que les LLM changent vraiment dans une organisation SAFe : où sont les gains, pourquoi ils ne se transforment pas automatiquement en valeur, ce que propose AI-Native SAFe (2026), et comment redessiner équipes, rôles, événements et gouvernance.",
       intro: "<p>En deux ans, les assistants de code et les agents IA sont passés de l'expérimentation au quotidien : selon DORA, <strong>90 % des professionnels du logiciel</strong> utilisent l'IA dans leur travail en 2025. Les promesses sont énormes — « 10 fois plus productif » — et les directions générales demandent des résultats. Pourtant, la recherche montre une réalité plus nuancée : des gains individuels réels, mais qui <em>se perdent souvent</em> avant d'atteindre le client.</p><p>Pour une organisation qui pratique l'agilité à l'échelle, et en particulier <strong>SAFe</strong>, la question n'est plus « faut-il utiliser l'IA ? », mais : <em>que devient un Agile Release Train quand écrire du code et des user stories ne coûte presque plus rien ?</em> Le goulot d'étranglement se déplace, les rôles se recomposent, les cérémonies doivent être repensées. Scaled Agile en a tiré les conséquences en publiant <strong>AI-Native SAFe</strong> en juin 2026.</p><p>Ce parcours vous donne une lecture <strong>fondée sur les faits</strong> — chaque chapitre cite ses sources — pour comprendre ce qui change, séparer les signaux du battage, et décrire concrètement la <strong>nouvelle organisation agile AI-native</strong>. Le dernier chapitre confronte ce modèle aux réalités d'un <strong>grand groupe régulé</strong> (banque, assurance) : ce qui est réaliste, et par où commencer. Le parcours suppose une connaissance de base de SAFe (ART, PI Planning, WSJF) et de la delivery (voir le parcours « Introduction à la CI/CD »).</p><div class='callout callout-warn'><strong>À noter :</strong> le domaine évolue très vite. Les chiffres cités datent de 2023 à 2026 et portent sur des outils qui ont déjà changé. Retenez surtout les <em>mécanismes</em>, qui eux sont stables.</div>",
+      quiz: [
+        {
+          "q": "Après le déploiement d'assistants de code, les développeurs ouvrent 30 % de pull requests en plus, mais le lead time de bout en bout n'a pas bougé. Quelle est l'explication la plus probable ?",
+          "options": [
+            "L'outil est mal configuré.",
+            "Les développeurs n'utilisent pas vraiment l'outil.",
+            "Il faut attendre un an pour voir l'effet.",
+            "Le goulot n'était pas l'écriture du code : la revue, les tests ou la décision sont saturés, et le surplus s'accumule en file d'attente."
+          ],
+          "answer": 3,
+          "explanation": "Accélérer une étape qui n'est pas le goulot crée seulement une file d'attente devant le goulot. Les études (Faros, DORA) montrent ce schéma : plus de PR, des PR plus grosses, une revue saturée."
+        },
+        {
+          "q": "La direction veut piloter l'adoption de l'IA par le pourcentage de code généré par l'IA. Quel est le principal risque ?",
+          "options": [
+            "Il mesure l'activité, pas les résultats : il pousse à produire plus de code (et plus de duplication et de dette) sans lien avec le lead time, la qualité ou les outcomes.",
+            "Aucun : c'est un bon indicateur d'adoption.",
+            "Il est difficile à mesurer techniquement.",
+            "Il pénalise les développeurs juniors."
+          ],
+          "answer": 0,
+          "explanation": "Piloter l'activité est un anti-pattern identifié par le cours. Il vaut mieux suivre le lead time, le taux d'échec des changements et les outcomes métier."
+        },
+        {
+          "q": "Un développeur expérimenté affirme être « au moins 30 % plus rapide » avec l'IA. Que retenir de la recherche ?",
+          "options": [
+            "Son estimation est fiable, puisqu'il est expérimenté.",
+            "Les gains sont toujours plus élevés chez les seniors.",
+            "La perception est peu fiable : dans l'étude METR, des développeurs expérimentés se pensaient 20 % plus rapides et étaient 19 % plus lents. Il faut mesurer.",
+            "L'IA ralentit toujours les développeurs expérimentés."
+          ],
+          "answer": 2,
+          "explanation": "Ce résultat ne prouve pas que l'IA ralentit toujours (la mise à jour de METR en 2026 nuance le constat). Il montre que le ressenti ne suffit pas pour décider."
+        },
+        {
+          "q": "Une organisation a des pipelines lents, de gros lots et peu de tests automatisés. Elle impose l'IA à toutes les équipes. Que prédit DORA ?",
+          "options": [
+            "Un gain important, car l'IA compense les lacunes.",
+            "Une amplification des dysfonctionnements : plus de changements, plus gros, et donc plus d'instabilité.",
+            "Aucun effet.",
+            "Un gain uniquement pour les juniors."
+          ],
+          "answer": 1,
+          "explanation": "DORA décrit l'IA comme un amplificateur : elle accélère ce qui fonctionne comme ce qui dysfonctionne. Renforcer les fondamentaux (petits lots, tests, CI/CD) est un prérequis."
+        },
+        {
+          "q": "En ART Sense and Respond, une piste exploratoire a consommé deux itérations sans faire bouger l'outcome visé. L'équipe veut la terminer « parce qu'elle est à 70 % ». Que recommander ?",
+          "options": [
+            "L'arrêter explicitement, documenter ce qu'on a appris, et réallouer la capacité aux pistes qui font bouger l'outcome.",
+            "La terminer : abandonner gaspillerait le travail déjà fait.",
+            "La mettre en pause sans rien décider.",
+            "Lui ajouter des développeurs pour la finir plus vite."
+          ],
+          "answer": 0,
+          "explanation": "C'est l'abandon volontaire du travail : l'engagement porte sur l'outcome, pas sur la feature. Le travail déjà fait est un coût irrécupérable, et une feature inutile livrée coûte encore en maintenance."
+        },
+        {
+          "q": "Dans un grand groupe régulé, un PM a construit avec l'IA un prototype fonctionnel qui plaît beaucoup au métier. Le métier veut le mettre en production la semaine prochaine. Quelle réponse est conforme à la charte du prototype ?",
+          "options": [
+            "Le mettre en production tel quel, puisqu'il fonctionne.",
+            "Le mettre en production après une relecture rapide du code.",
+            "L'abandonner : les prototypes faits avec l'IA ne sont pas fiables.",
+            "Le prototype est un outil de communication, jetable et hors du SI : il sert de spécification vivante, et l'équipe reconstruit la solution avec ses standards (sécurité, tests, exploitation)."
+          ],
+          "answer": 3,
+          "explanation": "Industrialiser un prototype tel quel ferait entrer dans le SI du code non revu, non testé et non maintenu. Le prototype a beaucoup de valeur comme accélérateur de compréhension, pas comme livrable."
+        },
+        {
+          "q": "Lequel de ces engagements est correctement formulé pour un PI Outcome Planning ?",
+          "options": [
+            "Livrer les features A, B et C d'ici la fin du PI.",
+            "Réduire de 30 % le taux d'abandon des clients sur le parcours de souscription d'ici la fin du PI, mesuré dans le funnel.",
+            "Livrer 120 story points.",
+            "Utiliser l'IA sur 80 % des stories."
+          ],
+          "answer": 1,
+          "explanation": "Un outcome est un résultat mesurable chez l'utilisateur ou pour le métier. Les features sont des moyens, les points et l'usage de l'IA sont de l'activité."
+        },
+        {
+          "q": "Klarna a massivement remplacé son support client par l'IA pour réduire les coûts, puis a recommencé à embaucher des humains. Quelle leçon en tirer ?",
+          "options": [
+            "L'IA ne fonctionne pas pour le support client.",
+            "Il fallait un meilleur modèle.",
+            "Il faut éviter de communiquer sur ses projets d'IA.",
+            "Optimiser sur le seul coût dégrade la qualité perçue : il faut mesurer la qualité et la satisfaction, et garder un humain responsable et accessible."
+          ],
+          "answer": 3,
+          "explanation": "C'est l'anti-pattern « couper avant de comprendre » : réduire les effectifs sur une promesse de gain, avant d'avoir mesuré l'effet réel sur la qualité."
+        }
+      ],
       chapters: [
         {
           slug: "ia-safe-llm-ce-qui-change",

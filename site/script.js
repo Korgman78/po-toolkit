@@ -772,6 +772,9 @@ function renderFormationTheme(themeKey, chapterSlug = null) {
   theme.chapters.forEach((ch, i) => {
     html += `<li><a href="#formation/${themeKey}/${ch.slug}"><span class="toc-num">${i + 1}</span><span class="toc-text"><strong>${ch.title}</strong><span>${ch.summary}</span></span></a></li>`;
   });
+  if (theme.quiz && theme.quiz.length) {
+    html += `<li><a href="#formation/${themeKey}/quiz"><span class="toc-num">&#127919;</span><span class="toc-text"><strong>Quiz final</strong><span>${theme.quiz.length} mises en situation pour vérifier que vous savez appliquer le cours.</span></span></a></li>`;
+  }
   html += `</ol></div>`;
 
   // Chapters
@@ -792,6 +795,8 @@ function renderFormationTheme(themeKey, chapterSlug = null) {
       </article>
     `;
   });
+
+  html += renderQuiz(themeKey, theme);
 
   // Completion note
   const endApp = theme.defaultApp;
@@ -832,6 +837,78 @@ function renderExercise(ex, defaultApp) {
       </div>
     </div>
   `;
+}
+
+// ---- Formation quiz ----
+function renderQuiz(themeKey, theme) {
+  const quiz = theme.quiz;
+  if (!quiz || !quiz.length) return '';
+  return `
+    <section class="formation-quiz fade-in" id="quiz-${themeKey}" data-detail-slug="quiz">
+      <div class="formation-quiz-head">
+        <span class="formation-exercise-badge">&#127919; Quiz final</span>
+        <h2>Mettez le cours en pratique</h2>
+        <p>${quiz.length} mises en situation. Une seule réponse est correcte à chaque fois ; l'explication s'affiche dès que vous avez choisi.</p>
+      </div>
+      ${quiz.map((item, qi) => `
+        <div class="quiz-question" data-qi="${qi}">
+          <p class="quiz-q"><span class="quiz-num">${qi + 1}</span><span>${item.q}</span></p>
+          <div class="quiz-options">
+            ${item.options.map((opt, oi) => `<button type="button" class="quiz-option" data-oi="${oi}" onclick="answerQuiz('${themeKey}', ${qi}, ${oi})"><span class="quiz-letter">${String.fromCharCode(65 + oi)}</span><span>${opt}</span></button>`).join('')}
+          </div>
+          <div class="quiz-explanation"></div>
+        </div>
+      `).join('')}
+      <div class="quiz-footer">
+        <span class="quiz-score" aria-live="polite">Score : 0 / ${quiz.length}</span>
+        <button type="button" class="quiz-reset" onclick="resetQuiz('${themeKey}')">&#8635; Recommencer</button>
+      </div>
+      <div class="quiz-result"></div>
+    </section>
+  `;
+}
+
+function answerQuiz(themeKey, qi, oi) {
+  const quiz = FORMATION_CATEGORIES[themeKey].quiz;
+  const section = document.getElementById(`quiz-${themeKey}`);
+  const block = section && section.querySelector(`.quiz-question[data-qi="${qi}"]`);
+  if (!block || block.classList.contains('is-answered')) return;
+
+  const item = quiz[qi];
+  const correct = oi === item.answer;
+  block.classList.add('is-answered', correct ? 'is-right' : 'is-wrong');
+  block.querySelectorAll('.quiz-option').forEach(btn => {
+    const idx = Number(btn.dataset.oi);
+    btn.disabled = true;
+    if (idx === item.answer) btn.classList.add('is-correct');
+    else if (idx === oi) btn.classList.add('is-chosen-wrong');
+  });
+  const expl = block.querySelector('.quiz-explanation');
+  expl.innerHTML = `<strong>${correct ? '&#9989; Bonne réponse.' : `&#10060; La bonne réponse était ${String.fromCharCode(65 + item.answer)}.`}</strong> ${item.explanation}`;
+  expl.classList.add('is-visible');
+
+  const answered = section.querySelectorAll('.quiz-question.is-answered').length;
+  const right = section.querySelectorAll('.quiz-question.is-right').length;
+  section.querySelector('.quiz-score').textContent = `Score : ${right} / ${answered}` + (answered < quiz.length ? ` (${quiz.length - answered} restantes)` : '');
+
+  if (answered === quiz.length) {
+    const ratio = right / quiz.length;
+    const verdict = ratio >= 0.85
+      ? 'Excellent : vous maîtrisez les arbitrages du cours.'
+      : ratio >= 0.6
+        ? 'Bonne base. Relisez les explications des questions manquées et les chapitres correspondants.'
+        : 'Les notions sont encore fragiles : reprenez les chapitres, puis refaites le quiz.';
+    const result = section.querySelector('.quiz-result');
+    result.innerHTML = `<strong>Résultat : ${right} / ${quiz.length}.</strong> ${verdict}`;
+    result.classList.add('is-visible');
+  }
+}
+
+function resetQuiz(themeKey) {
+  const section = document.getElementById(`quiz-${themeKey}`);
+  if (!section) return;
+  section.outerHTML = renderQuiz(themeKey, FORMATION_CATEGORIES[themeKey]);
+  document.getElementById(`quiz-${themeKey}`).scrollIntoView({ block: 'start', behavior: 'smooth' });
 }
 
 // ---- Filter Tools ----

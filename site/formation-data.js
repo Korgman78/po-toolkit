@@ -35,6 +35,96 @@
       tagline: "Concevoir, exposer et faire évoluer des API sans rien casser.",
       description: "Une API est un contrat public entre deux systèmes : une fois consommée, on ne peut plus la changer librement. Ce cours couvre les styles d'API (REST, GraphQL, événements), la conception de contrats clairs, le versioning, la sécurité et la gouvernance — pour que le PO pilote l'ouverture d'API comme une décision produit.",
       intro: "<p>Dès qu'un produit parle à un autre système — une app mobile, un partenaire, un autre service interne — il le fait via une <strong>API</strong>. Pour le PO, l'API n'est pas un détail technique : c'est un <em>engagement durable</em>, souvent monétisable, et toujours coûteux à modifier une fois en production.</p><p>Ce cours vous donne le vocabulaire et les réflexes pour concevoir de bons contrats, choisir le bon style d'API, anticiper le versioning et la sécurité, et arbitrer ce qu'on expose (ou non) à l'extérieur.</p><p>Les exercices s'appuient sur <strong>Schémas &amp; Workflows</strong> pour modéliser les flux, et sur <strong>JSON &amp; UUID Tools</strong> pour manipuler de vrais payloads.</p>",
+      quiz: [
+        {
+          "q": "Un partenaire demande un accès à vos données produit. Le commercial veut « ouvrir une API vite, on verra après ». Quelle lecture PO est la plus juste ?",
+          "options": [
+            "C'est un détail technique à confier à l'équipe de développement.",
+            "Le plus simple est de lui donner un accès en lecture à la base.",
+            "On peut ouvrir sans documentation et la rédiger si le partenaire pose des questions.",
+            "Ouvrir une API partenaire est un engagement durable : contrat, documentation, versioning, sécurité, quotas et support sont à cadrer comme pour un produit."
+          ],
+          "answer": 3,
+          "explanation": "Une API exposée à l'extérieur devient un contrat que d'autres intègrent dans leurs systèmes : chaque changement ultérieur a un coût pour eux et pour vous. Plus l'exposition est large (interne, partenaire, publique), plus l'engagement est fort."
+        },
+        {
+          "q": "Il faut renommer le champ price en amount et le transformer en objet {value, currency}. Plusieurs partenaires l'utilisent. Que faire ?",
+          "options": [
+            "C'est un changement cassant : publier une v2, maintenir la v1, annoncer une dépréciation datée, mesurer l'usage de la v1, puis la couper.",
+            "Modifier le champ et prévenir les partenaires par e-mail le jour même.",
+            "Ajouter amount et supprimer price dans la même livraison.",
+            "Pas besoin de version : le changement est petit."
+          ],
+          "answer": 0,
+          "explanation": "Renommer ou changer le type d'un champ casse les clients existants. La dépréciation se gère comme un plan : annoncer, laisser le temps, mesurer l'usage résiduel, puis couper."
+        },
+        {
+          "q": "Lequel de ces changements est compatible (non cassant) pour les clients existants ?",
+          "options": [
+            "Rendre obligatoire un paramètre auparavant optionnel.",
+            "Changer le format des dates de JJ/MM/AAAA vers ISO 8601.",
+            "Ajouter un nouveau champ optionnel dans la réponse.",
+            "Supprimer un champ que « personne n'utilise »."
+          ],
+          "answer": 2,
+          "explanation": "Ajouter est compatible ; supprimer, renommer, retyper ou durcir une règle est cassant. « Personne n'utilise ce champ » est une hypothèse, qu'il faut vérifier par des mesures avant toute suppression."
+        },
+        {
+          "q": "Une application mobile doit afficher un écran qui agrège six ressources avec une bande passante limitée ; en interne, deux services échangent de gros volumes avec des contraintes de latence. Quel couple de choix est le plus cohérent ?",
+          "options": [
+            "gRPC pour le mobile, REST en interne.",
+            "Webhooks pour le mobile, GraphQL en interne.",
+            "REST partout, car c'est le standard.",
+            "GraphQL (ou un BFF) pour le mobile, gRPC entre les services internes."
+          ],
+          "answer": 3,
+          "explanation": "GraphQL laisse le client choisir ses champs en une requête, ce qui convient aux fronts riches ou contraints. gRPC, binaire et performant, est adapté à l'interne mais pas au navigateur. REST reste le défaut raisonnable quand aucun besoin particulier n'existe."
+        },
+        {
+          "q": "Un partenaire interroge votre API toutes les 10 secondes pour savoir si un paiement est confirmé, ce qui représente 60 % de votre trafic. Quelle solution ?",
+          "options": [
+            "Lui proposer un webhook qui le notifie à la confirmation du paiement (avec signature et nouvelles tentatives en cas d'échec).",
+            "Augmenter son quota.",
+            "Passer l'endpoint en GraphQL.",
+            "Paginer la réponse."
+          ],
+          "answer": 0,
+          "explanation": "Le polling fait porter au serveur le coût de questions dont la réponse est presque toujours « pas encore ». Le webhook inverse la logique : c'est vous qui notifiez l'événement quand il se produit."
+        },
+        {
+          "q": "Un client connecté peut consulter les factures d'un autre client en changeant l'identifiant dans l'URL. De quel type de défaut s'agit-il ?",
+          "options": [
+            "Un défaut d'authentification : il faut ajouter la double authentification.",
+            "Un défaut de rate-limiting.",
+            "Un défaut d'autorisation : l'API vérifie qui vous êtes, mais pas que cette facture vous appartient.",
+            "Un problème de versioning."
+          ],
+          "answer": 2,
+          "explanation": "Authentification (qui êtes-vous) et autorisation (à quoi avez-vous droit) sont distinctes. Ce défaut de contrôle d'accès par objet est l'une des failles d'API les plus fréquentes ; le PO doit l'inscrire dans les critères d'acceptance."
+        },
+        {
+          "q": "Sur votre offre API gratuite, un seul client génère 40 % du trafic et ralentit les autres. Quelle réponse est à la fois technique et produit ?",
+          "options": [
+            "Bloquer ce client.",
+            "Mettre en place des quotas par clé d'API, organisés en paliers (gratuit, standard, entreprise), documentés et visibles dans les réponses.",
+            "Ajouter des serveurs sans rien changer à l'offre.",
+            "Retirer l'offre gratuite."
+          ],
+          "answer": 1,
+          "explanation": "Le rate-limiting protège l'API et structure l'offre : les paliers transforment une contrainte technique en modèle économique. Des limites documentées permettent aux clients de s'y adapter."
+        },
+        {
+          "q": "Un partenaire envoie une date mal formatée et reçoit « 500 Internal Server Error ». Quel devrait être le contrat ?",
+          "options": [
+            "Un 400 indiquant le champ en erreur et le format attendu (ISO 8601).",
+            "Un 200 avec success: false dans le corps.",
+            "Un 404, car la ressource n'a pas pu être créée.",
+            "Un 500 accompagné de la trace technique complète pour aider au diagnostic."
+          ],
+          "answer": 0,
+          "explanation": "Une erreur du client doit renvoyer un code 4xx, avec un message qui explique comment corriger. Un 500 laisse croire à une panne serveur, et exposer la trace technique pose un problème de sécurité."
+        }
+      ],
       chapters: [
         {
           slug: "api-fondamentaux",
@@ -154,6 +244,96 @@
       tagline: "Lire un modèle de données, en parler juste, et protéger la donnée.",
       description: "La donnée est l'actif le plus durable d'un produit : les écrans changent, les données restent. Ce cours apprend au PO à lire et challenger un modèle de données (entités, relations, cardinalités), à distinguer état et événement, à raisonner qualité, cycle de vie et conformité (RGPD), sans devenir DBA.",
       intro: "<p>Un PO qui ne comprend pas le modèle de données de son produit avance à l'aveugle : il sous-estime les impacts, propose des features impossibles, ou découvre trop tard qu'une donnée critique n'a jamais été collectée.</p><p>Ce cours ne fait pas de vous un architecte de bases de données. Il vous apprend à <strong>lire un schéma</strong>, à parler juste avec les développeurs (entité, relation, cardinalité, clé), à raisonner sur la <strong>qualité</strong> et le <strong>cycle de vie</strong> de la donnée, et à intégrer la <strong>conformité</strong> dès la conception.</p><p>Les exercices se font dans <strong>Schémas &amp; Workflows</strong> pour modéliser entités et flux de données.</p>",
+      quiz: [
+        {
+          "q": "Le marketing demande combien de clients ont changé d'adresse l'an dernier. Votre modèle ne stocke que l'adresse actuelle. Que répondre ?",
+          "options": [
+            "L'information n'a jamais été conservée : elle ne peut pas être reconstituée. Il faut décider maintenant d'historiser les changements pour l'avenir.",
+            "Une requête SQL bien écrite permettra de retrouver l'information.",
+            "Les journaux applicatifs permettent toujours de la reconstituer de façon fiable.",
+            "Il suffit de comparer avec la sauvegarde de l'an dernier."
+          ],
+          "answer": 0,
+          "explanation": "Un modèle qui ne stocke que l'état écrase le passé. Si une donnée n'est pas collectée, aucune analyse ne la recrée : la question de l'historique se pose au moment de concevoir la fonctionnalité."
+        },
+        {
+          "q": "Un client peut détenir plusieurs contrats, et un contrat peut avoir plusieurs titulaires (co-emprunteurs), avec des rôles différents. Comment le modéliser ?",
+          "options": [
+            "Une relation 1-N : un client, plusieurs contrats.",
+            "Deux colonnes client_1 et client_2 sur le contrat.",
+            "Une relation N-N avec une table de liaison qui porte le rôle de chaque titulaire.",
+            "Une relation 1-1 entre client et contrat."
+          ],
+          "answer": 2,
+          "explanation": "C'est une relation plusieurs-à-plusieurs, et la table de liaison peut porter des attributs (rôle, date d'entrée). Les colonnes client_1/client_2 cassent dès le troisième titulaire : ce choix de cardinalité est une décision produit."
+        },
+        {
+          "q": "Après une hausse de prix, la réimpression d'une facture du mois dernier affiche le nouveau prix. Quelle est la cause ?",
+          "options": [
+            "Le modèle n'est pas assez normalisé.",
+            "Un problème de cache.",
+            "Un problème de fuseau horaire.",
+            "La facture pointe vers le prix actuel du produit au lieu de figer le prix au moment de l'émission."
+          ],
+          "answer": 3,
+          "explanation": "La normalisation est le bon défaut, mais certains documents doivent figer l'historique : une facture reprend (dénormalise) le prix, le taux de TVA et l'adresse au moment de son émission."
+        },
+        {
+          "q": "L'adresse d'un client existe dans le CRM, dans l'outil de facturation et dans l'application mobile, et les trois divergent. Quelle est la première décision à prendre ?",
+          "options": [
+            "Désigner la source de vérité de l'adresse, que les autres systèmes consomment ou synchronisent.",
+            "Lancer un script de nettoyage mensuel qui aligne les trois.",
+            "Laisser chaque outil gérer sa version.",
+            "Demander aux clients de mettre à jour leur adresse partout."
+          ],
+          "answer": 0,
+          "explanation": "Sans source de vérité désignée, chaque correction crée une nouvelle divergence. Le nettoyage traite le symptôme, pas la cause."
+        },
+        {
+          "q": "Pour un nouveau programme de parrainage, l'équipe propose de collecter aussi la date de naissance « au cas où, pour du marketing plus tard ». Quelle position tenir ?",
+          "options": [
+            "La collecter : une donnée non collectée est perdue à jamais.",
+            "La collecter, mais la cacher dans l'interface.",
+            "Ne pas la collecter sans finalité définie : minimisation et limitation de la finalité sont des principes du RGPD.",
+            "La collecter uniquement pour les clients qui ont plus de 18 ans."
+          ],
+          "answer": 2,
+          "explanation": "Il y a une tension réelle avec « penser données en amont », mais le RGPD tranche : on ne collecte que ce qui sert une finalité déterminée et annoncée. Penser données en amont, c'est identifier les données utiles à une finalité, pas tout stocker."
+        },
+        {
+          "q": "Un client demande l'effacement de ses données, mais ses factures doivent être conservées 10 ans pour des raisons comptables. Que faire ?",
+          "options": [
+            "Tout supprimer : le droit à l'effacement prime.",
+            "Effacer ou anonymiser ce qui n'a plus de base légale, conserver les factures avec un accès restreint, puis les supprimer à l'échéance.",
+            "Refuser la demande en bloc à cause de l'obligation comptable.",
+            "Ne rien faire tant que le client ne relance pas."
+          ],
+          "answer": 1,
+          "explanation": "Le droit à l'effacement a des exceptions, dont les obligations légales de conservation. Le modèle doit prévoir cette granularité dès la conception (privacy by design)."
+        },
+        {
+          "q": "18 % des numéros de téléphone en base sont invalides. Quelle action est la plus rentable ?",
+          "options": [
+            "Valider le format à la saisie, puis traiter le stock existant de façon ciblée.",
+            "Un nettoyage trimestriel par une équipe dédiée.",
+            "Ignorer le problème tant qu'aucun rapport n'est faux.",
+            "Rendre le champ facultatif."
+          ],
+          "answer": 0,
+          "explanation": "Valider à l'entrée coûte bien moins cher que nettoyer après coup. Sans validation à la saisie, le stock se re-dégrade après chaque nettoyage."
+        },
+        {
+          "q": "Les data scientists veulent une copie des données de production pour entraîner un modèle de scoring. Ils proposent de retirer les noms et prénoms pour que ce soient des « données anonymes ». Qu'en penser ?",
+          "options": [
+            "C'est suffisant : sans nom, ce ne sont plus des données personnelles.",
+            "Il suffit d'obtenir l'accord du DPO après coup.",
+            "C'est interdit dans tous les cas.",
+            "Retirer le nom ne suffit pas : c'est au mieux une pseudonymisation, les données restent personnelles. Il faut minimiser les champs, restreindre les accès et documenter la finalité."
+          ],
+          "answer": 3,
+          "explanation": "Une personne reste souvent identifiable par croisement (date de naissance, code postal, montants). Les données pseudonymisées restent soumises au RGPD ; seule une vraie anonymisation, irréversible, en sort."
+        }
+      ],
       chapters: [
         {
           slug: "donnees-pourquoi",
