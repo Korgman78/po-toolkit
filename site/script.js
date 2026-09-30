@@ -57,7 +57,7 @@ function icon(name, size = 16, cls = '') {
 }
 
 const TOOL_CATEGORY_ICONS = {
-  'project-management': 'kanban', roadmapping: 'route', 'design-prototyping': 'pen', 'user-research': 'users',
+  'project-management': 'kanban', roadmapping: 'route', 'ia-assistants': 'sparkles', 'design-prototyping': 'pen', 'user-research': 'users',
   analytics: 'chart', collaboration: 'message', documentation: 'file', 'devops-technical': 'code',
   'api-testing': 'plug', testing: 'checkSquare',
 };
@@ -145,7 +145,7 @@ const TOOL_LOGO_SLUGS = {
   jira: "jira", linear: "linear", "azure-devops": "azuredevops", shortcut: "shortcut", asana: "asana",
   "monday-com": "mondaydotcom", trello: "trello", clickup: "clickup", youtrack: "youtrack", "github-projects": "github",
   productboard: "productboard", aha: "aha", airfocus: "airfocus", figma: "figma", miro: "miro", sketch: "sketch",
-  penpot: "penpot", "adobe-xd": "adobexd", figjam: "figma", slack: "slack", "microsoft-teams": "microsoftteams",
+  penpot: "penpot", figjam: "figma", slack: "slack", "microsoft-teams": "microsoftteams",
   zoom: "zoom", loom: "loom", notion: "notion", confluence: "confluence", coda: "coda", docusaurus: "docusaurus",
   gitbook: "gitbook", amplitude: "amplitude", mixpanel: "mixpanel", tableau: "tableau", looker: "looker",
   metabase: "metabase", powerbi: "powerbi", hotjar: "hotjar", datadog: "datadog", sentry: "sentry",
@@ -235,20 +235,21 @@ function readingMinutes(html) {
 }
 
 // ---------- Tool logos ----------
-function getToolLogoSrc(tool) {
-  const simpleIconSlug = TOOL_LOGO_SLUGS[legacySlug(tool.name)];
-  if (simpleIconSlug) return `https://cdn.simpleicons.org/${simpleIconSlug}`;
+function toolFavicon(tool) {
   try {
     const host = new URL(tool.url).hostname.replace(/^www\./, '');
     return `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
   } catch (e) { return ''; }
 }
 function toolLogo(tool, large = false) {
-  const src = getToolLogoSrc(tool);
+  const slug = TOOL_LOGO_SLUGS[legacySlug(tool.name)];
+  const favicon = toolFavicon(tool);
+  const src = slug ? `https://cdn.simpleicons.org/${slug}` : favicon;
   const fallback = escapeHtml(tool.name.slice(0, 2).toUpperCase());
   const cls = `tool-logo${large ? ' tool-logo-lg' : ''}`;
   if (!src) return `<span class="${cls}">${fallback}</span>`;
-  return `<span class="${cls}"><img src="${src}" alt="" loading="lazy" referrerpolicy="no-referrer" data-fallback="${fallback}"></span>`;
+  const alt = slug && favicon ? ` data-alt-src="${favicon}"` : '';
+  return `<span class="${cls}"><img src="${src}" alt="" loading="lazy" referrerpolicy="no-referrer" data-fallback="${fallback}"${alt}></span>`;
 }
 function scoreView(score) {
   return `<span class="score" title="Score PO ${score}/10"><span class="score-bar"><span style="width:${score * 10}%"></span></span>${Number(score).toFixed(1)}</span>`;
@@ -1293,8 +1294,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('error', e => {
     const img = e.target;
     if (img.tagName === 'IMG' && img.dataset.fallback) {
-      const parent = img.parentElement;
-      parent.textContent = img.dataset.fallback;
+      if (img.dataset.altSrc) {
+        img.src = img.dataset.altSrc;
+        delete img.dataset.altSrc;
+        return;
+      }
+      img.parentElement.textContent = img.dataset.fallback;
     }
   }, true);
   window.addEventListener('scroll', updateReadProgress, { passive: true });

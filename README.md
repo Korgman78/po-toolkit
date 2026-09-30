@@ -94,18 +94,17 @@ po-toolkit/
 
 ## Categories d'outils couverts
 
-1. Gestion de Projet & Backlog (Jira, Linear, Azure DevOps, Shortcut, Asana, Monday, Trello, ClickUp, YouTrack, GitHub Projects, Targetprocess)
-2. Roadmapping (Productboard, Aha!, Airfocus, Craft.io, Roadmunk)
-3. Design & Prototypage (Figma, Sketch, Adobe XD, Balsamiq, Whimsical, Axure, Framer, Penpot)
-4. User Research (Maze, Hotjar, UserTesting, Dovetail, Optimal Workshop, Typeform, Microsoft Clarity)
-5. Analytics & Data (Mixpanel, Amplitude, PostHog, GA4, Heap, Pendo, Matomo)
-6. Collaboration (Miro, Mural, FigJam, Lucidspark, Klaxoon, Excalidraw)
-7. Documentation (Notion, Confluence, Coda, GitBook, Slite)
-8. Communication (Slack, Teams, Loom, Zight)
+1. Gestion de Projet & Backlog (Jira, Linear, Azure DevOps, Shortcut (ex-Clubhouse), Asana, Monday.com, Trello, ClickUp, YouTrack, GitHub Projects, IBM Targetprocess, Jira Align, Plane)
+2. Roadmapping & Vision Produit (Productboard, Jira Product Discovery, Aha!, Airfocus, Craft.io, Strategic Roadmaps (ex-Roadmunk))
+3. IA & Assistants (ChatGPT, Claude, Gemini, Microsoft 365 Copilot, NotebookLM, Perplexity, v0, Lovable, Bolt)
+4. Design & Prototypage (Figma, Sketch, Balsamiq, Whimsical, Axure RP, Framer, Penpot)
+5. User Research & Testing (Maze, Hotjar, UserTesting, Dovetail, Optimal Workshop, Typeform, Microsoft Clarity, Canny)
+6. Analytics & Data (Mixpanel, Amplitude, PostHog, Google Analytics 4, Heap, Pendo, Matomo, Contentsquare, Optimizely, AB Tasty, Power BI, Looker Studio, Metabase)
+7. Collaboration & Workshops (Miro, Mural, FigJam, Lucidspark, Klaxoon, Excalidraw, Slack, Microsoft Teams, Loom)
+8. Documentation & Knowledge Base (Notion, Confluence, Coda, GitBook, Slite, draw.io, Lucidchart)
 9. DevOps & Technique (GitHub, GitLab, Datadog, Sentry, LaunchDarkly)
-10. IA & Productivite (ChatGPT, Claude, Copilot, Notion AI, Gamma)
-11. Feedback & Support (Canny, Intercom, Zendesk)
-12. Tests & Qualite (TestRail, Zephyr, BrowserStack)
+10. API Testing & Documentation (Postman, Bruno, Insomnia, Hoppscotch, Swagger / OpenAPI, Stoplight, HTTPie)
+11. Tests & Qualite (TestRail, Zephyr (SmartBear), BrowserStack, Xray)
 
 ## Licence
 
