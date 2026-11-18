@@ -43,6 +43,14 @@ Section de cours structures, accessible depuis la sidebar « Formation ». Chaqu
 | **Du mode projet au mode produit** | 9 chapitres (parcours Delivery & Agilite, niveau intermediaire) : definitions et symptomes du water-scrum-fall, pourquoi le mode projet resiste (budget, comites, CapEx), cout cache et metriques de flux (Flow Framework), mode produit (Cagan, ING), equipes socles et Team Topologies, reglementaire en mode produit (exemple CCD2), Lean Budgets et garde-fous, pilotage par la direction, leviers d'action du PO. Donnees dans `site/formation-projet-produit.js`. |
 | **L'IA au quotidien du PO/PM : usages avances** | 10 chapitres (parcours Discovery & Produit, niveau avance), sources citees (HBS/BCG, P&G, METR, Anthropic, Uber, Pinterest, Tetlock, NN/g, Veracode, AI Act) : grille de delegation, context engineering et connecteurs MCP, analyse de verbatims a grande echelle (methode Clio), limites des utilisateurs synthetiques, text-to-SQL et verification des chiffres, contradiction / pre-mortem / previsions, prototypage sous controle, workflows et triade mortelle, evals d'une fonctionnalite IA, confidentialite / AI Act / esprit critique. Donnees dans `site/formation-ia-quotidien.js`. |
 
+### Presentations interactives
+
+Onglet « Presentations interactives » (`#presentations`) : supports a projeter devant un client ou un comite, ouverts dans un nouvel onglet. Moteur commun `site/presentations/deck.js` + `deck.css` (canevas 1600x900 mis a l'echelle, chapitres cliquables, vue d'ensemble `O`, sources `S` et notes `N` par diapositive, plein ecran `F`, theme `T`, lien direct `#n`, mode statique `?static` pour l'export PDF). Chaque diapositive est une `<section class="slide" data-chapter data-title>` avec `<aside class="notes">` et `<aside class="sources">`.
+
+| Presentation | Contenu |
+|--------------|---------|
+| **L'IA agentique, du discours aux faits** (`ia-agentique.html`) | 37 diapositives, 5 chapitres : definition et spectre d'autonomie, grappe generative, donnees structurees vs non structurees, cas pertinents / pieges, ecosysteme SI, exemples ; adoption et valeur reelles 2025-2026 (Gartner, McKinsey, KPMG, Deloitte, Stanford AI Index, METR, Workday, RCT Alibaba) ; organisation, agilite, gouvernance des donnees, accelerateurs et freins, triade dangereuse, autodiagnostic ; methodes d'identification des cas d'usage, grille de decision regle / workflow / agent, matrice desir x capacite ; plan a 90 jours et sources. |
+
 ### Accelerateurs telechargeables
 
 | Fichier | Format | Description |

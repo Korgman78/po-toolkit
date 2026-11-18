@@ -50,6 +50,8 @@ const ICONS = {
   target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
   bulb: '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/>',
   dot: '<circle cx="12" cy="12" r="3"/>',
+  presentation: '<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M12 16v4M8 20h8"/><path d="m10 8 4 2-4 2z"/>',
+  play: '<path d="M7 5v14l11-7z"/>',
 };
 
 function icon(name, size = 16, cls = '') {
@@ -114,6 +116,18 @@ const ACCELERATOR_FORMAT_META = {
   pptx: { title: "Supports et canvases", description: "Cadrage, ateliers et communication avec les parties prenantes." },
   csv: { title: "Imports", description: "Imports en masse dans Jira et Azure DevOps." },
 };
+
+const PRESENTATIONS_DATA = [
+  {
+    key: 'ia-agentique', file: 'presentations/ia-agentique.html',
+    title: "L'IA agentique, du discours aux faits",
+    desc: "Ce qu'est (et n'est pas) un agent, l'état réel de l'adoption et de la productivité en 2026, l'organisation comme prérequis, et les méthodes pour identifier les bons cas d'usage.",
+    audience: 'Clients, comités de direction', duration: '45 à 60 min', slides: 37, updated: 'Novembre 2026',
+    chapters: ["Comprendre l'IA agentique", "L'agentique aujourd'hui, concrètement", "L'organisation comme prérequis", "Identifier les cas d'usage", "Passer à l'action"],
+    features: ["Boucle agentique animée", "Calculateur d'erreurs composées", "Explorateur de cas pertinents / pièges", "Carte du SI", "Études de productivité", "Autodiagnostic de maturité", "Grille de décision règle / workflow / agent"],
+    sources: "Gartner, McKinsey, KPMG, Deloitte, Stanford AI Index 2026, METR, NBER, HBS, MIT, Workday, arXiv",
+  },
+];
 
 const CHEATSHEETS = [
   { title: "Rédaction de user stories", items: [
@@ -276,6 +290,7 @@ function sectionOf(page) {
   if (TOOLBOX_PAGES.includes(page)) return 'toolbox';
   if (page === 'tools') return 'tools';
   if (page === 'methods') return 'methods';
+  if (page === 'presentations') return 'presentations';
   return 'home';
 }
 
@@ -290,6 +305,7 @@ function renderSidebar(route) {
     { id: 'toolbox', label: 'Boîte à outils', icon: 'grid', href: '#toolbox', count: APPS_DATA.length },
     { id: 'tools', label: "Référentiel d'outils", icon: 'layers', href: '#tools', count: toolCount },
     { id: 'methods', label: 'Méthodes', icon: 'compass', href: '#methods', count: methodCount },
+    { id: 'presentations', label: 'Présentations interactives', icon: 'presentation', href: '#presentations', count: PRESENTATIONS_DATA.length },
   ];
 
   let html = `
@@ -385,6 +401,8 @@ function crumbsFor(route) {
   } else if (page === 'tools') {
     c.push(["Référentiel d'outils", '#tools']);
     if (TOOL_CATEGORIES[subpage]) c.push([TOOL_CATEGORIES[subpage].title]);
+  } else if (page === 'presentations') {
+    c.push(['Présentations interactives']);
   } else if (page === 'methods') {
     c.push(['Méthodes', '#methods']);
     if (METHOD_CATEGORIES[subpage]) c.push([METHOD_CATEGORIES[subpage].title]);
@@ -981,6 +999,36 @@ function renderMethodCategory(key) {
     </div>`;
 }
 
+// ---------- Présentations interactives ----------
+function renderPresentations() {
+  return `
+    <div class="page">
+      ${pageHead({ kicker: plural(PRESENTATIONS_DATA.length, 'présentation', 'présentations'), title: 'Présentations interactives', lead: "Des supports de présentation à projeter devant un client ou un comité : plein écran, navigation au clavier, sources et notes de l'orateur sur chaque diapositive, et des démonstrations à manipuler en direct." })}
+      ${PRESENTATIONS_DATA.map(p => `
+        <article class="panel pres-card">
+          <div class="pres-head">
+            ${tile('presentation', p.key)}
+            <div style="min-width:0;flex:1">
+              <span class="eyebrow">${p.updated} · ${p.slides} diapositives · ${p.duration}</span>
+              <h2 class="pres-title">${p.title}</h2>
+              <p class="pres-desc">${p.desc}</p>
+            </div>
+            <a class="btn btn-primary" href="${p.file}" target="_blank" rel="noopener">${icon('play', 14)} Lancer la présentation</a>
+          </div>
+          <div class="pres-body">
+            <div class="pres-col"><span class="eyebrow">Déroulé</span><ol>${p.chapters.map((c, i) => `<li><a href="${p.file}#${[3, 13, 21, 29, 35][i] || 1}" target="_blank" rel="noopener"><span class="n">${pad2(i + 1)}</span>${c}</a></li>`).join('')}</ol></div>
+            <div class="pres-col"><span class="eyebrow">Démonstrations interactives</span><div class="chips">${p.features.map(f => `<span class="badge">${f}</span>`).join('')}</div>
+              <span class="eyebrow" style="margin-top:8px">Public</span><span class="muted">${p.audience}</span>
+              <span class="eyebrow" style="margin-top:8px">Sources</span><span class="muted">${p.sources}</span>
+            </div>
+          </div>
+          <div class="pres-foot">
+            <span><kbd>→</kbd> avancer</span><span><kbd>O</kbd> vue d'ensemble</span><span><kbd>S</kbd> sources</span><span><kbd>N</kbd> notes</span><span><kbd>F</kbd> plein écran</span><span><kbd>T</kbd> thème</span>
+          </div>
+        </article>`).join('')}
+    </div>`;
+}
+
 // ---------- Command palette ----------
 const TYPE_META = {
   action: { label: 'Actions rapides', order: 0 },
@@ -992,6 +1040,7 @@ const TYPE_META = {
   tool: { label: 'Outils', order: 6 },
   method: { label: 'Méthodes', order: 7 },
   template: { label: 'Templates', order: 8 },
+  presentation: { label: 'Présentations', order: 9 },
 };
 let searchIndex = [];
 let paletteItems = [];
@@ -1003,6 +1052,7 @@ function buildSearchIndex() {
     ['Accueil', '#home', 'home'], ['Formation', '#formation', 'book'], ['Boîte à outils', '#toolbox', 'grid'],
     ["Référentiel d'outils", '#tools', 'layers'], ['Méthodes', '#methods', 'compass'], ['Mini-apps', '#apps', 'grid'],
     ['Templates', '#accelerators', 'file'], ['Fiches mémo', '#cheatsheets', 'sheet'],
+    ['Présentations interactives', '#presentations', 'presentation'],
   ];
   pages.forEach(([t, h, i]) => idx.push({ type: 'page', title: t, sub: '', href: h, icon: i, text: t.toLowerCase() }));
   APPS_DATA.forEach(a => idx.push({ type: 'app', title: a.name, sub: a.short, href: a.file, external: true, icon: a.icon, text: `${a.name} ${a.desc} ${a.task || ''}`.toLowerCase() }));
@@ -1016,6 +1066,7 @@ function buildSearchIndex() {
   for (const [k, cat] of Object.entries(METHOD_CATEGORIES)) {
     cat.methods.forEach(m => idx.push({ type: 'method', title: m.name, sub: cat.title, href: `#methods/${k}/${legacySlug(m.name)}`, icon: METHOD_CATEGORY_ICONS[k] || 'compass', text: `${m.name} ${m.description} ${cat.title} ${m.when}`.toLowerCase() }));
   }
+  PRESENTATIONS_DATA.forEach(p => idx.push({ type: 'presentation', title: p.title, sub: `${p.slides} diapositives · ${p.duration}`, href: p.file, external: true, icon: 'presentation', text: `${p.title} ${p.desc} ${p.chapters.join(' ')} présentation agent agentique`.toLowerCase() }));
   ACCELERATORS_DATA.forEach(a => idx.push({ type: 'template', title: a.name, sub: `${a.format.toUpperCase()} · ${a.desc}`, href: a.file, download: true, icon: 'file', text: `${a.name} ${a.desc} ${a.format}`.toLowerCase() }));
   return idx;
 }
@@ -1165,6 +1216,7 @@ function handleRoute() {
   else if (page === 'tools') { content = renderToolsOverview(); title = "Référentiel d'outils"; }
   else if (page === 'methods' && subpage && METHOD_CATEGORIES[subpage]) { content = renderMethodCategory(subpage); title = METHOD_CATEGORIES[subpage].title; }
   else if (page === 'methods') { content = renderMethodsOverview(); title = 'Méthodes'; }
+  else if (page === 'presentations') { content = renderPresentations(); title = 'Présentations interactives'; }
   else { content = renderHome(); }
 
   const main = $('#main-content');

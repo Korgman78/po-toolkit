@@ -570,6 +570,25 @@ kbd, .kbd {
 .feature-row .txt b { color: var(--text); font-weight: 600; }
 .feature-row .txt span { font-size: 13.5px; color: var(--text-3); }
 
+/* ---------- Présentations interactives ---------- */
+.pres-card { display: flex; flex-direction: column; overflow: hidden; }
+.pres-head { display: flex; align-items: flex-start; gap: 16px; padding: 22px; flex-wrap: wrap; }
+.pres-head .btn { flex: none; }
+.pres-title { font-family: var(--font-serif); font-size: 24px; font-weight: 600; line-height: 1.2; margin: 6px 0 8px; }
+.pres-desc { font-size: 14.5px; line-height: 1.6; color: var(--text-2); max-width: 760px; }
+.pres-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border-top: 1px solid var(--border-soft); }
+.pres-col { display: flex; flex-direction: column; gap: 10px; padding: 18px 22px; font-size: 14px; }
+.pres-col + .pres-col { border-left: 1px solid var(--border-soft); }
+.pres-col ol { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.pres-col ol a { display: flex; gap: 10px; align-items: baseline; padding: 6px 8px; margin: 0 -8px; border-radius: var(--radius-sm); color: var(--text-2); text-decoration: none; }
+.pres-col ol a:hover { background: var(--surface-2); color: var(--text); }
+.pres-col .n { font-family: var(--font-mono); font-size: 11.5px; color: var(--accent-text); }
+.pres-foot { display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 12px 22px; border-top: 1px solid var(--border-soft); background: var(--surface-2); font-size: 12.5px; color: var(--text-3); }
+@media (max-width: 760px) {
+  .pres-body { grid-template-columns: minmax(0, 1fr); }
+  .pres-col + .pres-col { border-left: 0; border-top: 1px solid var(--border-soft); }
+}
+
 /* ---------- Boîte à outils ---------- */
 .format-badge { display: inline-grid; place-items: center; min-width: 44px; height: 22px; padding: 0 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.03em; background: var(--surface-3); color: var(--text-2); }
 .format-badge.xlsx { background: var(--success-soft); color: color-mix(in oklch, var(--success) 75%, var(--text)); }
