@@ -79,8 +79,8 @@ a { color: var(--accent-text); text-underline-offset: 3px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
 /* ---------- Stage ---------- */
-.stage { position: fixed; inset: 0 0 56px 0; display: grid; place-items: center; overflow: hidden; }
-.deck { position: relative; width: 1600px; height: 900px; flex: none; transform-origin: center center; }
+.stage { position: fixed; inset: 0 0 56px 0; overflow: hidden; }
+.deck { position: absolute; left: 50%; top: 50%; width: 1600px; height: 900px; transform-origin: center center; transform: translate(-50%, -50%); }
 .slide {
   position: absolute; inset: 0; padding: 72px 96px 64px;
   display: flex; flex-direction: column; gap: 28px;
@@ -264,7 +264,7 @@ kbd { font-family: var(--font-mono); font-size: 12px; padding: 2px 7px; border: 
   html, body { overflow: visible; height: auto; }
   .chrome, .drawer, .overview, .help { display: none !important; }
   .stage { position: static; display: block; }
-  .deck { transform: none !important; }
+  .deck { position: static; transform: none !important; }
   .slide { position: relative; opacity: 1; visibility: visible; transform: none; page-break-after: always; margin-bottom: 20px; box-shadow: none; }
   .slide .r { opacity: 1; transform: none; }
   @page { size: 1600px 900px; margin: 0; }

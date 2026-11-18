@@ -95,8 +95,9 @@
   // ---------- Scaling ----------
   function fit() {
     const w = stage.clientWidth, h = stage.clientHeight;
-    const k = Math.min((w - 32) / 1600, (h - 32) / 900);
-    deck.style.transform = `scale(${Math.max(0.2, k)})`;
+    const pad = w < 900 ? 12 : 32;
+    const k = Math.min((w - pad) / 1600, (h - pad) / 900);
+    deck.style.transform = `translate(-50%, -50%) scale(${Math.max(0.2, k)})`;
   }
   window.addEventListener('resize', fit);
   fit();

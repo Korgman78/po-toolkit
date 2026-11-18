@@ -123,6 +123,32 @@
   .toggle input:checked { background: var(--good); border-color: var(--good); }
   .toggle input:checked::after { transform: translateX(20px); }
 
+  /* ---------- Data pipeline (1.6) ---------- */
+  .pipe { display: flex; flex-direction: column; gap: 10px; }
+  .pipe-zones { display: grid; grid-template-columns: 2fr 1fr; gap: 80px; padding: 0 0 0 0; }
+  .pipe-zones .z { font-family: var(--font-mono); font-size: 13px; letter-spacing: .04em; padding: 0 0 8px; border-bottom: 3px solid var(--accent); color: var(--accent-text); }
+  .pipe-zones .z.sys { border-color: var(--blue); color: var(--blue); }
+  .pipe-row { display: grid; grid-template-columns: 1fr 64px 1fr 96px 1fr; align-items: stretch; }
+  .pipe-step { border-radius: 18px; padding: 22px 24px; display: flex; flex-direction: column; gap: 10px; }
+  .pipe-step > .tag { align-self: flex-start; }
+  .pipe-step h3 { font-size: 28px; }
+  .pipe-step p { font-size: 17.5px; color: var(--text-2); }
+  .pipe-step .eg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pipe-step.in { background: var(--accent-soft); }
+  .pipe-step.agent { background: var(--ink); color: var(--on-ink); box-shadow: 0 0 0 4px color-mix(in oklch, var(--accent) 35%, transparent); }
+  .pipe-step.agent p { color: var(--on-ink-2); }
+  .pipe-step.agent strong { color: var(--on-ink); }
+  .pipe-step.agent .tag { background: var(--accent); color: var(--on-accent); }
+  .pipe-step.sys { background: var(--blue-soft); }
+  .tag.blue { background: var(--surface); color: var(--blue); }
+  .pipe-arrow { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+  .pipe-arrow span { width: 70%; height: 3px; background: var(--border-strong); position: relative; overflow: hidden; border-radius: 3px; }
+  .pipe-arrow span::after { content: ''; position: absolute; top: 0; left: -30%; width: 30%; height: 100%; background: var(--accent); animation: flowx 1.6s linear infinite; }
+  .pipe-arrow::after { content: ''; position: absolute; right: 12%; top: 50%; width: 10px; height: 10px; border-top: 3px solid var(--border-strong); border-right: 3px solid var(--border-strong); transform: translateY(-50%) rotate(45deg); }
+  .pipe-arrow.out::after { top: calc(50% - 22px); }
+  .pipe-arrow.out span { margin-top: 0; }
+  .pipe-arrow small { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); text-align: center; line-height: 1.3; }
+  @keyframes flowx { to { left: 100%; } }
   /* ---------- Data ---------- */
   .data-split { display: grid; grid-template-columns: 1fr 120px 1fr; gap: 0; align-items: stretch; }
   .data-col { border-radius: 18px; padding: 26px; display: flex; flex-direction: column; gap: 14px; }
@@ -219,7 +245,7 @@
   .tip.on { opacity: 1; }
 
   /* ---------- Perception gap ---------- */
-  .gap-chart { height: 340px; }
+  .gap-chart { height: 380px; }
 
   /* ---------- Studies explorer ---------- */
   .studies { display: grid; grid-template-columns: 470px 1fr; gap: 24px; flex: 1; min-height: 0; }
@@ -255,6 +281,25 @@
   @keyframes bob { 50% { transform: translateY(-4px); } }
   .org-pane .list { font-size: 17px; color: var(--text-2); }
 
+  /* ---------- Before / after (3.3) ---------- */
+  .ba { display: flex; flex-direction: column; gap: 9px; }
+  .ba-head, .ba-row { display: grid; grid-template-columns: 250px 1fr 64px 1.45fr; align-items: center; }
+  .ba-head { padding-bottom: 2px; }
+  .ba-head .tag { justify-self: start; }
+  .ba-name { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 18px; color: var(--text); }
+  .ba-name i { font-style: normal; font-family: var(--font-mono); font-size: 12px; color: var(--accent-text); width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); flex: none; }
+  .ba-before { padding: 13px 16px; border-radius: 12px; border: 1px dashed var(--border-strong); color: var(--text-3); font-size: 16.5px; }
+  .ba-after { padding: 13px 16px 13px 18px; border-radius: 12px; background: var(--accent-soft); border: 1px solid var(--accent-border); border-left: 4px solid var(--accent); color: var(--text); font-size: 16.5px; display: flex; align-items: center; gap: 12px; }
+  .ba-kind { flex: none; min-width: 96px; text-align: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: var(--surface); color: var(--accent-text); }
+  .ba-kind.new { background: var(--accent); color: var(--on-accent); }
+  .ba-kind.add { color: var(--good); }
+  .ba-arrow { position: relative; height: 2px; margin: 0 12px; background: linear-gradient(90deg, var(--border-strong), var(--accent)); }
+  .ba-arrow::after { content: ''; position: absolute; right: -1px; top: 50%; width: 9px; height: 9px; border-top: 2px solid var(--accent); border-right: 2px solid var(--accent); transform: translateY(-50%) rotate(45deg); }
+  .ba-row { transition: transform .25s var(--ease); }
+  .ba-row:hover .ba-after { box-shadow: var(--shadow); }
+  .ba-row:hover .ba-before { color: var(--text-2); }
+  .slide .ba-row .ba-after, .slide .ba-row .ba-arrow { opacity: 0; transform: translateX(-16px); }
+  .slide.is-active .ba-row .ba-after, .slide.is-active .ba-row .ba-arrow { opacity: 1; transform: none; transition: opacity .5s var(--ease), transform .5s var(--ease); transition-delay: calc(.35s + var(--i) * .09s); }
   /* ---------- Agile table ---------- */
   .ctable { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 19px; }
   .ctable th { text-align: left; font-family: var(--font-mono); font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); font-weight: 500; padding: 10px 14px; border-bottom: 1px solid var(--border-strong); }
@@ -268,7 +313,7 @@
   .eb { display: grid; grid-template-columns: 1fr 500px; gap: 24px; flex: 1; min-height: 0; }
   .eb-pillars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; align-content: start; }
   .eb-pillar { display: flex; flex-direction: column; gap: 10px; }
-  .eb-pillar h4 { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); font-weight: 500; padding: 0 2px 4px; border-bottom: 2px solid var(--accent); }
+  .eb-pillar h4 { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); font-weight: 500; padding: 0 2px 6px; border-bottom: 2px solid var(--accent); min-height: 44px; display: flex; align-items: flex-end; line-height: 1.35; }
   .eb-pillar.blk h4 { border-color: var(--bad); }
   .eb-pillar button { text-align: left; padding: 14px 15px; min-height: 92px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); font-size: 17px; line-height: 1.25; transition: all .2s var(--ease); }
   .eb-pillar button:hover { border-color: var(--accent-border); }
@@ -558,30 +603,41 @@
   <aside class="notes"><p>Démo : 95 % par étape, 20 étapes, on tombe à 36 %. Activer la vérification : on remonte fortement. D'où l'importance des points de contrôle, des outils déterministes et des tâches courtes.</p></aside>
 </section>
 
-<section class="slide" data-chapter="1 · Comprendre" data-title="Données structurées ou non structurées">
+<section class="slide" data-chapter="1 · Comprendre" data-title="Données structurées ou non structurées" style="gap:24px">
   <span class="kicker r"><span class="n">1.6</span> Le sujet données</span>
-  <h2 class="r">L'agent <em>lit le désordre</em> ; le système déterministe <em>calcule l'exact</em>.</h2>
-  <div class="data-split r">
-    <div class="data-col structured grid-pattern">
-      <span class="tag" style="align-self:flex-start">Données structurées</span>
-      <h3>Tables, ERP, transactions</h3>
-      <div class="eg"><span class="tag">SQL</span><span class="tag">Comptabilité</span><span class="tag">Stocks</span><span class="tag">Paie</span><span class="tag">KPI</span></div>
-      <p style="font-size:18px;color:var(--text-2)">Le résultat attendu est unique et vérifiable. Une requête, une règle ou un outil de BI le produit de façon exacte, traçable et presque gratuite.</p>
-      <div class="verdict-box"><b>Rôle de l'agent :</b> interface en langage naturel qui <em>appelle</em> SQL ou la BI, jamais calculateur. Il échoue vite sans couche sémantique.</div>
+  <h2 class="r">L'agent <em>lit le désordre</em>, le système <em>calcule l'exact</em>.</h2>
+  <div class="pipe r">
+    <div class="pipe-zones">
+      <span class="z agent">Terrain de l'agent : c'est ici qu'il crée de la valeur</span>
+      <span class="z sys">Terrain du déterministe : l'agent l'appelle, il ne le remplace pas</span>
     </div>
-    <div class="data-mid"><span class="vs">vs</span><span>80 à 90 %<br>des données<br>d'entreprise sont<br>non structurées<br>(estimation IDC)</span></div>
-    <div class="data-col unstructured">
-      <span class="tag accent" style="align-self:flex-start">Données non structurées</span>
-      <h3>Documents, e-mails, contrats, tickets</h3>
-      <div class="eg"><span class="tag">PDF</span><span class="tag">Courriels</span><span class="tag">Verbatims</span><span class="tag">Contrats</span><span class="tag">Code legacy</span></div>
-      <p style="font-size:18px;color:var(--text-2)">Formats hétérogènes, sens implicite, cas tous différents. C'est là que les règles échouaient et que le langage naturel apporte une capacité nouvelle.</p>
-      <div class="verdict-box"><b>Rôle de l'agent :</b> lire, classer, extraire, rapprocher, puis <em>produire une donnée structurée</em> qu'un système contrôle.</div>
+    <div class="pipe-row">
+      <div class="pipe-step in">
+        <span class="tag accent">1 · Entrée</span>
+        <h3>Données non structurées</h3>
+        <div class="eg"><span class="tag">PDF</span><span class="tag">Courriels</span><span class="tag">Contrats</span><span class="tag">Verbatims</span><span class="tag">Code legacy</span></div>
+        <p>Formats hétérogènes, sens implicite, cas tous différents. <strong>80 à 90 %</strong> des données d'entreprise (estimation IDC).</p>
+      </div>
+      <div class="pipe-arrow"><span></span></div>
+      <div class="pipe-step agent">
+        <span class="tag">2 · L'agent</span>
+        <h3>Lit, classe, extrait, rapproche</h3>
+        <p>Il absorbe la variété là où les règles échouaient, et <strong>produit une donnée structurée</strong>.</p>
+      </div>
+      <div class="pipe-arrow out"><span></span><small>donnée<br>structurée</small></div>
+      <div class="pipe-step sys grid-pattern">
+        <span class="tag blue">3 · Le système</span>
+        <h3>Calcule, contrôle, trace</h3>
+        <div class="eg"><span class="tag">SQL</span><span class="tag">ERP</span><span class="tag">Règles</span><span class="tag">BI</span></div>
+        <p>Résultat unique, exact, auditable et presque gratuit. Sur des tables propres, c'est lui qui répond.</p>
+      </div>
     </div>
   </div>
+  <span class="kicker r" style="color:var(--text-3)">Ce qui arrive quand on demande à l'agent de remplacer le système</span>
   <div class="evidence r">
-    <div class="card"><b class="n">17 %</b><span>de réussite pour o1-preview sur Spider 2.0 (SQL d'entreprise réel), contre 91 % sur le benchmark académique Spider 1.0.</span><span class="cite">Lei et al., ICLR 2025</span></div>
-    <div class="card"><b class="n">16 → 54 %</b><span>de bonnes réponses de GPT-4 sur une base SQL d'assurance une fois une couche sémantique (graphe de connaissances) ajoutée.</span><span class="cite">Sequeda et al., 2023</span></div>
-    <div class="card"><b class="n">60 %</b><span>des projets d'IA sans données «&nbsp;prêtes pour l'IA&nbsp;» seront abandonnés d'ici fin 2026, selon Gartner.</span><span class="cite">Gartner, fév. 2025</span></div>
+    <div class="card"><b class="n">17 %</b><span>de réussite pour o1-preview sur du SQL d'entreprise réel (Spider 2.0), contre 91 % sur un benchmark académique.</span><span class="cite">Lei et al., ICLR 2025</span></div>
+    <div class="card"><b class="n">16 → 54 %</b><span>de bonnes réponses de GPT-4 sur une base d'assurance dès qu'on lui donne une couche sémantique (définitions métier).</span><span class="cite">Sequeda et al., 2023</span></div>
+    <div class="card"><b class="n">60 %</b><span>des projets d'IA sans données «&nbsp;prêtes pour l'IA&nbsp;» seront abandonnés d'ici fin 2026.</span><span class="cite">Gartner, fév. 2025</span></div>
   </div>
   <aside class="sources"><ol>
     <li>Lei et al., «&nbsp;Spider 2.0: Evaluating Language Models on Real-World Enterprise Text-to-SQL Workflows&nbsp;», ICLR 2025, arXiv:2411.07763. Le classement public 2026 montre des systèmes spécialisés bien plus haut, au prix d'une ingénierie de contexte lourde.</li>
@@ -917,18 +973,16 @@
 <section class="slide" data-chapter="3 · Organisation" data-title="L'agilité à l'ère agentique">
   <span class="kicker r"><span class="n">3.3</span> Agilité</span>
   <h2 class="r" style="font-size:46px">L'agilité reste le bon cadre ; ses pratiques changent de centre de gravité.</h2>
-  <table class="ctable r">
-    <thead><tr><th>Pratique</th><th>Avant</th><th>Avec des agents</th></tr></thead>
-    <tbody>
-      <tr><td>Goulot d'étranglement</td><td>Produire : coder, rédiger, analyser</td><td>Spécifier et vérifier : intention claire, relecture, validation</td></tr>
-      <tr><td>Definition of Done</td><td>Tests passés, recette validée</td><td>+ seuils d'évaluation atteints, garde-fous testés, coûts dans le budget</td></tr>
-      <tr><td>Backlog</td><td>Fonctionnalités</td><td>+ cas d'évaluation, sources de connaissance, droits d'accès des agents</td></tr>
-      <tr><td>Product Owner</td><td>Priorise des fonctionnalités</td><td>Possède le comportement de l'agent et son résultat métier</td></tr>
-      <tr><td>Revue de sprint</td><td>Démonstration</td><td>+ revue des traces, des erreurs et des escalades</td></tr>
-      <tr><td>Nouveaux rôles</td><td>—</td><td>Ingénieur agents, responsable des évaluations, propriétaire de la connaissance</td></tr>
-      <tr><td>Plateforme</td><td>CI/CD, environnements</td><td>Plateforme d'agents : modèles, outils MCP, observabilité, évaluations, identités</td></tr>
-    </tbody>
-  </table>
+  <div class="ba r">
+    <div class="ba-head"><span></span><span class="tag">Avant</span><span></span><span class="tag accent">Avec des agents</span></div>
+    <div class="ba-row" style="--i:1"><span class="ba-name"><i>01</i>Goulot d'étranglement</span><span class="ba-before">Produire : coder, rédiger, analyser</span><span class="ba-arrow" aria-hidden="true"></span><span class="ba-after"><b class="ba-kind change">Se déplace</b>Spécifier et vérifier : intention claire, relecture, validation</span></div>
+    <div class="ba-row" style="--i:2"><span class="ba-name"><i>02</i>Definition of Done</span><span class="ba-before">Tests passés, recette validée</span><span class="ba-arrow" aria-hidden="true"></span><span class="ba-after"><b class="ba-kind add">S'enrichit</b>Seuils d'évaluation atteints, garde-fous testés, coûts dans le budget</span></div>
+    <div class="ba-row" style="--i:3"><span class="ba-name"><i>03</i>Backlog</span><span class="ba-before">Fonctionnalités</span><span class="ba-arrow" aria-hidden="true"></span><span class="ba-after"><b class="ba-kind add">S'enrichit</b>Cas d'évaluation, sources de connaissance, droits d'accès des agents</span></div>
+    <div class="ba-row" style="--i:4"><span class="ba-name"><i>04</i>Product Owner</span><span class="ba-before">Priorise des fonctionnalités</span><span class="ba-arrow" aria-hidden="true"></span><span class="ba-after"><b class="ba-kind change">Change</b>Possède le comportement de l'agent et son résultat métier</span></div>
+    <div class="ba-row" style="--i:5"><span class="ba-name"><i>05</i>Revue de sprint</span><span class="ba-before">Démonstration</span><span class="ba-arrow" aria-hidden="true"></span><span class="ba-after"><b class="ba-kind add">S'enrichit</b>Revue des traces, des erreurs et des escalades</span></div>
+    <div class="ba-row" style="--i:6"><span class="ba-name"><i>06</i>Nouveaux rôles</span><span class="ba-before">—</span><span class="ba-arrow" aria-hidden="true"></span><span class="ba-after"><b class="ba-kind new">Nouveau</b>Ingénieur agents, responsable des évaluations, propriétaire de la connaissance</span></div>
+    <div class="ba-row" style="--i:7"><span class="ba-name"><i>07</i>Plateforme</span><span class="ba-before">CI/CD, environnements</span><span class="ba-arrow" aria-hidden="true"></span><span class="ba-after"><b class="ba-kind new">Nouveau</b>Plateforme d'agents : modèles, outils MCP, observabilité, évaluations, identités</span></div>
+  </div>
   <p class="cite r">DORA 2025 : petits lots et plateformes internes de qualité sont des multiplicateurs · Team Topologies (Skelton &amp; Pais) : la plateforme d'agents comme équipe plateforme.</p>
 </section>
 

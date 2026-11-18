@@ -330,8 +330,8 @@
     const el = $('#gap');
     if (!el) return;
     const D = [['Gain prévu avant', 24], ['Gain ressenti après', 20], ['Effet mesuré', -19]];
-    const zero = 190, k = 6, w = 150, gapX = 250;
-    el.innerHTML = `<svg viewBox="0 0 760 340" width="100%" height="340" role="img" aria-label="Gain prévu, ressenti et mesuré">
+    const zero = 200, k = 6, w = 150, gapX = 250;
+    el.innerHTML = `<svg viewBox="0 0 760 380" width="100%" height="380" role="img" aria-label="Gain prévu, ressenti et mesuré">
       <line x1="0" x2="760" y1="${zero}" y2="${zero}" stroke="var(--border-strong)"/>
       ${D.map(([l, v], i) => {
         const x = 55 + i * gapX, h = Math.abs(v) * k, neg = v < 0;
