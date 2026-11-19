@@ -538,8 +538,8 @@
       const [d, m, out] = F[Number(i)];
       $('#funnel-detail').innerHTML = `
         <div class="card accent"><h4>Ce qu'on fait</h4><span style="font-size:20px;color:var(--text)">${d}</span></div>
-        <div class="card"><h4>Méthodes mobilisées</h4><ul>${m.map(x => `<li>${x}</li>`).join('')}</ul></div>
-        <div class="card"><h4>Livrables</h4><ul>${out.map(x => `<li>${x}</li>`).join('')}</ul></div>`;
+        <div class="card blue"><h4>Méthodes mobilisées</h4><ul>${m.map(x => `<li>${x}</li>`).join('')}</ul></div>
+        <div class="card good"><h4>Livrables</h4><ul>${out.map(x => `<li>${x}</li>`).join('')}</ul></div>`;
     }
     choose(box, 'button', 'i', render);
     render(0);

@@ -363,6 +363,12 @@
   .funnel-detail .card { min-height: 230px; }
   .funnel-detail h4 { font-family: var(--font-mono); font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); font-weight: 500; }
 
+  .card.blue { background: var(--blue-soft); border-color: color-mix(in oklch, var(--blue) 30%, transparent); }
+  .card.blue li::before { background: var(--blue); }
+  .divider-line { display: flex; align-items: center; gap: 16px; font-family: var(--font-mono); font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); }
+  .divider-line::before, .divider-line::after { content: ''; flex: 1; height: 1px; background: var(--border-strong); }
+  .divider-line::before { flex: 0 0 40px; }
+  .principles .card { background: var(--surface-3); border-color: var(--border-strong); }
   /* ---------- Scorer ---------- */
   .scorer { display: grid; grid-template-columns: 1fr 560px; gap: 30px; flex: 1; min-height: 0; }
   .sc-sliders { display: flex; flex-direction: column; gap: 13px; }
@@ -1119,8 +1125,9 @@
     <button data-i="4"><span class="n">05</span><span class="t">Industrialiser ou arrêter</span></button>
   </div>
   <div class="funnel-detail r" id="funnel-detail"></div>
-  <div class="grid-3 r">
-    <div class="card accent"><h3>Toujours comparer</h3><span>Chaque cas est confronté à l'option la plus simple : règle, requête, workflow. L'agent doit gagner la comparaison.</span></div>
+  <div class="divider-line r"><span>Principes valables à chaque étape</span></div>
+  <div class="grid-3 principles r">
+    <div class="card"><h3>Toujours comparer</h3><span>Chaque cas est confronté à l'option la plus simple : règle, requête, workflow. L'agent doit gagner la comparaison.</span></div>
     <div class="card"><h3>Raisonner par domaine</h3><span>Les tâches retenues sont regroupées par domaine pour repenser le flux, pas pour empiler des agents.</span></div>
     <div class="card"><h3>Pas de critère d'arrêt, pas de projet</h3><span>Un cas sans valeur attendue ni critère d'abandon écrits n'entre pas dans le portefeuille.</span></div>
   </div>
