@@ -266,18 +266,26 @@
 
   /* ---------- Org before/after ---------- */
   .org { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
-  .org-pane { border-radius: 18px; padding: 26px; display: flex; flex-direction: column; gap: 16px; border: 1px solid var(--border); transition: all .4s var(--ease); }
+  .org-pane { border-radius: 18px; padding: 22px 24px; display: flex; flex-direction: column; gap: 16px; border: 1px solid var(--border); transition: all .4s var(--ease); }
   .org-pane.before { background: var(--surface-2); }
   .org-pane.after { background: var(--accent-soft); border-color: var(--accent-border); }
   .chain { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; }
   .chain span { padding: 10px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border-strong); font-size: 15px; white-space: nowrap; }
   .chain i { color: var(--text-3); font-style: normal; }
-  .squad { display: grid; grid-template-columns: 200px 1fr; gap: 16px; align-items: center; }
+  .squad { display: grid; grid-template-columns: 172px 104px 1fr; gap: 0; align-items: center; }
+  .squad .lbl { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--accent-text); }
   .squad .humans { display: flex; flex-direction: column; gap: 8px; }
-  .squad .humans span { padding: 9px 12px; border-radius: 10px; background: var(--ink); color: var(--on-ink); font-size: 14.5px; }
-  .fleet { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
-  .fleet i { aspect-ratio: 1; border-radius: 10px; background: var(--surface); border: 1px solid var(--accent-border); display: grid; place-items: center; font-style: normal; font-family: var(--font-mono); font-size: 11px; color: var(--accent-text); animation: bob 3s ease-in-out infinite; }
-  .fleet i:nth-child(3n) { animation-delay: .6s; } .fleet i:nth-child(3n+1) { animation-delay: 1.2s; }
+  .squad .humans span:not(.lbl) { padding: 8px 12px; border-radius: 10px; background: var(--ink); color: var(--on-ink); font-size: 14.5px; }
+  .squad .links { display: flex; flex-direction: column; gap: 18px; padding: 0 8px; font-family: var(--font-mono); font-size: 11px; line-height: 1.3; color: var(--text-2); }
+  .squad .links span { display: flex; flex-direction: column; gap: 2px; }
+  .squad .links .down { align-items: flex-end; text-align: right; }
+  .squad .links .up { align-items: flex-start; }
+  .squad .links b { font-size: 28px; line-height: 1; color: var(--accent); font-weight: 400; }
+  .fleet { border: 1.5px dashed var(--accent-border); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: color-mix(in oklch, var(--surface) 55%, transparent); }
+  .fleet .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+  .fleet i { font-style: normal; padding: 7px 8px 7px 24px; border-radius: 9px; background: var(--surface); border: 1px solid var(--accent-border); font-size: 13px; line-height: 1.25; color: var(--text); position: relative; }
+  .fleet i::before { content: ''; position: absolute; left: 10px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: var(--good); animation: pulse 1.8s infinite; }
+  .fleet i:nth-child(2n)::before { animation-delay: .5s; } .fleet i:nth-child(3n)::before { animation-delay: 1s; }
   @keyframes bob { 50% { transform: translateY(-4px); } }
   .org-pane .list { font-size: 17px; color: var(--text-2); }
 
@@ -928,10 +936,10 @@
   <h2 class="r">L'IA est un <em>amplificateur</em> : elle accélère ce qui marche et expose ce qui ne marche pas.</h2>
   <div class="row fill r" style="gap:40px;align-items:center">
     <div class="col" style="width:620px">
-      <svg viewBox="0 0 620 300" width="620" height="300" role="img" aria-label="Répartition 10-20-70 de l'effort">
+      <svg viewBox="0 0 620 280" width="620" height="280" role="img" aria-label="Répartition 10-20-70 de l'effort">
         <g id="b1027"></g>
       </svg>
-      <p class="small">Règle 10-20-70 de BCG : là où se joue la valeur de l'IA.</p>
+      <div class="card accent" style="font-size:17px;gap:6px"><strong style="color:var(--text)">La règle 10-20-70 (BCG)</strong><span>Dans les entreprises qui tirent le plus de valeur de l'IA, l'effort se répartit ainsi : <b>10 %</b> sur les algorithmes, <b>20 %</b> sur la technologie et les données, et <b>70 %</b> sur les personnes et les processus : refonte du travail, compétences, conduite du changement. Le modèle n'est qu'une petite partie du chantier.</span></div>
     </div>
     <div class="col grow">
       <div class="card"><h3>DORA 2025 : sept capacités qui amplifient l'IA</h3><ul>
@@ -952,9 +960,9 @@
   <aside class="notes"><p>C'est la charnière de la présentation : les chapitres 1 et 2 montrent que la technologie progresse et que la valeur ne suit pas. L'explication est organisationnelle, et elle est actionnable.</p></aside>
 </section>
 
-<section class="slide" data-chapter="3 · Organisation" data-title="Ce qui change dans l'organisation">
+<section class="slide" data-chapter="3 · Organisation" data-title="Ce qui change dans l'organisation" style="gap:22px">
   <span class="kicker r"><span class="n">3.2</span> Modèle opératoire</span>
-  <h2 class="r" style="font-size:46px">D'une chaîne de transmissions à des équipes qui pilotent un résultat.</h2>
+  <h2 class="r" style="font-size:44px">D'une chaîne de relais à des équipes qui pilotent un résultat.</h2>
   <div class="org r">
     <div class="org-pane before">
       <span class="tag" style="align-self:flex-start">Aujourd'hui · organisation en relais</span>
@@ -968,8 +976,15 @@
     <div class="org-pane after">
       <span class="tag accent" style="align-self:flex-start">Cible · équipe agentique</span>
       <div class="squad">
-        <div class="humans"><span>Responsable du résultat</span><span>Expert métier</span><span>Ingénieur agents</span></div>
-        <div class="fleet"><i>doc</i><i>tri</i><i>SQL</i><i>test</i><i>code</i><i>QA</i><i>veille</i><i>CRM</i><i>mail</i><i>rapp.</i><i>KYC</i><i>éval</i></div>
+        <div class="humans"><span class="lbl">Les humains</span><span>Responsable du résultat</span><span>Expert métier</span><span>Ingénieur agents</span></div>
+        <div class="links" aria-hidden="true">
+          <span class="down">objectifs, validation<b>→</b></span>
+          <span class="up"><b>←</b>exceptions, escalades</span>
+        </div>
+        <div class="fleet">
+          <span class="lbl">Les agents · un par tâche spécialisée</span>
+          <div class="tiles"><i>Lire les documents</i><i>Trier les demandes</i><i>Interroger les données</i><i>Rédiger les réponses</i><i>Tester le code</i><i>Contrôler la conformité</i></div>
+        </div>
       </div>
       <ul class="list">
         <li>Une petite équipe humaine possède un résultat de bout en bout.</li>
@@ -979,9 +994,9 @@
     </div>
   </div>
   <div class="grid-3 r">
-    <div class="card"><h3>Pour les managers</h3><span>Du contrôle des tâches à la conception du travail : objectifs, garde-fous, arbitrages, ratio humains / agents.</span></div>
-    <div class="card"><h3>Pour les équipes</h3><span>Moins de production brute, plus de spécification, d'évaluation et de traitement des exceptions.</span></div>
-    <div class="card accent"><h3>Le signal faible</h3><span>4 % des organisations ont un plan de refonte des rôles humain-agent ; elles sont 2,4 fois plus souvent en tête (Gartner, oct. 2026).</span></div>
+    <div class="card" style="font-size:16.5px;padding:18px 22px"><h3>Pour les managers</h3><span>Du contrôle des tâches à la conception du travail : objectifs, garde-fous, arbitrages, ratio humains / agents.</span></div>
+    <div class="card" style="font-size:16.5px;padding:18px 22px"><h3>Pour les équipes</h3><span>Moins de production brute, plus de spécification, d'évaluation et de traitement des exceptions.</span></div>
+    <div class="card accent" style="font-size:16.5px;padding:18px 22px"><h3>Le signal faible</h3><span>4 % des organisations ont un plan de refonte des rôles humain-agent ; elles sont 2,4 fois plus souvent en tête (Gartner, oct. 2026).</span></div>
   </div>
   <p class="cite r">McKinsey, «&nbsp;The agentic organization: Contours of the next paradigm for the AI era&nbsp;», sept. 2025 · Gartner, 19 oct. 2026.</p>
 </section>
