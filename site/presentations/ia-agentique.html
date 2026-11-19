@@ -385,6 +385,16 @@
   .sc-warn { font-size: 15.5px; padding: 12px 14px; border-radius: 10px; background: oklch(0.8 0.12 80 / .16); color: oklch(0.88 0.09 82); display: none; }
   .sc-warn.on { display: block; }
 
+  .sc-out { cursor: pointer; position: relative; }
+  .sc-veil { display: flex; flex-direction: column; justify-content: center; gap: 22px; flex: 1; }
+  .sc-veil .q { font-family: var(--font-serif); font-size: 36px; line-height: 1.15; font-weight: 600; }
+  .sc-veil .btn { align-self: flex-start; transition: transform .2s var(--ease); }
+  .sc-out:hover .sc-veil .btn { transform: translateX(4px); }
+  .sc-result { display: none; flex-direction: column; gap: 14px; }
+  .sc-out.is-revealed { cursor: default; }
+  .sc-out.is-revealed .sc-veil { display: none; }
+  .sc-out.is-revealed .sc-result { display: flex; animation: scin .45s var(--ease); }
+  @keyframes scin { from { opacity: 0; transform: translateY(8px); } }
   /* ---------- Quadrant ---------- */
   .quad { display: grid; grid-template-columns: 700px 1fr; gap: 30px; flex: 1; align-items: center; }
   .quad-plot { position: relative; width: 700px; height: 560px; }
@@ -1135,21 +1145,26 @@
 
 <section class="slide" data-chapter="4 · Méthode" data-title="Grille de décision interactive">
   <span class="kicker r"><span class="n">4.3</span> Outil</span>
-  <div class="row r" style="justify-content:space-between;align-items:flex-end">
-    <h2 style="font-size:44px">Règle, workflow, agent… ou rien&#8239;?</h2>
-    <div class="chips" id="sc-presets"></div>
-  </div>
+  <h2 class="r" style="font-size:44px">Règle, workflow, agent… ou rien&#8239;? Quelques cas pratiques.</h2>
+  <div class="chips r" id="sc-presets"></div>
   <div class="scorer r">
     <div class="sc-sliders" id="sc-sliders"></div>
-    <div class="sc-out" id="sc-out">
-      <span class="kicker" style="color:var(--accent)">Recommandation</span>
-      <div class="sc-ladder" id="sc-ladder"><span>Ne pas automatiser</span><span>Règle / RPA / SQL</span><span>Workflow LLM</span><span>Agent supervisé</span><span>Agent autonome borné</span></div>
-      <div class="rec" id="sc-rec"></div>
-      <ul class="why" id="sc-why" style="padding-left:20px"></ul>
-      <div class="sc-warn" id="sc-warn"></div>
+    <div class="sc-out" id="sc-out" role="button" tabindex="0" aria-expanded="false" aria-controls="sc-result">
+      <div class="sc-veil">
+        <span class="kicker" style="color:var(--accent)">À vous de jouer</span>
+        <span class="q">Et vous, que recommanderiez-vous pour ce cas&#8239;?</span>
+        <span class="btn">Voir la recommandation →</span>
+      </div>
+      <div class="sc-result" id="sc-result">
+        <span class="kicker" style="color:var(--accent)">Recommandation</span>
+        <div class="sc-ladder" id="sc-ladder"><span>Ne pas automatiser</span><span>Règle / RPA / SQL</span><span>Workflow LLM</span><span>Agent supervisé</span><span>Agent autonome borné</span></div>
+        <div class="rec" id="sc-rec"></div>
+        <ul class="why" id="sc-why" style="padding-left:20px"></ul>
+        <div class="sc-warn" id="sc-warn"></div>
+      </div>
     </div>
   </div>
-  <aside class="notes"><p>Choisir un exemple en haut, puis bouger les curseurs pour montrer comment la recommandation change. C'est une grille de discussion, pas un oracle : elle force à expliciter le profil de la tâche.</p></aside>
+  <aside class="notes"><p>Choisir un cas en haut, faire deviner la réponse à la salle, puis cliquer la carte pour révéler la recommandation. Bouger ensuite les curseurs pour montrer comment elle change (elle se cache à nouveau quand on change de cas). C'est une grille de discussion, pas un oracle : elle force à expliciter le profil de la tâche.</p></aside>
 </section>
 
 <section class="slide" data-chapter="4 · Méthode" data-title="Désir et capacité">
@@ -1176,16 +1191,17 @@
 
 <section class="slide" data-chapter="4 · Méthode" data-title="La fiche cas d'usage">
   <span class="kicker r"><span class="n">4.5</span> Gouvernance du portefeuille</span>
-  <h2 class="r" style="font-size:46px">Une fiche par cas d'usage, signée avant de commencer.</h2>
+  <h2 class="r" style="font-size:44px">Chaque cas d'usage a sa fiche : le problème, la conception et la preuve attendue, validés <em>avant</em> de lancer quoi que ce soit.</h2>
   <div class="grid-3 r">
     <div class="card"><h3>1 · Le problème</h3><ul><li>Irritant chiffré et référence de départ</li><li>Propriétaire métier nommé</li><li>Volume et fréquence</li><li>Option la plus simple envisagée</li></ul></div>
     <div class="card"><h3>2 · La conception</h3><ul><li>Niveau d'autonomie visé (0 à 5)</li><li>Systèmes et données nécessaires, droits</li><li>Points de contrôle humain</li><li>Analyse de la triade dangereuse</li></ul></div>
     <div class="card"><h3>3 · La preuve</h3><ul><li>Jeu d'évaluation et seuil d'acceptation</li><li>Indicateur de valeur (pas d'usage)</li><li>Budget de coûts de fonctionnement</li><li>Critère d'arrêt et date de décision</li></ul></div>
   </div>
+  <div class="divider-line r"><span>Pourquoi cette discipline paie</span></div>
   <div class="grid-3 r">
-    <div class="stat"><b class="acc">2,3×</b><span>plus de chances d'être en tête avec des règles de passage en production.</span><span class="cite">Gartner, oct. 2026</span></div>
-    <div class="stat"><b class="acc">2,6×</b><span>avec des règles d'abandon des cas sans valeur.</span><span class="cite">Gartner, oct. 2026</span></div>
-    <div class="stat"><b class="acc">5×</b><span>plus de ROI établi quand les coûts de fonctionnement sont visibles (15 % contre 3 %).</span><span class="cite">KPMG Global, Q2 2026</span></div>
+    <div class="stat"><b class="acc">2,3×</b><span>plus de chances d'être parmi les organisations en tête quand des règles encadrent le passage d'un pilote en production.</span><span class="cite">Gartner, oct. 2026</span></div>
+    <div class="stat"><b class="acc">2,6×</b><span>plus de chances d'être parmi les organisations en tête quand des règles prévoient l'arrêt des cas d'usage qui ne créent pas de valeur.</span><span class="cite">Gartner, oct. 2026</span></div>
+    <div class="stat"><b class="acc">5×</b><span>plus d'entreprises avec un ROI établi quand elles suivent les coûts de fonctionnement de l'IA (15 % contre 3 %).</span><span class="cite">KPMG Global, Q2 2026</span></div>
   </div>
   <div class="card r" style="flex-direction:row;align-items:center;gap:20px;font-size:18px"><span class="tag accent">Go / no-go</span><span>La fiche tient sur une page. Elle devient le contrat entre le métier, l'IT, les risques et la conformité, et sert de base à la décision de passage en production ou d'arrêt.</span></div>
 </section>

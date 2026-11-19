@@ -594,12 +594,18 @@
       $('#sc-why').innerHTML = d.why.map(w => `<li>${w}</li>`).join('');
       const w = $('#sc-warn'); w.textContent = d.warn; w.classList.toggle('on', !!d.warn);
     }
+    const out = $('#sc-out');
+    const reveal = on => { out.classList.toggle('is-revealed', on); out.setAttribute('aria-expanded', on); };
+    out.addEventListener('click', () => reveal(true));
+    out.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); reveal(true); } });
+    onEnter(out, () => reveal(false));
     sl.addEventListener('input', e => { v[e.target.dataset.k] = Number(e.target.value); $$('#sc-presets .chip').forEach(c => c.classList.remove('is-on')); render(); });
     $('#sc-presets').addEventListener('click', e => {
       const b = e.target.closest('.chip'); if (!b) return;
       Object.assign(v, presets[b.dataset.p]);
       $$('#sc-presets .chip').forEach(c => c.classList.toggle('is-on', c === b));
       $$('input', sl).forEach(i => (i.value = v[i.dataset.k]));
+      reveal(false);
       render();
     });
     render();
