@@ -32,7 +32,7 @@
   .sidebar h1 { font-family: var(--font-serif); font-size: 26px; font-weight: 500; line-height: 1.15; letter-spacing: -0.015em; }
   .sidebar .intro p { margin-top: 6px; }
   .sidebar p, .inspector p, .hint { font-size: 12.5px; line-height: 1.55; color: var(--text-3); }
-  .panel { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--border-soft); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-sm); }
+  .panel { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-sm); }
   .panel h2 { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
   .session-row, .toolbar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
   .session-row input { flex: 1; min-width: 0; font-family: var(--font-mono); }
@@ -45,9 +45,18 @@
   .category-chips { display: flex; gap: 4px; flex-wrap: wrap; }
   .category-chip { height: 26px; padding: 0 9px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text-3); font-size: 12px; font-weight: 500; transition: background 0.12s, border-color 0.12s, color 0.12s; }
   .category-chip:hover { color: var(--text); border-color: var(--border-strong); }
-  .category-chip.active { border-color: var(--accent-border); background: var(--accent-soft); color: var(--accent-text); }
+  .category-chip.active { border-color: var(--app); background: var(--app); color: var(--surface); }
+  .category-chip[data-category]:not([data-category="all"])::before { content: ''; display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 2px; background: var(--c); vertical-align: 0; }
+  .category-chip[data-category="fronts"] { --c: var(--blue); }
+  .category-chip[data-category="edge_access"] { --c: var(--red); }
+  .category-chip[data-category="services"] { --c: var(--green); }
+  .category-chip[data-category="integration"] { --c: var(--orange); }
+  .category-chip[data-category="data"] { --c: var(--cyan); }
+  .category-chip[data-category="platform"] { --c: var(--purple); }
+  .category-chip[data-category="external"], .category-chip[data-category="custom"] { --c: var(--slate); }
+  .category-chip.active::before { background: var(--surface) !important; }
   .template-grid { display: grid; gap: 6px; }
-  .template-card { display: grid; gap: 2px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); text-align: left; cursor: pointer; transition: border-color 0.12s, background 0.12s; }
+  .template-card { display: grid; gap: 2px; padding: 10px 12px 10px 13px; border: 1px solid var(--border); border-left: 3px solid var(--tc, var(--border-strong)); border-radius: 8px; background: var(--surface); text-align: left; cursor: pointer; transition: border-color 0.12s, background 0.12s; }
   .template-card:hover { border-color: var(--border-strong); background: var(--surface-2); }
   .template-card strong { font-size: 13.5px; font-weight: 500; color: var(--text); }
   .template-card span { font-size: 12px; line-height: 1.45; color: var(--text-3); }
@@ -70,7 +79,7 @@
     background-size: 24px 24px;
   }
   #links-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-  #link-label-layer { position: absolute; inset: 0; pointer-events: none; }
+  #link-label-layer { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
   #canvas { position: absolute; inset: 0; pointer-events: none; }
   .empty-state { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 32px; text-align: center; font-size: 14px; line-height: 1.6; color: var(--text-3); pointer-events: none; }
 
@@ -78,9 +87,10 @@
   .node {
     --cat: var(--slate);
     position: absolute; display: grid; gap: 6px; width: 190px; min-height: 116px; padding: 12px;
-    border: 1px solid color-mix(in oklch, var(--cat) 30%, var(--border));
+    border: 1px solid color-mix(in oklab, var(--cat) 40%, var(--border));
+    border-top: 4px solid var(--cat);
     border-radius: 12px;
-    background: var(--surface);
+    background: linear-gradient(180deg, color-mix(in oklab, var(--cat) 10%, var(--surface)), var(--surface) 56px);
     box-shadow: var(--shadow-sm);
     cursor: grab; user-select: none; pointer-events: auto;
     transition: box-shadow 0.15s, border-color 0.15s;
@@ -90,10 +100,10 @@
   .node.connecting { border-color: var(--success); box-shadow: 0 0 0 3px color-mix(in oklch, var(--success) 22%, transparent), var(--shadow-md); }
   .node .top, .node .label, .node .subtitle, .node .footer, .node-actions { position: relative; z-index: 1; }
   .node .top { display: grid; grid-template-columns: 30px 1fr; align-items: center; gap: 9px; }
-  .node .icon { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: color-mix(in oklch, var(--c, var(--cat)) 15%, var(--surface)); color: var(--c, var(--cat)); }
+  .node .icon { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: color-mix(in oklab, var(--c, var(--cat)) 15%, var(--surface)); color: var(--c, var(--cat)); }
   .node .icon svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .node .icon svg.fill-icon, .node .icon .fill-icon { fill: currentColor; stroke: none; }
-  .node .type { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.25; color: var(--text-3); }
+  .node .type { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.25; color: color-mix(in oklab, var(--cat) 75%, var(--text)); }
   .node .label { font-size: 14.5px; font-weight: 600; line-height: 1.3; color: var(--text); }
   .node .subtitle { font-size: 12px; line-height: 1.45; color: var(--text-3); }
   .node .footer { display: flex; align-items: center; justify-content: flex-end; gap: 6px; font-size: 11px; color: var(--text-3); }
@@ -173,7 +183,7 @@
   }
 </style>
 </head>
-<body data-app="Schémas & Workflows">
+<body data-app="Schémas & Workflows" data-tint="3" data-icon="flow" data-section="Schémas &amp; ateliers">
 <div class="modal-overlay hidden" id="session-modal">
   <div class="modal">
     <h2>Rejoindre une session</h2>
@@ -192,7 +202,7 @@
 
 <div class="app">
   <aside class="sidebar">
-    <div class="intro">
+    <div class="intro" data-kit-head>
       <h1>Schémas &amp; Workflows</h1>
       <p>Modélisez une petite archi ou un workflow produit en atelier PO / delivery.</p>
     </div>
@@ -744,7 +754,7 @@ function renderTemplates() {
     ? TEMPLATES
     : TEMPLATES.filter(template => template.category === state.activeCategory);
   document.getElementById('template-grid').innerHTML = visible.map(template => `
-    <button class="template-card" data-template="${template.type}">
+    <button class="template-card" data-template="${template.type}" style="--tc:${template.color};">
       <span class="template-badge" style="--c:${template.color};">${CATEGORY_LABELS[template.category]}</span>
       <strong>${template.name}</strong>
       <span>${template.desc}</span>

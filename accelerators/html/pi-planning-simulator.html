@@ -16,7 +16,7 @@
   .config-grid { grid-template-columns: 1.15fr 0.85fr; align-items: start; }
   .item-grid { grid-template-columns: 1fr 1fr; margin-top: 18px; gap: 14px; }
 
-  .panel { border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
+  .panel { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
   .panel-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 18px 20px 0; }
   .panel-header h2, .panel-header h3 { font-family: var(--font-serif); font-size: 21px; font-weight: 500; }
   .panel-header .tools { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
@@ -42,10 +42,12 @@
   .item-empty { padding: 12px; border: 1px dashed var(--border-strong); border-radius: 8px; font-size: 13px; line-height: 1.5; color: var(--text-3); }
 
   /* Indicateurs */
-  .summary-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .summary-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); overflow: hidden; }
   .summary-card { padding: 14px 18px; border-left: 1px solid var(--border-soft); }
   .summary-card:first-child { border-left: 0; }
   .summary-card .label { font-size: 12px; color: var(--text-3); }
+  .summary-card:first-child { background: var(--app-soft); }
+  .summary-card:first-child .label, .summary-card:first-child .value, .summary-card:first-child .sub { color: var(--app); }
   .summary-card .value { display: block; margin-top: 2px; font-family: var(--font-serif); font-size: 28px; font-weight: 500; line-height: 1.15; color: var(--text); }
   .summary-card .sub { display: block; margin-top: 2px; font-size: 12px; color: var(--text-3); }
 
@@ -64,7 +66,8 @@
   .toolbar .meta { font-size: 12.5px; color: var(--text-3); }
 
   /* Tableau backlog */
-  .table-wrap { overflow-x: auto; border: 1px solid var(--border-soft); border-radius: var(--radius); }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
+  thead th { background: var(--surface-2); border-bottom-color: var(--border); }
   table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
   th, td { padding: 7px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
   th { padding: 10px; text-align: left; white-space: nowrap; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
@@ -79,28 +82,38 @@
 
   /* Pastilles */
   .chip { display: inline-flex; align-items: center; height: 21px; padding: 0 7px; border-radius: 999px; background: var(--surface-3); color: var(--text-2); font-size: 11.5px; font-weight: 500; white-space: nowrap; }
-  .chip.must { background: var(--danger-soft); color: var(--danger); }
-  .chip.should { background: var(--warn-soft); color: var(--warn-text); }
+  .chip.must { background: var(--danger-soft); color: var(--danger-text); font-weight: 600; }
+  .chip.should { background: var(--warn-soft); color: var(--warn-text); font-weight: 600; }
+  .chip.sp { background: var(--app-soft); color: var(--app); font-family: var(--font-mono); font-weight: 600; }
+  .chip.squad { background: transparent; border: 1px solid var(--border); }
+  .chip.squad::before { content: ''; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: var(--sq); }
   .chip.ip { background: var(--t4-bg); color: var(--t4-fg); }
 
   /* Board */
   .board-grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; align-items: start; }
-  .lane { display: flex; flex-direction: column; min-height: 260px; border: 1px solid var(--border-soft); border-radius: var(--radius); background: var(--surface-2); }
-  .lane.ip-lane { background: color-mix(in oklch, var(--t4-bg) 45%, var(--surface-2)); }
-  .lane-header { padding: 12px 12px 10px; }
+  .lane { display: flex; flex-direction: column; min-height: 260px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); overflow: hidden; }
+  .lane-header { padding: 12px 12px 10px; border-top: 3px solid var(--app); background: var(--surface); border-bottom: 1px solid var(--border-soft); }
+  .lane.backlog-lane .lane-header { border-top-color: var(--text-4); }
+  .lane.ip-lane .lane-header { border-top-color: var(--t4-fg); background: var(--t4-bg); }
+  .lane.ip-lane .lane-title { color: var(--t4-fg); }
+  .lane.is-over .lane-header { border-top-color: var(--danger); }
+  .lane-body { padding-top: 8px !important; }
   .lane-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
   .lane-title { font-size: 14px; font-weight: 600; }
   .lane-stats { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); }
   .lane-capacity { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-sans); }
   .lane-capacity input { width: 58px; height: 26px; padding: 0 6px; font-family: var(--font-mono); font-size: 12px; }
   .lane-progress { height: 4px; margin-top: 8px; border-radius: 2px; background: var(--surface-3); overflow: hidden; }
-  .lane-progress-bar { height: 100%; background: var(--accent); }
+  .lane-progress { height: 6px !important; border-radius: 3px !important; }
+  .lane-progress-bar { height: 100%; border-radius: inherit; background: var(--success); }
+  .lane-progress-bar.near { background: var(--warn); }
   .lane-progress-bar.over { background: var(--danger); }
+  .lane-stats .used.over { color: var(--danger-text); font-weight: 600; }
   .lane-body { display: grid; gap: 8px; min-height: 180px; padding: 2px 8px 8px; }
   .lane-drop { display: grid; gap: 8px; min-height: 36px; border: 1px dashed transparent; border-radius: 9px; }
   .lane.drag-over .lane-drop { border-color: var(--accent); background: var(--accent-soft); }
 
-  .story-card { display: grid; gap: 7px; padding: 10px 12px; border: 1px solid var(--border-soft); border-radius: 9px; background: var(--surface); box-shadow: var(--shadow-sm); cursor: grab; }
+  .story-card { display: grid; gap: 7px; padding: 10px 12px; border: 1px solid var(--border); border-left: 3px solid var(--prio, var(--border-strong)); border-radius: 9px; background: var(--surface); box-shadow: var(--shadow-sm); cursor: grab; }
   .story-card:active { cursor: grabbing; }
   .story-card .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
   .story-card h4 { font-size: 13.5px; font-weight: 500; line-height: 1.4; }
@@ -124,7 +137,7 @@
   }
 </style>
 </head>
-<body data-app="PI Planning Simulator">
+<body data-app="PI Planning Simulator" data-tint="2" data-icon="board" data-section="Planification &amp; facilitation">
 <div class="page">
   <div class="header">
     <div class="kit-head">
@@ -490,7 +503,7 @@ function renderBacklog() {
         </select>
       </td>
       <td><input type="text" data-field="squad" value="${escapeHtml(story.squad)}"></td>
-      <td><input type="text" data-field="dependsOn" value="${escapeHtml(story.dependsOn)}" placeholder="US-1, US-3"></td>
+      <td><input type="text" data-field="dependsOn" value="${escapeHtml(story.dependsOn)}" placeholder="ex. US-1"></td>
       <td>
         <select data-field="sprint">
           <option value="">Backlog</option>
@@ -518,9 +531,10 @@ function renderBoard() {
     const capacity = column.isBacklog ? null : (Number(state.capacities[column.id - 1]) || 0);
     const ratio = !column.isBacklog && capacity > 0 ? Math.min((used / capacity) * 100, 100) : 0;
     const isOver = !column.isBacklog && used > capacity;
+    const isNear = !isOver && !column.isBacklog && capacity > 0 && used / capacity >= 0.85;
 
     return `
-      <section class="lane ${column.isIp ? 'ip-lane' : ''}" data-drop-sprint="${column.isBacklog ? '' : column.id}">
+      <section class="lane ${column.isIp ? 'ip-lane' : ''} ${column.isBacklog ? 'backlog-lane' : ''} ${isOver ? 'is-over' : ''}" data-drop-sprint="${column.isBacklog ? '' : column.id}">
         <div class="lane-header">
           <div class="lane-top">
             <div class="lane-title">${column.title}</div>
@@ -530,10 +544,10 @@ function renderBoard() {
             <div class="lane-stats"><span>${stories.length} US non planifiées</span></div>
           ` : `
             <div class="lane-stats">
-              <span>${used} / ${capacity} pts</span>
+              <span class="used ${isOver ? 'over' : ''}">${used} / ${capacity} pts</span>
               <label class="lane-capacity">Cap. <input type="number" min="0" max="200" step="1" value="${capacity}" data-capacity-sprint="${column.id}"></label>
             </div>
-            <div class="lane-progress"><div class="lane-progress-bar ${isOver ? 'over' : ''}" style="width:${ratio}%"></div></div>
+            <div class="lane-progress"><div class="lane-progress-bar ${isOver ? 'over' : isNear ? 'near' : ''}" style="width:${ratio}%"></div></div>
           `}
         </div>
         <div class="lane-body ${dragStoryId ? 'drag-ready' : ''}">
@@ -546,17 +560,23 @@ function renderBoard() {
   }).join('');
 }
 
+function squadTone(name) {
+  const squads = [...new Set(state.stories.map(story => story.squad || 'Core'))];
+  const TONES = [5, 3, 1, 4, 6, 2];
+  return TONES[Math.max(0, squads.indexOf(name)) % TONES.length];
+}
+
 function renderStoryCard(story) {
   const deps = parseDependencies(story);
   return `
-    <article class="story-card" draggable="true" data-story-card="${story.id}">
+    <article class="story-card" draggable="true" data-story-card="${story.id}" style="--prio:${story.priority === 'Must' ? 'var(--danger)' : 'var(--warn)'}">
       <div class="top">
         <h4>${story.id} · ${escapeHtml(story.title)}</h4>
         <span class="chip ${story.priority === 'Must' ? 'must' : 'should'}">${story.priority}</span>
       </div>
       <div class="meta">
-        <span class="chip">${story.points} SP</span>
-        <span class="chip">${escapeHtml(story.squad || 'Core')}</span>
+        <span class="chip sp">${story.points} SP</span>
+        <span class="chip squad" style="--sq:var(--t${squadTone(story.squad || 'Core')}-fg)">${escapeHtml(story.squad || 'Core')}</span>
       </div>
       <div class="small ${deps.length > 0 ? 'deps' : ''}">
         <strong>Dépend de :</strong> ${deps.length > 0 ? deps.join(', ') : 'aucune'}

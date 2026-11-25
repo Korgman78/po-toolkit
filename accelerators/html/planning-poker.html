@@ -45,11 +45,14 @@
     cursor: pointer; user-select: none; box-shadow: var(--shadow-sm);
     transition: transform 0.15s var(--ease), border-color 0.12s, background 0.12s, box-shadow 0.15s;
   }
-  .poker-card:hover { border-color: var(--accent-border); transform: translateY(-2px); box-shadow: var(--shadow-md); }
-  .poker-card.selected { border-color: var(--accent); background: var(--accent); color: var(--on-accent); transform: translateY(-4px); box-shadow: var(--shadow-md); }
+  .poker-card { position: relative; border-color: var(--border-strong); }
+  .poker-card::before { content: ''; position: absolute; inset: 4px; border: 1px solid var(--border-soft); border-radius: 7px; pointer-events: none; }
+  .poker-card:hover { border-color: var(--app); color: var(--app); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .poker-card.selected { border-color: var(--app); background: var(--app); color: var(--surface); transform: translateY(-6px); box-shadow: 0 12px 24px -10px color-mix(in oklab, var(--app) 70%, transparent); }
+  .poker-card.selected::before { border-color: color-mix(in oklch, var(--surface) 35%, transparent); }
 
   /* Participants */
-  .voters-section, .results { padding: 20px 22px; border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
+  .voters-section, .results { padding: 20px 22px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
   .voters-section h2, .results h2, .history h2 { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; font-family: var(--font-serif); font-size: 21px; font-weight: 500; }
   .voters-section h2 .voter-count { font-family: var(--font-sans); font-size: 12.5px; font-weight: 400; color: var(--text-3); }
   .voter-row { display: flex; align-items: center; gap: 12px; padding: 8px 4px; border-bottom: 1px solid var(--border-soft); }
@@ -59,9 +62,10 @@
   .voter-name .me-tag { margin-left: 6px; font-size: 12px; font-weight: 400; color: var(--text-3); }
   .voter-name .owner-tag { display: inline-flex; align-items: center; height: 19px; margin-left: 6px; padding: 0 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); font-size: 11px; font-weight: 500; vertical-align: 1px; }
   .voter-vote { display: grid; place-items: center; width: 34px; height: 46px; flex-shrink: 0; border: 1px dashed var(--border-strong); border-radius: 7px; background: transparent; font-family: var(--font-serif); font-size: 18px; font-weight: 500; color: var(--text-4); transition: background 0.2s, border-color 0.2s, color 0.2s; }
-  .voter-vote.hidden-vote { border-style: solid; border-color: var(--border); background: var(--surface-3); }
-  .voter-vote.hidden-vote::after { content: ''; width: 12px; height: 12px; border-radius: 3px; background: var(--accent); opacity: 0.7; }
-  .voter-vote.revealed { border-style: solid; border-color: var(--accent-border); background: var(--accent-soft); color: var(--accent-text); }
+  .voter-vote.hidden-vote { border-style: solid; border-color: var(--app); background: repeating-linear-gradient(135deg, var(--app) 0 4px, color-mix(in oklab, var(--app) 75%, var(--surface)) 4px 8px); }
+  .voter-vote.revealed { border-style: solid; border-color: color-mix(in oklab, var(--app) 40%, var(--border)); background: var(--app-soft); color: var(--app); font-weight: 600; }
+  .voter-status { font-size: 12px; color: var(--text-4); }
+  .voter-status.ok { color: var(--success-text); }
 
   .controls { display: flex; gap: 8px; flex-wrap: wrap; }
   .controls .spacer { flex: 1; }
@@ -72,6 +76,15 @@
   .result-stats > p { grid-column: 1 / -1; padding: 14px; color: var(--text-3); }
   .stat { padding: 14px 16px; border-left: 1px solid var(--border-soft); }
   .stat:first-child { border-left: 0; }
+  .stat.key { background: var(--app-soft); }
+  .stat.key .stat-value, .stat.key .stat-label { color: var(--app); }
+  .distribution { display: grid; gap: 6px; margin-top: 16px; }
+  .dist-row { display: grid; grid-template-columns: 34px minmax(0, 1fr) 24px; align-items: center; gap: 10px; font-size: 13px; }
+  .dist-row .v { font-family: var(--font-serif); font-size: 17px; text-align: center; }
+  .dist-row .track { height: 10px; border-radius: 5px; background: var(--surface-3); overflow: hidden; }
+  .dist-row .track span { display: block; height: 100%; border-radius: inherit; background: color-mix(in oklab, var(--app) 35%, var(--app-soft)); }
+  .dist-row.top .track span { background: var(--app); }
+  .dist-row .c { font-family: var(--font-mono); font-size: 12px; color: var(--text-3); text-align: right; }
   .stat-value { font-family: var(--font-serif); font-size: 30px; font-weight: 500; line-height: 1.1; color: var(--text); }
   .stat-label { margin-top: 2px; font-size: 12px; color: var(--text-3); }
   .consensus { margin-top: 12px; padding: 11px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; }
@@ -83,7 +96,7 @@
   .history { display: none; }
   .history-item { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--border-soft); }
   .history-item .story-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; font-size: 14px; }
-  .history-item .story-result { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-2); }
+  .history-item .story-result { padding: 3px 10px; border-radius: 999px; background: var(--app-soft); color: var(--app); font-family: var(--font-mono); font-size: 12px; }
 
 
   button:disabled, .scale-btn:disabled { opacity: 0.4; pointer-events: none; }
@@ -100,7 +113,7 @@
 <script src="ably-config.js"></script>
 <script src="ably-sync.js"></script>
 </head>
-<body data-app="Planning Poker">
+<body data-app="Planning Poker" data-tint="6" data-icon="cards" data-section="Planification &amp; facilitation">
 
 <!-- Pseudo modal -->
 <div class="modal-overlay" id="pseudo-modal">
@@ -335,6 +348,7 @@ function renderVoters() {
       <div class="voter-row ${isMe ? 'is-me' : ''}">
         <div class="voter-avatar tint-${tintOf(v.pseudo)}">${getAvatarLetter(v.pseudo)}</div>
         <span class="voter-name">${escapeHtml(v.pseudo)}${isMe ? '<span class="me-tag">(vous)</span>' : ''}${v.pseudo === sessionOwner ? '<span class="owner-tag">Animateur</span>' : ''}</span>
+        ${!revealed ? `<span class="voter-status ${hasVote ? 'ok' : ''}">${hasVote ? 'A voté' : 'En attente'}</span>` : ''}
         <div class="voter-vote ${revealed && hasVote ? 'revealed' : hasVote ? 'hidden-vote' : ''}">${voteDisplay}</div>
       </div>
     `;
@@ -379,6 +393,7 @@ function computeStatsFromNumericVotes(numericVotes) {
 // ---- Game logic ----
 function revealVotes() {
   revealed = true;
+  document.getElementById('distribution')?.remove();
   renderVoters();
 
   const numericVotes = getNumericVotesFromVoters(voters);
@@ -399,10 +414,18 @@ function revealVotes() {
 
   document.getElementById('result-stats').innerHTML = `
     <div class="stat"><div class="stat-value">${avg.toFixed(1)}</div><div class="stat-label">Moyenne</div></div>
-    <div class="stat"><div class="stat-value">${median}</div><div class="stat-label">Médiane</div></div>
+    <div class="stat key"><div class="stat-value">${median}</div><div class="stat-label">Médiane</div></div>
     <div class="stat"><div class="stat-value">${min}</div><div class="stat-label">Min</div></div>
     <div class="stat"><div class="stat-value">${max}</div><div class="stat-label">Max</div></div>
   `;
+
+  const counts = {};
+  voters.forEach(v => { if (v.vote !== null && v.vote !== undefined) counts[v.vote] = (counts[v.vote] || 0) + 1; });
+  const order = scales[currentScale];
+  const entries = Object.entries(counts).sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0]));
+  const maxCount = Math.max(...entries.map(e => e[1]));
+  document.getElementById('result-stats').insertAdjacentHTML('afterend', `<div class="distribution" id="distribution">${entries.map(([v, c]) =>
+    `<div class="dist-row ${c === maxCount ? 'top' : ''}"><span class="v">${escapeHtml(v)}</span><span class="track"><span style="width:${Math.round(c / maxCount * 100)}%"></span></span><span class="c">${c}</span></div>`).join('')}</div>`);
 
   const spread = stats.spread;
   const consensus = document.getElementById('consensus');

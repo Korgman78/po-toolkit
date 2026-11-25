@@ -17,9 +17,9 @@
   .method-list { display: flex; flex-direction: column; gap: 1px; margin: 0; padding: 0; list-style: none; }
   .method-item { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border-radius: var(--radius-sm); font-size: 13.5px; color: var(--text-2); cursor: pointer; transition: background 0.12s, color 0.12s; }
   .method-item:hover { background: var(--surface-2); color: var(--text); }
-  .method-item.active { background: var(--surface); color: var(--text); font-weight: 500; box-shadow: var(--shadow-sm); }
+  .method-item.active { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: var(--shadow-sm), inset 3px 0 0 var(--app); }
   .method-item .method-abbr { display: grid; place-items: center; width: 24px; height: 20px; border-radius: 5px; background: var(--surface-3); font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--text-3); }
-  .method-item.active .method-abbr { background: var(--accent-soft); color: var(--accent-text); }
+  .method-item.active .method-abbr { background: var(--app); color: var(--surface); }
   .method-info { margin-top: 20px; padding: 16px; border: 1px solid var(--border-soft); border-radius: var(--radius); background: var(--surface); }
   .method-info h3 { margin-bottom: 6px; font-size: 13.5px; font-weight: 600; }
   .method-info p { font-size: 12.5px; line-height: 1.55; color: var(--text-2); }
@@ -35,28 +35,32 @@
   .file-btn input { display: none; }
 
   /* Critères */
-  .criteria-bar { margin-bottom: 16px; padding: 16px 18px; border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
+  .criteria-bar { margin-bottom: 16px; padding: 16px 18px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
   .criteria-bar h3 { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; font-size: 14px; font-weight: 600; }
   .criteria-bar h3 .hint { font-size: 12.5px; font-weight: 400; color: var(--text-3); }
   .criteria-list { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-  .crit-group { width: 100%; margin: 6px 0 0; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+  .crit-group { width: 100%; margin: 6px 0 0; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--app); }
   .crit-group:first-child { margin-top: 0; }
-  .criterion-tag { display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 4px 0 11px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); font-size: 13px; }
+  .criterion-tag { display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 4px 0 11px; border: 1px solid color-mix(in oklab, var(--app) 25%, var(--border)); border-radius: 7px; background: var(--app-soft); font-size: 13px; }
+  .criterion-tag .crit-name { color: var(--app); }
   .criterion-tag .crit-name { font-weight: 500; color: var(--text); }
   .criterion-tag .crit-x { font-size: 11px; color: var(--text-4); }
   .criterion-tag input[type="number"] { width: 50px; height: 24px; padding: 0 4px; border-radius: 5px; font-family: var(--font-mono); font-size: 12px; text-align: center; }
   .criterion-tag .remove-crit { display: grid; place-items: center; width: 22px; height: 22px; padding: 0; border: 0; border-radius: 5px; background: none; color: var(--text-4); font-size: 14px; cursor: pointer; }
   .criterion-tag .remove-crit:hover { background: var(--danger-soft); color: var(--danger); }
-  .criterion-tag.custom { border-style: dashed; border-color: var(--border-strong); }
+  .criterion-tag.custom { border-style: dashed; border-color: var(--border-strong); background: var(--surface); }
+  .criterion-tag.custom .crit-name { color: var(--text); }
   .add-criterion { display: flex; gap: 6px; align-items: center; }
   .add-criterion.full { width: 100%; margin-top: 6px; }
   .add-criterion input { width: 240px; height: 32px; padding: 0 10px; font-size: 13px; }
 
   /* Tableau */
-  .table-wrap { overflow-x: auto; border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
   table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-  th { padding: 10px 12px; border-bottom: 1px solid var(--border-soft); text-align: left; white-space: nowrap; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+  thead th { background: var(--surface-2); }
+  th { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
   th.score-col, th.rank-col { text-align: center; }
+  th.score-col { background: var(--app-soft); color: var(--app); }
   th.id-col, th.act-col { width: 44px; }
   th.name-col { min-width: 220px; }
   td { padding: 7px 12px; border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
@@ -69,29 +73,36 @@
   td input[type="number"], td select { width: 100%; min-width: 80px; height: 32px; padding: 0 8px; font-size: 13px; }
   td input[type="number"] { font-family: var(--font-mono); }
   td select { cursor: pointer; }
-  .score-cell { text-align: center; font-family: var(--font-mono); font-size: 14px; font-weight: 500; color: var(--text); font-variant-numeric: tabular-nums; }
+  .score-cell { text-align: center; background: color-mix(in oklch, var(--app-soft) 55%, transparent); font-family: var(--font-mono); font-size: 14px; font-weight: 600; color: var(--app); font-variant-numeric: tabular-nums; }
   .rank-cell { text-align: center; color: var(--text-4); }
   .rank-badge { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font-family: var(--font-mono); font-size: 12px; font-weight: 500; }
-  .rank-1 { background: var(--accent); color: var(--on-accent); }
-  .rank-2, .rank-3 { background: var(--accent-soft); color: var(--accent-text); }
+  .rank-1 { background: var(--app); color: var(--surface); }
+  .rank-2 { background: color-mix(in oklab, var(--app) 55%, var(--surface)); color: var(--surface); }
+  .rank-3 { background: var(--app-soft); color: var(--app); }
   .rank-other { background: var(--surface-3); color: var(--text-3); }
   .delete-row { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--text-4); cursor: pointer; }
   .delete-row:hover { background: var(--danger-soft); color: var(--danger); }
   .add-row { margin-top: 10px; }
 
   /* Classement */
-  .results-panel { margin-top: 20px; border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .results-panel { margin-top: 20px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); overflow: hidden; }
   .results-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 8px; }
   .results-header h3 { font-family: var(--font-serif); font-size: 21px; font-weight: 500; }
   .ranking-list { padding: 4px 8px 10px; }
   .ranking-item { display: flex; align-items: center; gap: 14px; padding: 9px 10px; border-radius: 8px; }
   .ranking-item:hover { background: var(--surface-2); }
   .ranking-item .rank { min-width: 28px; font-family: var(--font-mono); font-size: 12.5px; color: var(--text-4); }
-  .ranking-item .rank.gold { color: var(--accent-text); font-weight: 500; }
+  .ranking-item .rank.gold, .ranking-item .rank.silver, .ranking-item .rank.bronze { color: var(--app); font-weight: 600; }
+  .ranking-item.podium .item-name { font-weight: 600; }
+  .ranking-item.first { background: var(--app-soft); }
+  .ranking-item.first:hover { background: var(--app-soft); }
+  .ranking-item.first .ranking-bar { background: color-mix(in oklch, var(--surface) 70%, transparent); }
   .ranking-item .item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
-  .ranking-item .item-score { min-width: 48px; text-align: right; font-family: var(--font-mono); font-size: 13px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .ranking-item .item-score { min-width: 84px; text-align: right; font-family: var(--font-mono); font-size: 13px; color: var(--text); font-variant-numeric: tabular-nums; }
   .ranking-bar { flex: 1; max-width: 220px; height: 6px; border-radius: 3px; background: var(--surface-3); overflow: hidden; }
-  .ranking-bar-fill { height: 100%; border-radius: inherit; background: var(--accent); transition: width 0.4s var(--ease); }
+  .ranking-bar-fill { height: 100%; border-radius: inherit; background: color-mix(in oklab, var(--app) 30%, var(--app-soft)); transition: width 0.4s var(--ease); }
+  .podium .ranking-bar-fill { background: color-mix(in oklab, var(--app) 65%, var(--app-soft)); }
+  .first .ranking-bar-fill { background: var(--app); }
 
   /* Export */
   .export-modal { position: fixed; inset: 0; z-index: 1000; display: none; align-items: center; justify-content: center; padding: 16px; background: var(--overlay); }
@@ -120,11 +131,13 @@
   }
 </style>
 </head>
-<body data-app="Calculateur de priorisation">
+<body data-app="Calculateur de priorisation" data-tint="5" data-icon="list" data-section="Cadrage &amp; priorisation">
 <div class="app">
   <aside class="sidebar">
+    <div data-kit-head>
     <h1>Priorisation</h1>
     <p class="subtitle">Comparez et classez votre backlog.</p>
+    </div>
 
     <ul class="method-list" id="method-list"></ul>
 
@@ -414,6 +427,10 @@ function loadState() {
   }
 }
 
+function fmtScore(n) {
+  return Number(n).toLocaleString('fr-FR', { maximumFractionDigits: Math.abs(n) >= 100 ? 0 : 1 });
+}
+
 // ===============================
 // RENDER: Sidebar
 // ===============================
@@ -532,7 +549,7 @@ function renderTable() {
 
     const scoreDisplay = item.score !== undefined ? (m.isCategorical ?
       ['','Won\'t','Could','Should','Must'][Math.round(item.score)] || item.score.toFixed(1) :
-      item.score.toFixed(1)) : '-';
+      fmtScore(item.score)) : '-';
 
     const rankClass = item.rank === 1 ? 'rank-1' : item.rank === 2 ? 'rank-2' : item.rank === 3 ? 'rank-3' : 'rank-other';
 
@@ -569,9 +586,9 @@ function renderResults() {
     const item = scored[i];
     const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
     const pct = maxScore > 0 ? (item.score / maxScore * 100) : 0;
-    const display = m.isCategorical ? ['','Won\'t','Could','Should','Must'][Math.round(item.score)] || item.score.toFixed(1) : item.score.toFixed(1);
+    const display = m.isCategorical ? ['','Won\'t','Could','Should','Must'][Math.round(item.score)] || item.score.toFixed(1) : fmtScore(item.score);
 
-    html += `<div class="ranking-item">
+    html += `<div class="ranking-item ${i < 3 ? 'podium' : ''} ${i === 0 ? 'first' : ''}">
       <span class="rank ${rankClass}">${String(i + 1).padStart(2, '0')}</span>
       <span class="item-name">${item.name || 'Sans nom'}</span>
       <div class="ranking-bar"><div class="ranking-bar-fill" style="width:${pct}%"></div></div>

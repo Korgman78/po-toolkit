@@ -18,6 +18,7 @@
   .tab { height: 30px; padding: 0 14px; border: 0; border-radius: 6px; background: transparent; color: var(--text-3); font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.12s, color 0.12s; }
   .tab:hover { color: var(--text); }
   .tab.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
+  .tab.active::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 7px; border-radius: 50%; background: var(--app); vertical-align: 1px; }
 
   .panels { flex: 1; display: flex; flex-direction: column; }
   .panel { flex: 1; display: none; flex-direction: column; gap: 14px; }
@@ -44,23 +45,34 @@
   textarea.valid { border-color: color-mix(in oklch, var(--success) 60%, var(--border)); }
   textarea.invalid { border-color: color-mix(in oklch, var(--danger) 60%, var(--border)); }
   .output-area { overflow: auto; white-space: pre-wrap; word-break: break-all; background: var(--surface-2); border-color: var(--border); }
+  .output-area.is-valid { border-color: color-mix(in oklch, var(--success) 45%, var(--border)); }
+  .output-area.is-error { border-color: color-mix(in oklch, var(--danger) 45%, var(--border)); background: color-mix(in oklch, var(--danger-soft) 60%, var(--surface)); }
+  .tok-key { color: var(--t5-fg); }
+  .tok-str { color: var(--t3-fg); }
+  .tok-num { color: var(--t1-fg); }
+  .tok-bool { color: var(--t6-fg); font-weight: 500; }
+  .tok-null { color: var(--text-3); font-style: italic; }
   .output-area .err { color: var(--danger); }
   .output-area .hint { color: var(--text-3); }
 
-  .status-bar { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .status-bar { display: flex; align-items: center; gap: 9px; padding: 9px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 13px; font-weight: 500; }
+  .status-bar:has(.status-dot.ok) { border-color: transparent; background: var(--success-soft); }
+  .status-bar:has(.status-dot.err) { border-color: transparent; background: var(--danger-soft); }
   .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
   .status-dot.ok { background: var(--success); }
   .status-dot.err { background: var(--danger); }
   .status-dot.idle { background: var(--text-4); }
   .status-text { color: var(--text-3); }
-  .status-text.ok { color: var(--success); }
-  .status-text.err { color: var(--danger); }
+  .status-text.ok { color: var(--success-text); }
+  .status-text.err { color: var(--danger-text); }
 
   .json-stats { display: flex; gap: 14px; font-family: var(--font-mono); font-size: 11.5px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--text-3); }
-  .json-stats strong { color: var(--text); font-weight: 500; }
+  .json-stats { gap: 6px; }
+  .json-stats span { padding: 2px 8px; border-radius: 999px; background: var(--surface-3); color: var(--text-2); }
+  .json-stats strong { color: var(--app); font-weight: 600; }
 
   /* Générateur d'UUID */
-  .uuid-section { padding: 22px 24px; border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
+  .uuid-section { padding: 22px 24px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
   .uuid-section h3 { font-family: var(--font-serif); font-size: 21px; font-weight: 500; margin-bottom: 16px; }
   .uuid-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
   .uuid-controls label { font-size: 13px; color: var(--text-3); margin-left: 6px; }
@@ -72,6 +84,8 @@
   .uuid-display { max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); font-family: var(--font-mono); font-size: 13.5px; }
   .uuid-line { display: flex; align-items: center; gap: 12px; padding: 7px 8px 7px 16px; border-bottom: 1px solid var(--border-soft); }
   .uuid-line:last-child { border-bottom: 0; }
+  .uuid-line:nth-child(even) { background: color-mix(in oklch, var(--surface) 55%, transparent); }
+  .uuid-line .n { width: 22px; font-size: 11px; color: var(--text-4); }
   .uuid-line .uuid-text { flex: 1; color: var(--text); letter-spacing: 0.01em; user-select: all; }
   .uuid-line .copy-one { height: 26px; padding: 0 9px; border: 0; border-radius: 5px; background: none; color: var(--text-3); font-family: var(--font-sans); font-size: 12px; cursor: pointer; }
   .uuid-line .copy-one:hover { background: var(--surface-3); color: var(--text); }
@@ -80,6 +94,8 @@
   .uuid-analysis { font-size: 13.5px; color: var(--text-3); }
   .uuid-analysis .grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 20px; }
   .uuid-analysis strong { color: var(--text); font-weight: 500; }
+  .uuid-analysis .grid { padding: 14px 16px; border-radius: var(--radius); background: var(--app-soft); }
+  .uuid-analysis .grid > span { color: var(--app); font-weight: 500; }
   .uuid-analysis .mono { font-family: var(--font-mono); }
   .uuid-analysis .err { color: var(--danger); }
 
@@ -90,7 +106,7 @@
   }
 </style>
 </head>
-<body data-app="JSON & UUID Tools">
+<body data-app="JSON & UUID Tools" data-tint="5" data-icon="braces" data-section="Utilitaires">
 <main class="page">
 <div class="header">
   <div class="kit-head">
@@ -238,10 +254,11 @@ function validateJSON() {
   try {
     const parsed = JSON.parse(raw);
     const formatted = JSON.stringify(parsed, null, getIndent());
-    document.getElementById('json-output').textContent = formatted;
+    showOutput(formatted);
     updateStats(parsed, formatted);
     setStatus('ok', 'JSON valide — formaté avec succès');
   } catch (e) {
+    document.getElementById('json-output').className = 'output-area is-error';
     document.getElementById('json-output').innerHTML = `<span class="err">Erreur de syntaxe :\n\n${escapeHtml(e.message)}</span>\n\n<span class="hint">Vérifiez :\n• Virgules manquantes ou en trop\n• Guillemets doubles (pas simples)\n• Accolades/crochets non fermés\n• Trailing commas</span>`;
     setStatus('err', e.message);
   }
@@ -254,7 +271,7 @@ function formatJSON() {
     const parsed = JSON.parse(raw);
     const formatted = JSON.stringify(parsed, null, getIndent());
     document.getElementById('json-input').value = formatted;
-    document.getElementById('json-output').textContent = formatted;
+    showOutput(formatted);
     updateStats(parsed, formatted);
     setStatus('ok', 'JSON formaté (pretty print)');
   } catch (e) {
@@ -269,7 +286,7 @@ function minifyJSON() {
     const parsed = JSON.parse(raw);
     const minified = JSON.stringify(parsed);
     document.getElementById('json-input').value = minified;
-    document.getElementById('json-output').textContent = minified;
+    showOutput(minified);
     updateStats(parsed, minified);
     setStatus('ok', `JSON minifié — ${minified.length} caractères`);
   } catch (e) {
@@ -285,7 +302,7 @@ function sortKeys() {
     const sorted = sortObject(parsed);
     const formatted = JSON.stringify(sorted, null, getIndent());
     document.getElementById('json-input').value = formatted;
-    document.getElementById('json-output').textContent = formatted;
+    showOutput(formatted);
     updateStats(sorted, formatted);
     setStatus('ok', 'Clés triées alphabétiquement');
   } catch (e) {
@@ -329,6 +346,7 @@ function copyOutput() {
 
 function clearJSON() {
   document.getElementById('json-input').value = '';
+  document.getElementById('json-output').className = 'output-area';
   document.getElementById('json-output').innerHTML = '<span class="hint">Le résultat formaté apparaîtra ici.</span>';
   document.getElementById('json-input').classList.remove('valid', 'invalid');
   document.getElementById('json-stats').innerHTML = '';
@@ -344,6 +362,21 @@ async function pasteJSON() {
   } catch(e) {
     setStatus('err', 'Impossible de lire le presse-papiers');
   }
+}
+
+function highlightJson(text) {
+  return escapeHtml(text).replace(/("(?:\\.|[^"\\])*")(\s*:)?|\b(true|false)\b|\bnull\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g,
+    (m, str, colon, bool) => {
+      if (str) return colon ? `<span class="tok-key">${str}</span>${colon}` : `<span class="tok-str">${str}</span>`;
+      if (bool) return `<span class="tok-bool">${m}</span>`;
+      if (m === 'null') return `<span class="tok-null">${m}</span>`;
+      return `<span class="tok-num">${m}</span>`;
+    });
+}
+function showOutput(text) {
+  const out = document.getElementById('json-output');
+  out.className = 'output-area is-valid';
+  out.innerHTML = highlightJson(text);
 }
 
 function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -402,8 +435,8 @@ function generateUUIDs() {
     uuids.push(formatUUID(id, format));
   }
 
-  display.innerHTML = uuids.map(u =>
-    `<div class="uuid-line"><span class="uuid-text">${u}</span><button class="copy-one" onclick="copyOne('${u}')">Copier</button></div>`
+  display.innerHTML = uuids.map((u, i) =>
+    `<div class="uuid-line"><span class="n">${String(i + 1).padStart(2, '0')}</span><span class="uuid-text">${u}</span><button class="copy-one" onclick="copyOne('${u}')">Copier</button></div>`
   ).join('');
 
   document.getElementById('uuid-count-label').textContent = `${uuids.length} ${version === 'nano' ? 'Nano IDs' : version === 'short' ? 'Short IDs' : 'UUIDs'} générés`;
