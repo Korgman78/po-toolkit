@@ -4,137 +4,127 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Calculateur de Priorisation — PO Toolkit</title>
+<link rel="stylesheet" href="app-kit.css">
+<script src="app-kit.js"></script>
 <style>
-  :root { --accent: #6366f1; --accent2: #a855f7; --bg: #0f1117; --card: #1a1c2b; --text: #e8eaf0; --muted: #6b7089; --border: #2a2d3e; --green: #10b981; --red: #ef4444; --yellow: #f59e0b; --pink: #ec4899; }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  :root { --card: var(--surface); --muted: var(--text-3); --red: var(--danger); }
+  .app { display: flex; min-height: calc(100vh - var(--kit-bar-h)); }
 
-  .app { display: flex; min-height: 100vh; }
+  /* Barre latérale des méthodes */
+  .sidebar { position: sticky; top: var(--kit-bar-h); align-self: flex-start; width: 280px; height: calc(100vh - var(--kit-bar-h)); flex-shrink: 0; overflow-y: auto; padding: 28px 16px 24px; border-right: 1px solid var(--border); }
+  .sidebar h1 { padding: 0 8px; font-family: var(--font-serif); font-size: 26px; font-weight: 500; line-height: 1.15; }
+  .sidebar .subtitle { margin: 4px 0 20px; padding: 0 8px; font-size: 13px; color: var(--text-3); }
+  .method-list { display: flex; flex-direction: column; gap: 1px; margin: 0; padding: 0; list-style: none; }
+  .method-item { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border-radius: var(--radius-sm); font-size: 13.5px; color: var(--text-2); cursor: pointer; transition: background 0.12s, color 0.12s; }
+  .method-item:hover { background: var(--surface-2); color: var(--text); }
+  .method-item.active { background: var(--surface); color: var(--text); font-weight: 500; box-shadow: var(--shadow-sm); }
+  .method-item .method-abbr { display: grid; place-items: center; width: 24px; height: 20px; border-radius: 5px; background: var(--surface-3); font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--text-3); }
+  .method-item.active .method-abbr { background: var(--accent-soft); color: var(--accent-text); }
+  .method-info { margin-top: 20px; padding: 16px; border: 1px solid var(--border-soft); border-radius: var(--radius); background: var(--surface); }
+  .method-info h3 { margin-bottom: 6px; font-size: 13.5px; font-weight: 600; }
+  .method-info p { font-size: 12.5px; line-height: 1.55; color: var(--text-2); }
+  .method-info .formula { margin-top: 10px; padding: 8px 10px; border-radius: 6px; background: var(--surface-2); font-family: var(--font-mono); font-size: 11.5px; line-height: 1.55; color: var(--text); white-space: pre-wrap; }
+  .method-info .when { margin-top: 12px; }
+  .method-info .when strong { display: block; margin-bottom: 2px; color: var(--text); font-weight: 600; }
 
-  /* Sidebar */
-  .sidebar { width: 280px; background: var(--card); border-right: 1px solid var(--border); padding: 1.5rem; flex-shrink: 0; overflow-y: auto; }
-  .sidebar h1 { font-size: 1.28rem; margin-bottom: 0.3rem; letter-spacing: -0.03em; font-weight: 800; color: #f8fafc; }
-  .sidebar .subtitle { color: var(--muted); font-size: 0.8rem; margin-bottom: 1.5rem; }
-  .method-list { list-style: none; }
-  .method-item { padding: 0.7rem 1rem; border-radius: 10px; cursor: pointer; margin-bottom: 0.3rem; transition: all 0.2s; display: flex; align-items: center; gap: 0.6rem; font-size: 0.9rem; color: var(--muted); }
-  .method-item:hover { background: rgba(99,102,241,0.1); color: var(--text); }
-  .method-item.active { background: var(--accent); color: white; font-weight: 600; }
-  .method-item .method-icon { font-size: 1.1rem; }
-  .method-info { background: var(--bg); border-radius: 10px; padding: 1rem; margin-top: 1.5rem; }
-  .method-info h3 { font-size: 0.9rem; margin-bottom: 0.5rem; color: #f8fafc; font-weight: 800; }
-  .method-info p { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
-  .method-info .formula { font-family: 'Courier New', monospace; background: var(--card); padding: 0.5rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.75rem; color: var(--accent2); }
+  /* Contenu */
+  .main-content { flex: 1; min-width: 0; padding: 28px 32px 64px; }
+  .main-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+  .main-header h2 { font-family: var(--font-serif); font-size: 30px; font-weight: 500; letter-spacing: -0.015em; }
+  .header-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .file-btn input { display: none; }
 
-  /* Main */
-  .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
-  .main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
-  .main-header h2 { font-size: 1.56rem; letter-spacing: -0.03em; font-weight: 800; color: #f8fafc; }
+  /* Critères */
+  .criteria-bar { margin-bottom: 16px; padding: 16px 18px; border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
+  .criteria-bar h3 { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; font-size: 14px; font-weight: 600; }
+  .criteria-bar h3 .hint { font-size: 12.5px; font-weight: 400; color: var(--text-3); }
+  .criteria-list { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .crit-group { width: 100%; margin: 6px 0 0; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+  .crit-group:first-child { margin-top: 0; }
+  .criterion-tag { display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 4px 0 11px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); font-size: 13px; }
+  .criterion-tag .crit-name { font-weight: 500; color: var(--text); }
+  .criterion-tag .crit-x { font-size: 11px; color: var(--text-4); }
+  .criterion-tag input[type="number"] { width: 50px; height: 24px; padding: 0 4px; border-radius: 5px; font-family: var(--font-mono); font-size: 12px; text-align: center; }
+  .criterion-tag .remove-crit { display: grid; place-items: center; width: 22px; height: 22px; padding: 0; border: 0; border-radius: 5px; background: none; color: var(--text-4); font-size: 14px; cursor: pointer; }
+  .criterion-tag .remove-crit:hover { background: var(--danger-soft); color: var(--danger); }
+  .criterion-tag.custom { border-style: dashed; border-color: var(--border-strong); }
+  .add-criterion { display: flex; gap: 6px; align-items: center; }
+  .add-criterion.full { width: 100%; margin-top: 6px; }
+  .add-criterion input { width: 240px; height: 32px; padding: 0 10px; font-size: 13px; }
 
-  /* Buttons */
-  button { font-family: inherit; font-size: 0.85rem; font-weight: 600; padding: 0.5rem 1rem; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s; }
-  .btn-primary { background: var(--accent); color: white; }
-  .btn-primary:hover { background: #4f46e5; }
-  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
-  .btn-secondary:hover { border-color: var(--accent); }
-  .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); padding: 0.3rem 0.6rem; font-size: 0.75rem; }
-  .btn-danger:hover { background: var(--red); color: white; }
-  .btn-ghost { background: none; border: 1px dashed var(--border); color: var(--muted); width: 100%; padding: 0.7rem; }
-  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* Criteria Management */
-  .criteria-bar { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
-  .criteria-bar h3 { font-size: 0.92rem; color: #f8fafc; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
-  .criteria-list { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
-  .criterion-tag { display: flex; align-items: center; gap: 0.5rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.5rem 0.4rem 0.75rem; font-size: 0.8rem; }
-  .criterion-tag .crit-name { font-weight: 600; color: var(--text); }
-  .criterion-tag .crit-weight { font-size: 0.7rem; color: var(--accent); background: rgba(99,102,241,0.1); padding: 0.1rem 0.4rem; border-radius: 4px; }
-  .criterion-tag input[type="number"] { width: 45px; background: var(--card); border: 1px solid var(--border); border-radius: 4px; color: var(--accent); font-size: 0.75rem; font-weight: 700; text-align: center; padding: 0.15rem; font-family: inherit; }
-  .criterion-tag input[type="number"]:focus { border-color: var(--accent); outline: none; }
-  .criterion-tag .remove-crit { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem; padding: 0 0.2rem; }
-  .criterion-tag .remove-crit:hover { color: var(--red); }
-  .criterion-tag.core { border-color: var(--accent); }
-  .criterion-tag.custom { border-color: var(--accent2); border-style: dashed; }
-  .add-criterion { display: flex; gap: 0.5rem; align-items: center; }
-  .add-criterion input { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.35rem 0.6rem; color: var(--text); font-family: inherit; font-size: 0.8rem; width: 150px; }
-  .add-criterion input:focus { border-color: var(--accent); outline: none; }
-  .add-criterion input::placeholder { color: var(--muted); }
-
-  /* Table */
-  .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
-  table { width: 100%; border-collapse: collapse; }
-  th { background: var(--card); padding: 0.6rem 0.75rem; text-align: left; font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border); white-space: nowrap; }
-  th.score-col { text-align: center; color: var(--accent); }
-  th.rank-col { text-align: center; width: 60px; }
-  td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(99,102,241,0.04); }
-  td input[type="text"] { width: 100%; background: transparent; border: none; color: var(--text); font-family: inherit; font-size: 0.85rem; outline: none; }
-  td input[type="text"]::placeholder { color: var(--muted); }
-  td input[type="number"], td select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.35rem 0.5rem; color: var(--text); font-family: inherit; font-size: 0.8rem; }
-  td input[type="number"]:focus, td select:focus { border-color: var(--accent); outline: none; }
+  /* Tableau */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { padding: 10px 12px; border-bottom: 1px solid var(--border-soft); text-align: left; white-space: nowrap; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+  th.score-col, th.rank-col { text-align: center; }
+  th.id-col, th.act-col { width: 44px; }
+  th.name-col { min-width: 220px; }
+  td { padding: 7px 12px; border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
+  tr:last-child td { border-bottom: 0; }
+  tbody tr:hover td { background: color-mix(in oklch, var(--surface-2) 60%, transparent); }
+  td.id-cell { font-family: var(--font-mono); font-size: 12px; color: var(--text-4); }
+  td input[type="text"] { width: 100%; height: 32px; padding: 0 8px; border-color: transparent; background: transparent; font-weight: 500; }
+  td input[type="text"]:hover { border-color: var(--border); }
+  td input[type="text"]:focus { background: var(--surface); }
+  td input[type="number"], td select { width: 100%; min-width: 80px; height: 32px; padding: 0 8px; font-size: 13px; }
+  td input[type="number"] { font-family: var(--font-mono); }
   td select { cursor: pointer; }
-  .score-cell { text-align: center; font-weight: 800; font-size: 1.05rem; color: var(--accent); font-variant-numeric: tabular-nums; }
-  .rank-cell { text-align: center; }
-  .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-weight: 800; font-size: 0.8rem; }
-  .rank-1 { background: #fbbf24; color: #1a1d2e; }
-  .rank-2 { background: #94a3b8; color: #1a1d2e; }
-  .rank-3 { background: #b45309; color: white; }
-  .rank-other { background: var(--card); color: var(--muted); }
-  .delete-row { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; padding: 0.2rem; }
-  .delete-row:hover { color: var(--red); }
+  .score-cell { text-align: center; font-family: var(--font-mono); font-size: 14px; font-weight: 500; color: var(--text); font-variant-numeric: tabular-nums; }
+  .rank-cell { text-align: center; color: var(--text-4); }
+  .rank-badge { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font-family: var(--font-mono); font-size: 12px; font-weight: 500; }
+  .rank-1 { background: var(--accent); color: var(--on-accent); }
+  .rank-2, .rank-3 { background: var(--accent-soft); color: var(--accent-text); }
+  .rank-other { background: var(--surface-3); color: var(--text-3); }
+  .delete-row { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--text-4); cursor: pointer; }
+  .delete-row:hover { background: var(--danger-soft); color: var(--danger); }
+  .add-row { margin-top: 10px; }
 
-  /* Results panel */
-  .results-panel { margin-top: 1.5rem; background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-  .results-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .results-header h3 { font-size: 1.04rem; font-weight: 800; color: #f8fafc; }
-  .ranking-list { padding: 0.5rem; }
-  .ranking-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 0.25rem; transition: background 0.2s; }
-  .ranking-item:hover { background: rgba(99,102,241,0.05); }
-  .ranking-item .rank { font-size: 1.3rem; font-weight: 900; min-width: 35px; text-align: center; }
-  .ranking-item .rank.gold { color: #fbbf24; }
-  .ranking-item .rank.silver { color: #94a3b8; }
-  .ranking-item .rank.bronze { color: #b45309; }
-  .ranking-item .item-name { font-weight: 600; flex: 1; }
-  .ranking-item .item-score { font-weight: 800; color: var(--accent); font-size: 1.1rem; font-variant-numeric: tabular-nums; }
-  .ranking-bar { flex: 1; max-width: 200px; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
-  .ranking-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 4px; transition: width 0.5s ease; }
+  /* Classement */
+  .results-panel { margin-top: 20px; border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .results-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 8px; }
+  .results-header h3 { font-family: var(--font-serif); font-size: 21px; font-weight: 500; }
+  .ranking-list { padding: 4px 8px 10px; }
+  .ranking-item { display: flex; align-items: center; gap: 14px; padding: 9px 10px; border-radius: 8px; }
+  .ranking-item:hover { background: var(--surface-2); }
+  .ranking-item .rank { min-width: 28px; font-family: var(--font-mono); font-size: 12.5px; color: var(--text-4); }
+  .ranking-item .rank.gold { color: var(--accent-text); font-weight: 500; }
+  .ranking-item .item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+  .ranking-item .item-score { min-width: 48px; text-align: right; font-family: var(--font-mono); font-size: 13px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .ranking-bar { flex: 1; max-width: 220px; height: 6px; border-radius: 3px; background: var(--surface-3); overflow: hidden; }
+  .ranking-bar-fill { height: 100%; border-radius: inherit; background: var(--accent); transition: width 0.4s var(--ease); }
 
   /* Export */
-  .export-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 100; }
+  .export-modal { position: fixed; inset: 0; z-index: 1000; display: none; align-items: center; justify-content: center; padding: 16px; background: var(--overlay); }
   .export-modal.open { display: flex; }
-  .export-box { background: var(--card); border-radius: 16px; padding: 2rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
-  .export-box h2 { margin-bottom: 1rem; font-weight: 800; color: #f8fafc; }
-  .export-box pre { background: var(--bg); padding: 1rem; border-radius: 8px; font-size: 0.8rem; white-space: pre-wrap; line-height: 1.6; }
-  .export-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+  .export-box { width: 100%; max-width: 640px; max-height: 82vh; overflow-y: auto; padding: 26px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-lg); }
+  .export-box h2 { margin-bottom: 14px; font-family: var(--font-serif); font-size: 24px; font-weight: 500; }
+  .export-box pre { margin: 0; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); font-size: 12.5px; line-height: 1.6; white-space: pre-wrap; }
+  .export-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
 
-  /* MoSCoW specific */
-  .moscow-tag { padding: 0.2rem 0.6rem; border-radius: 100px; font-size: 0.75rem; font-weight: 700; }
-  .moscow-M { background: rgba(239,68,68,0.15); color: var(--red); }
-  .moscow-S { background: rgba(245,158,11,0.15); color: var(--yellow); }
-  .moscow-C { background: rgba(99,102,241,0.15); color: var(--accent); }
-  .moscow-W { background: rgba(107,112,137,0.15); color: var(--muted); }
+  /* MoSCoW */
+  .moscow-tag { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+  .moscow-M { background: var(--danger-soft); color: var(--danger); }
+  .moscow-S { background: var(--warn-soft); color: var(--warn-text); }
+  .moscow-C { background: var(--accent-soft); color: var(--accent-text); }
+  .moscow-W { background: var(--surface-3); color: var(--text-3); }
 
-  /* Responsive */
   @media (max-width: 1100px) {
-    .sidebar { width: 220px; }
+    .sidebar { width: 230px; }
     .method-info { display: none; }
   }
   @media (max-width: 768px) {
     .app { flex-direction: column; }
-    .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 1rem; }
-    .method-list { display: flex; flex-wrap: wrap; gap: 0.3rem; }
-    .method-item { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
-    .main-content { padding: 1rem; }
-    .criteria-bar .criteria-list { flex-direction: column; }
-    .main-header { flex-direction: column; align-items: flex-start; }
+    .sidebar { position: static; width: 100%; height: auto; padding: 20px 16px 12px; border-right: 0; border-bottom: 1px solid var(--border); }
+    .method-list { flex-direction: row; flex-wrap: wrap; gap: 4px; }
+    .main-content { padding: 20px 16px 48px; }
   }
 </style>
 </head>
-<body>
+<body data-app="Calculateur de priorisation">
 <div class="app">
   <aside class="sidebar">
     <h1>Priorisation</h1>
-    <p class="subtitle">Calculateur interactif pour Product Owners</p>
+    <p class="subtitle">Comparez et classez votre backlog.</p>
 
     <ul class="method-list" id="method-list"></ul>
 
@@ -149,8 +139,8 @@
     <h2>Export</h2>
     <pre id="export-text"></pre>
     <div class="export-actions">
-      <button class="btn-primary" onclick="copyExport()">Copier</button>
       <button class="btn-secondary" onclick="document.getElementById('export-modal').classList.remove('open')">Fermer</button>
+      <button class="btn-primary" onclick="copyExport()">Copier</button>
     </div>
   </div>
 </div>
@@ -162,7 +152,8 @@
 const METHODS = {
   rice: {
     name: "RICE Scoring",
-    icon: "&#9878;",
+    abbr: "RI",
+    icon: "",
     color: "#6366f1",
     description: "Framework quantitatif développé par Intercom. Évalue chaque item sur 4 dimensions pour obtenir un score objectif et comparable.",
     formula: "Score = (Reach × Impact × Confidence) ÷ Effort",
@@ -192,7 +183,8 @@ const METHODS = {
   },
   wsjf: {
     name: "WSJF (SAFe)",
-    icon: "&#9889;",
+    abbr: "WS",
+    icon: "",
     color: "#a855f7",
     description: "Weighted Shortest Job First — utilisé dans SAFe pour prioriser au niveau du Program Increment. Le ratio Cost of Delay / Job Size maximise la valeur livrée par unité de temps.",
     formula: "WSJF = Cost of Delay ÷ Job Size\nCoD = (User Value × poids) + (Time Criticality × poids) + (Risk Reduction × poids)",
@@ -222,7 +214,8 @@ const METHODS = {
   },
   value_effort: {
     name: "Value vs Effort",
-    icon: "&#127775;",
+    abbr: "VE",
+    icon: "",
     color: "#10b981",
     description: "Matrice simple et universelle. Évalue chaque item sur la valeur apportée et l'effort requis. Le ratio identifie les Quick Wins (haute valeur, faible effort).",
     formula: "Score = Valeur pondérée ÷ Effort pondéré",
@@ -245,7 +238,8 @@ const METHODS = {
   },
   moscow: {
     name: "MoSCoW",
-    icon: "&#127919;",
+    abbr: "MO",
+    icon: "",
     color: "#f59e0b",
     description: "Classification en 4 catégories : Must have, Should have, Could have, Won't have. Pas un scoring — une classification pour la négociation de scope.",
     formula: "Classification : M (≤60%) > S (~20%) > C (~20%) > W",
@@ -260,7 +254,8 @@ const METHODS = {
   },
   ice: {
     name: "ICE Scoring",
-    icon: "&#129482;",
+    abbr: "IC",
+    icon: "",
     color: "#ec4899",
     description: "Framework simple de Sean Ellis (Growth Hacking). Chaque dimension est notée 1-10. Plus intuitif que RICE, mais plus subjectif.",
     formula: "Score = Impact × Confidence × Ease",
@@ -281,7 +276,8 @@ const METHODS = {
   },
   weighted: {
     name: "Scoring pondéré",
-    icon: "&#9878;",
+    abbr: "SP",
+    icon: "",
     color: "#64748b",
     description: "Scoring pondéré simple avec critères génériques fixes.",
     formula: "Score = Somme(critère × poids) / Somme(poids)",
@@ -425,7 +421,7 @@ function renderSidebar() {
   const list = document.getElementById('method-list');
   list.innerHTML = Object.entries(METHODS).map(([key, m]) =>
     `<li class="method-item ${key === currentMethod ? 'active' : ''}" onclick="switchMethod('${key}')">
-      <span class="method-icon">${m.icon}</span> ${m.name}
+      <span class="method-abbr">${m.abbr || m.name.slice(0, 2)}</span> ${m.name}
     </li>`
   ).join('');
 
@@ -434,7 +430,7 @@ function renderSidebar() {
     <h3>${m.name}</h3>
     <p>${m.description}</p>
     <div class="formula">${m.formula}</div>
-    <p style="margin-top: 0.75rem;"><strong style="color:var(--text);">Quand l'utiliser :</strong><br>${m.when}</p>
+    <p class="when"><strong>Quand l'utiliser</strong>${m.when}</p>
   `;
 }
 
@@ -446,7 +442,7 @@ function renderCriteriaBar() {
   const allowCustomCriteria = canAddCriteria();
 
   let html = `<div class="criteria-bar">
-    <h3>Critères ${criteria.length > 0 ? `(${criteria.length})` : ''} – Poids ajustables</h3>
+    <h3>Critères <span class="hint">${criteria.length} · poids ajustables</span></h3>
     <div class="criteria-list">`;
 
   let lastGroup = null;
@@ -456,23 +452,22 @@ function renderCriteriaBar() {
     if (crit.group && crit.group !== lastGroup) {
       if (allowCustomCriteria && lastGroup === 'Cost of Delay' && crit.group === 'Diviseur') {
         html += `
-      <div class="add-criterion" style="width:100%;margin-top:0.5rem;">
-        <input type="text" id="new-crit-name" placeholder="Ajouter une sous-composante CoD..." onkeydown="if(event.key==='Enter'){event.preventDefault();addCriterion();}">
-        <button class="btn-primary" style="padding:0.35rem 0.75rem; font-size:0.75rem;" onclick="addCriterion()">+ Ajouter</button>
+      <div class="add-criterion full">
+        <input type="text" id="new-crit-name" placeholder="Ajouter une sous-composante CoD" onkeydown="if(event.key==='Enter'){event.preventDefault();addCriterion();}">
+        <button class="btn-secondary btn-small" onclick="addCriterion()">Ajouter</button>
       </div>`;
       }
-      if (lastGroup !== null) html += `<span style="color:var(--muted);font-size:0.75rem;width:100%;margin:0.5rem 0 0.2rem;font-weight:700;">/</span>`;
-      html += `<span style="color:var(--accent2);font-size:0.75rem;font-weight:700;width:100%;margin:0.5rem 0 0.2rem;">${crit.group} :</span>`;
+      html += `<span class="crit-group">${crit.group}</span>`;
       lastGroup = crit.group;
     }
 
     html += `
       <div class="criterion-tag ${crit.isCustom ? 'custom' : 'core'}" title="${crit.description || ''}">
         <span class="crit-name">${crit.name}</span>
-        <span style="font-size:0.65rem;color:var(--muted);">x</span>
+        <span class="crit-x">&times;</span>
         <input type="number" value="${weight}" min="0.1" max="10" step="0.1"
                onchange="updateWeight('${crit.id}', this.value)" title="Poids du critère">
-        ${crit.isCustom ? `<button class="remove-crit" onclick="removeCriterion('${crit.id}')" title="Supprimer">x</button>` : ''}
+        ${crit.isCustom ? `<button class="remove-crit" onclick="removeCriterion('${crit.id}')" title="Supprimer" aria-label="Supprimer le critère">&times;</button>` : ''}
       </div>`;
   }
 
@@ -502,8 +497,8 @@ function renderTable() {
 
   let html = `<div class="table-wrap"><table>
     <thead><tr>
-      <th style="width:40px">#</th>
-      <th style="min-width:200px">Feature / Story</th>`;
+      <th class="id-col">#</th>
+      <th class="name-col">Feature / Story</th>`;
 
   for (const crit of criteria) {
     html += `<th>${crit.name}</th>`;
@@ -511,13 +506,13 @@ function renderTable() {
 
   html += `<th class="score-col">Score</th>
     <th class="rank-col">Rang</th>
-    <th style="width:40px"></th>
+    <th class="act-col"></th>
     </tr></thead><tbody>`;
 
   for (const item of items) {
     html += `<tr>
-      <td style="color:var(--muted); font-size:0.8rem;">${item.id}</td>
-      <td><input type="text" value="${escapeAttr(item.name)}" onchange="updateItemName(${item.id}, this.value)" placeholder="Nom de la feature..."></td>`;
+      <td class="id-cell">${item.id}</td>
+      <td><input type="text" value="${escapeAttr(item.name)}" onchange="updateItemName(${item.id}, this.value)" placeholder="Nom de la feature"></td>`;
 
     for (const crit of criteria) {
       const val = item.values[crit.id];
@@ -543,12 +538,12 @@ function renderTable() {
 
     html += `<td class="score-cell">${scoreDisplay}</td>`;
     html += `<td class="rank-cell">${item.rank ? `<span class="rank-badge ${rankClass}">${item.rank}</span>` : '-'}</td>`;
-    html += `<td><button class="delete-row" onclick="removeItem(${item.id})" title="Supprimer">&#128465;</button></td>`;
+    html += `<td><button class="delete-row" onclick="removeItem(${item.id})" title="Supprimer" aria-label="Supprimer la ligne"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button></td>`;
     html += `</tr>`;
   }
 
   html += `</tbody></table></div>`;
-  html += `<button class="btn-ghost" style="margin-top:0.75rem;" onclick="addItem()">+ Ajouter une feature</button>`;
+  html += `<button class="btn-secondary add-row" onclick="addItem()">+ Ajouter une feature</button>`;
 
   return html;
 }
@@ -566,7 +561,7 @@ function renderResults() {
   let html = `<div class="results-panel">
     <div class="results-header">
       <h3>Classement</h3>
-      <button class="btn-secondary" style="font-size:0.75rem;" onclick="exportResults()">Exporter</button>
+      <button class="btn-ghost btn-small" onclick="exportResults()">Exporter</button>
     </div>
     <div class="ranking-list">`;
 
@@ -577,7 +572,7 @@ function renderResults() {
     const display = m.isCategorical ? ['','Won\'t','Could','Should','Must'][Math.round(item.score)] || item.score.toFixed(1) : item.score.toFixed(1);
 
     html += `<div class="ranking-item">
-      <span class="rank ${rankClass}">#${i + 1}</span>
+      <span class="rank ${rankClass}">${String(i + 1).padStart(2, '0')}</span>
       <span class="item-name">${item.name || 'Sans nom'}</span>
       <div class="ranking-bar"><div class="ranking-bar-fill" style="width:${pct}%"></div></div>
       <span class="item-score">${display}</span>
@@ -597,13 +592,13 @@ function render() {
 
   document.getElementById('main').innerHTML = `
     <div class="main-header">
-      <h2>${m.icon} ${m.name}</h2>
-      <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
-        <label class="btn-secondary" style="cursor:pointer;display:inline-flex;align-items:center;gap:0.35rem;">
+      <h2>${m.name}</h2>
+      <div class="header-actions">
+        <button class="btn-ghost" onclick="resetAll()">Réinitialiser</button>
+        <label class="btn-secondary file-btn">
           Importer CSV
-          <input type="file" accept=".csv" id="import-csv-input" style="display:none;" onchange="importCsv(this.files[0]);this.value='';">
+          <input type="file" accept=".csv" id="import-csv-input" onchange="importCsv(this.files[0]);this.value='';">
         </label>
-        <button class="btn-secondary" onclick="resetAll()">Réinitialiser</button>
         <button class="btn-primary" onclick="exportResults()">Exporter</button>
       </div>
     </div>

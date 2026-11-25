@@ -4,88 +4,83 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Story Splitter - PO Toolkit</title>
+<link rel="stylesheet" href="app-kit.css">
+<script src="app-kit.js"></script>
 <style>
-  :root { --bg: #0f1117; --card: #1a1c2b; --card2: #202338; --text: #e8eaf0; --muted: #8a90ab; --border: #2a2d3e; --blue: #6366f1; --blue2: #8b5cf6; --green: #10b981; --yellow: #f59e0b; --red: #ef4444; }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 64px; display: flex; flex-direction: column; gap: 18px; }
+  .header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .header-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
-  .main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
-  .header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
-  .header h2 { font-size: 1.56rem; font-weight: 800; color: #f8fafc; letter-spacing: -0.03em; }
-  .header-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-  button { font-family: inherit; font-size: 0.84rem; font-weight: 700; border: none; border-radius: 10px; padding: 0.6rem 0.95rem; cursor: pointer; transition: all 0.2s; }
-  .btn-primary { background: var(--blue); color: white; }
-  .btn-primary:hover { background: #4f46e5; }
-  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
-  .btn-secondary:hover { border-color: var(--blue); color: #fff; }
-  .btn-danger { background: transparent; color: var(--red); border: 1px solid rgba(239,68,68,0.5); }
-  .btn-danger:hover { background: rgba(239,68,68,0.12); }
-  .btn-small { padding: 0.35rem 0.6rem; font-size: 0.74rem; border-radius: 8px; }
+  .layout { display: grid; grid-template-columns: 1.05fr 1fr; gap: 16px; align-items: start; }
+  .panel { border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
+  .panel-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 18px 20px 0; }
+  .panel-header h3 { display: flex; align-items: baseline; gap: 10px; font-family: var(--font-serif); font-size: 21px; font-weight: 500; }
+  .panel-header h3 .step { font-family: var(--font-mono); font-size: 12px; font-weight: 400; color: var(--accent-text); }
+  .panel-header .hint { font-size: 12.5px; color: var(--text-3); }
+  .panel-body { padding: 16px 20px 20px; }
 
-  .layout { display: grid; grid-template-columns: 1.05fr 1fr; gap: 1rem; }
-  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-  .panel-header { padding: 1rem 1.1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-  .panel-header h3 { font-size: 1rem; font-weight: 800; color: #f8fafc; }
-  .panel-header .hint { color: var(--muted); font-size: 0.75rem; }
-  .panel-body { padding: 1rem 1.1rem; }
-
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
-  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
   .field.full { grid-column: 1 / -1; }
-  .field label { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
-  .field input, .field textarea, .field select { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 0.8rem; outline: none; font-family: inherit; font-size: 0.9rem; transition: border-color 0.2s; }
-  .field textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
-  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--blue); }
+  .field label { font-size: 12.5px; font-weight: 500; color: var(--text-2); }
+  .field input, .field select { width: 100%; height: 36px; padding: 0 11px; }
+  .field textarea { width: 100%; min-height: 80px; padding: 9px 11px; resize: vertical; line-height: 1.5; }
 
-  .pattern-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-  .pattern-card { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 0.85rem; display: flex; gap: 0.7rem; align-items: flex-start; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
-  .pattern-card:hover { border-color: rgba(99,102,241,0.4); }
-  .pattern-card.active { border-color: var(--blue); background: rgba(99,102,241,0.08); }
-  .pattern-card input { margin-top: 0.2rem; accent-color: var(--blue); }
-  .pattern-card strong { display: block; font-size: 0.86rem; margin-bottom: 0.2rem; }
-  .pattern-card span { color: var(--muted); font-size: 0.76rem; line-height: 1.5; }
+  .pattern-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .pattern-card { display: flex; gap: 10px; align-items: flex-start; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); cursor: pointer; transition: border-color 0.12s, background 0.12s; }
+  .pattern-card:hover { border-color: var(--border-strong); background: var(--surface-2); }
+  .pattern-card.active { border-color: var(--accent-border); background: var(--accent-soft); }
+  .pattern-card input { margin: 3px 0 0; flex-shrink: 0; }
+  .pattern-card strong { display: block; margin-bottom: 2px; font-size: 13.5px; font-weight: 600; }
+  .pattern-card span { font-size: 12.5px; line-height: 1.45; color: var(--text-3); }
 
-  .summary { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
-  .summary-card { background: var(--card2); border: 1px solid var(--border); border-radius: 14px; padding: 0.9rem 1rem; min-width: 150px; }
-  .summary-card .label { color: var(--muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; }
-  .summary-card .value { display: block; font-size: 1.25rem; font-weight: 800; margin-top: 0.25rem; }
+  .summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 16px; border: 1px solid var(--border-soft); border-radius: var(--radius); overflow: hidden; }
+  .summary-card { padding: 12px 16px; border-left: 1px solid var(--border-soft); }
+  .summary-card:first-child { border-left: 0; }
+  .summary-card .label { font-size: 12px; color: var(--text-3); }
+  .summary-card .value { display: block; margin-top: 2px; font-family: var(--font-serif); font-size: 24px; font-weight: 500; line-height: 1.2; }
 
-  .stories { display: grid; gap: 0.85rem; }
-  .story-card { background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 1rem; transition: border-color 0.2s; }
-  .story-card:hover { border-color: rgba(99,102,241,0.3); }
-  .story-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.8rem; }
-  .story-meta { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-  .story-badge { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 700; border-radius: 999px; padding: 0.28rem 0.6rem; background: rgba(99,102,241,0.12); color: #c7cdf9; }
-  .story-badge.team { background: rgba(16,185,129,0.12); color: #b7f3dc; }
-  .story-grid { display: grid; grid-template-columns: 1fr 160px; gap: 0.75rem; }
+  .stories { display: grid; gap: 10px; }
+  .story-card { padding: 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); transition: border-color 0.12s; }
+  .story-card:hover { border-color: var(--border-strong); }
+  .story-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .story-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .story-badge { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); font-size: 12px; font-weight: 500; }
+  .story-badge.team { background: var(--surface-3); color: var(--text-2); }
+  .story-grid { display: grid; grid-template-columns: 1fr 170px; gap: 12px; }
   .story-grid .field.full { grid-column: 1 / -1; }
-  .empty { padding: 3rem 2rem; border: 1px dashed var(--border); border-radius: 16px; text-align: center; color: var(--muted); line-height: 1.7; font-size: 0.9rem; }
-  .empty strong { display: block; color: var(--text); font-size: 1rem; margin-bottom: 0.35rem; }
+  .story-grid textarea { min-height: 64px; }
+  .empty { padding: 40px 24px; border: 1px dashed var(--border-strong); border-radius: var(--radius); text-align: center; font-size: 14px; line-height: 1.6; color: var(--text-3); }
+  .empty strong { display: block; margin-bottom: 4px; font-size: 15px; font-weight: 600; color: var(--text); }
 
   @media (max-width: 900px) {
     .layout { grid-template-columns: 1fr; }
   }
   @media (max-width: 720px) {
+    .main { padding: 24px 16px 48px; }
     .form-grid, .pattern-grid, .story-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
-<body>
+<body data-app="Story Splitter">
   <main class="main">
     <div class="header">
-      <h2>Story Splitter</h2>
+      <div class="kit-head">
+        <h1>Story Splitter</h1>
+        <p>Décrivez une feature, choisissez des axes de découpage, obtenez des stories verticales prêtes à affiner.</p>
+      </div>
       <div class="header-actions">
-        <button class="btn-secondary" id="generate-btn">Générer des suggestions</button>
-        <button class="btn-secondary" id="add-manual-btn">Ajouter une story</button>
+        <button class="btn-ghost" id="reset-btn">Réinitialiser</button>
         <button class="btn-secondary" id="export-btn">Exporter CSV</button>
-        <button class="btn-danger" id="reset-btn">Réinitialiser</button>
+        <button class="btn-secondary" id="add-manual-btn">Ajouter une story</button>
+        <button class="btn-primary" id="generate-btn">Générer des suggestions</button>
       </div>
     </div>
 
     <div class="layout">
       <section class="panel">
         <div class="panel-header">
-          <h3>1. Feature à décomposer</h3>
+          <h3><span class="step">01</span>Feature à décomposer</h3>
         </div>
         <div class="panel-body">
           <div class="form-grid">
@@ -122,7 +117,7 @@
 
       <section class="panel">
         <div class="panel-header">
-          <h3>2. Patterns de découpage</h3>
+          <h3><span class="step">02</span>Patterns de découpage</h3>
           <span class="hint">Combinez plusieurs axes si besoin.</span>
         </div>
         <div class="panel-body">
@@ -131,9 +126,9 @@
       </section>
     </div>
 
-    <section class="panel" style="margin-top: 1rem;">
+    <section class="panel">
       <div class="panel-header">
-        <h3>3. Stories proposées</h3>
+        <h3><span class="step">03</span>Stories proposées</h3>
         <span class="hint">Éditez, supprimez ou complétez avant export.</span>
       </div>
       <div class="panel-body">
@@ -397,7 +392,7 @@ function renderStories() {
           <span class="story-badge">${story.axis}</span>
           <span class="story-badge team">${story.team}</span>
         </div>
-        <button class="btn-danger btn-small" data-remove-story="${story.id}">Supprimer</button>
+        <button class="btn-ghost btn-small" data-remove-story="${story.id}">Supprimer</button>
       </div>
       <div class="story-grid">
         <div class="field">

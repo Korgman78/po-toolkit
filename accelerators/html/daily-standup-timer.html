@@ -4,96 +4,93 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Daily Standup Timer</title>
+<link rel="stylesheet" href="app-kit.css">
+<script src="app-kit.js"></script>
 <style>
-  :root { --accent: #6366f1; --bg: #0f1117; --card: #1a1c2b; --text: #e8eaf0; --muted: #6b7089; --border: #2a2d3e; --green: #10b981; --red: #ef4444; --yellow: #f59e0b; }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
-  h1 { font-size: 1.85rem; margin-bottom: 0.5rem; letter-spacing: -0.03em; font-weight: 800; color: #f8fafc; }
-  .subtitle { color: var(--muted); margin-bottom: 2rem; font-size: 0.9rem; }
-  .timer-display { font-size: 6rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.04em; margin: 1rem 0; transition: color 0.3s; }
-  .timer-display.warning { color: var(--yellow); }
-  .timer-display.danger { color: var(--red); animation: pulse 1s infinite; }
-  @keyframes pulse { 50% { opacity: 0.7; } }
-  .progress-ring { width: 280px; height: 280px; position: relative; margin: 1rem auto; }
-  .progress-ring svg { transform: rotate(-90deg); }
-  .progress-ring circle { fill: none; stroke-width: 8; }
-  .progress-ring .bg { stroke: var(--border); }
-  .progress-ring .fg { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke 0.3s; }
-  .progress-ring .fg.warning { stroke: var(--yellow); }
-  .progress-ring .fg.danger { stroke: var(--red); }
-  .timer-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .person-label { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 0.25rem; }
-  .person-time { font-size: 2.5rem; font-weight: 800; font-variant-numeric: tabular-nums; }
-  .controls { display: flex; gap: 1rem; margin: 1.5rem 0; }
-  button { font-family: inherit; font-size: 0.9rem; font-weight: 600; padding: 0.7rem 1.5rem; border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; }
-  .btn-primary { background: var(--accent); color: white; }
-  .btn-primary:hover { background: #4f46e5; transform: translateY(-1px); }
-  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
-  .btn-secondary:hover { border-color: var(--accent); }
-  .btn-danger { background: var(--red); color: white; }
-  .btn-next { background: var(--green); color: white; font-size: 1rem; padding: 0.8rem 2rem; }
-  .btn-next:hover { background: #059669; }
-  .team-setup { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; width: 100%; max-width: 500px; margin-top: 1rem; }
-  .team-setup h2 { font-size: 1.24rem; margin-bottom: 1rem; font-weight: 800; color: #f8fafc; }
-  .input-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-  input { font-family: inherit; font-size: 0.9rem; padding: 0.6rem 1rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); flex: 1; outline: none; }
-  input:focus { border-color: var(--accent); }
-  .member-list { list-style: none; margin: 1rem 0; }
-  .member-list li { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.75rem; border-radius: 8px; margin-bottom: 0.3rem; background: var(--bg); }
-  .member-list li .name { font-weight: 600; }
-  .member-list li .remove { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1.2rem; padding: 0.2rem 0.5rem; }
-  .summary { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; width: 100%; max-width: 500px; margin-top: 1.5rem; }
-  .summary h2 { margin-bottom: 1rem; font-size: 1.24rem; font-weight: 800; color: #f8fafc; }
-  .summary-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
-  .summary-row:last-child { border-bottom: none; }
-  .summary-row .time { font-weight: 700; font-variant-numeric: tabular-nums; }
-  .summary-row .over { color: var(--red); }
-  .total-time { font-size: 1.3rem; font-weight: 800; color: var(--accent); text-align: center; margin-top: 1rem; }
-  .settings-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; color: var(--muted); font-size: 0.85rem; }
+  .page { width: 100%; max-width: 560px; margin: 0 auto; padding: 40px 20px 64px; display: flex; flex-direction: column; gap: 20px; }
+  .kit-head { text-align: center; align-items: center; }
 
-  .session-bar { display: flex; align-items: center; gap: 0.75rem; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0.5rem 1rem; margin-bottom: 1.5rem; width: 100%; max-width: 500px; font-size: 0.8rem; }
-  .session-bar label { color: var(--muted); white-space: nowrap; }
-  .session-bar input { flex: 1; padding: 0.35rem 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--accent); font-family: inherit; font-size: 0.85rem; font-weight: 700; outline: none; text-align: center; letter-spacing: 0.05em; }
-  .session-bar input:focus { border-color: var(--accent); }
-  .session-bar button { padding: 0.35rem 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; font-family: inherit; font-size: 0.75rem; font-weight: 600; transition: all 0.2s; }
-  .session-bar button:hover { border-color: var(--accent); color: var(--accent); }
-  .session-bar .session-status { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
-  .settings-row input[type="number"] { width: 70px; flex: none; text-align: center; }
+  .card { padding: 24px; border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
+  .card h2 { font-family: var(--font-serif); font-size: 22px; font-weight: 500; margin-bottom: 16px; }
+
+  .settings-row { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; font-size: 13.5px; color: var(--text-2); }
+  .settings-row input { width: 76px; height: 34px; padding: 0 8px; text-align: center; font-family: var(--font-mono); }
+  .input-row { display: flex; gap: 8px; }
+  .input-row input { flex: 1; height: 34px; padding: 0 12px; }
+
+  .member-list { list-style: none; margin: 14px 0 0; padding: 0; border-top: 1px solid var(--border-soft); }
+  .member-list:empty { display: none; }
+  .member-list li { display: flex; align-items: center; gap: 10px; padding: 8px 2px; border-bottom: 1px solid var(--border-soft); }
+  .member-list li .idx { width: 20px; font-family: var(--font-mono); font-size: 11.5px; color: var(--text-4); }
+  .member-list li .name { flex: 1; font-weight: 500; }
+  .member-list li .remove { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--text-4); cursor: pointer; font-size: 16px; line-height: 1; }
+  .member-list li .remove:hover { background: var(--danger-soft); color: var(--danger); }
+  .btn-block { width: 100%; height: 42px; margin-top: 20px; font-size: 14px; }
+
+  /* Minuteur */
   #app-timer { display: none; text-align: center; }
+  .progress-ring { position: relative; width: 280px; height: 280px; margin: 8px auto 0; }
+  .progress-ring svg { transform: rotate(-90deg); }
+  .progress-ring circle { fill: none; stroke-width: 6; }
+  .progress-ring .bg { stroke: var(--surface-3); }
+  .progress-ring .fg { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke 0.3s; }
+  .progress-ring .fg.warning { stroke: var(--warn); }
+  .progress-ring .fg.danger { stroke: var(--danger); }
+  .timer-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+  .person-label { font-family: var(--font-serif); font-size: 24px; font-weight: 500; color: var(--text); }
+  .person-time { font-family: var(--font-mono); font-size: 44px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--text); }
+  .timer-meta { display: flex; justify-content: center; align-items: baseline; gap: 14px; margin-top: 18px; color: var(--text-3); font-size: 13.5px; }
+  .timer-display { font-family: var(--font-mono); font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--text-2); transition: color 0.3s; }
+  .timer-display.warning { color: var(--warn-text); }
+  .timer-display.danger { color: var(--danger); }
+  .controls { display: flex; justify-content: center; gap: 8px; margin-top: 22px; }
+  .controls .btn-primary { min-width: 140px; }
+
+  /* Récap */
   #app-summary { display: none; }
+  .summary-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--border-soft); font-size: 14px; }
+  .summary-row:last-child { border-bottom: 0; }
+  .summary-row .time { font-family: var(--font-mono); font-size: 13px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .summary-row .over { color: var(--danger); }
+  .total-time { display: flex; justify-content: space-between; align-items: baseline; margin-top: 12px; padding-top: 14px; border-top: 1px solid var(--border); font-weight: 600; }
+  .total-time .value { font-family: var(--font-mono); font-size: 15px; }
+  .total-time .ok { color: var(--success); }
+  .total-time .ko { color: var(--danger); }
 </style>
 <script src="https://cdn.ably.com/lib/ably.min-2.js"></script>
 <script src="ably-config.js"></script>
 <script src="ably-sync.js"></script>
 </head>
-<body>
-<h1>Daily Standup Timer</h1>
-<p class="subtitle">Gardez vos daily standups dans les temps — 15 minutes max</p>
+<body data-app="Daily Standup Timer">
+<main class="page">
+<header class="kit-head">
+  <h1>Daily Standup Timer</h1>
+  <p>Un tour de parole minuté pour tenir le daily en 15 minutes.</p>
+</header>
 
 <div class="session-bar">
-  <div class="session-status" title="Session active"></div>
-  <label>Session :</label>
+  <span class="session-status" title="Session active"></span>
+  <label for="session-id">Session</label>
   <input type="text" id="session-id" value="" placeholder="session-id" onchange="changeSession(this.value)">
   <button onclick="newSession()">Nouvelle</button>
   <button onclick="copySessionLink(this)">Copier le lien</button>
 </div>
 
-
 <div id="app-setup">
-  <div class="team-setup">
+  <section class="card">
     <h2>Équipe</h2>
     <div class="settings-row">
-      <label>Temps par personne :</label>
+      <label for="time-per-person">Temps par personne</label>
       <input type="number" id="time-per-person" value="90" min="30" max="300" step="15">
       <span>secondes</span>
     </div>
     <div class="input-row">
-      <input type="text" id="member-input" placeholder="Nom du membre..." onkeydown="if(event.key==='Enter')addMember()">
-      <button class="btn-primary" onclick="addMember()">+ Ajouter</button>
+      <input type="text" id="member-input" placeholder="Nom du membre" onkeydown="if(event.key==='Enter')addMember()">
+      <button class="btn-secondary" onclick="addMember()">Ajouter</button>
     </div>
     <ul class="member-list" id="member-list"></ul>
-    <button class="btn-primary" style="width:100%; margin-top:1rem; padding: 1rem;" onclick="startStandup()" id="start-btn" disabled>Démarrer le Daily</button>
-  </div>
+    <button class="btn-primary btn-block" onclick="startStandup()" id="start-btn" disabled>Démarrer le daily</button>
+  </section>
 </div>
 
 <div id="app-timer">
@@ -107,23 +104,26 @@
       <div class="person-time" id="person-time">1:30</div>
     </div>
   </div>
-  <div class="timer-display" id="total-timer">15:00</div>
-  <div style="color: var(--muted); margin-bottom: 1rem;" id="counter-label">Personne 1/4</div>
+  <div class="timer-meta">
+    <span id="counter-label">Personne 1/4</span>
+    <span>Total <span class="timer-display" id="total-timer">0:00</span></span>
+  </div>
   <div class="controls">
     <button class="btn-secondary" onclick="togglePause()" id="pause-btn">Pause</button>
-    <button class="btn-next" onclick="nextPerson()" id="next-btn">Suivant &#8594;</button>
-    <button class="btn-secondary" onclick="endStandup()">Terminer</button>
+    <button class="btn-primary" onclick="nextPerson()" id="next-btn">Suivant</button>
+    <button class="btn-ghost" onclick="endStandup()">Terminer</button>
   </div>
 </div>
 
 <div id="app-summary">
-  <div class="summary">
-    <h2>Récap du Daily</h2>
+  <section class="card">
+    <h2>Récap du daily</h2>
     <div id="summary-list"></div>
     <div class="total-time" id="total-time-summary"></div>
-    <button class="btn-primary" style="width:100%; margin-top:1.5rem;" onclick="resetApp()">Nouveau Daily</button>
-  </div>
+    <button class="btn-primary btn-block" onclick="resetApp()">Nouveau daily</button>
+  </section>
 </div>
+</main>
 
 <script>
 const APP_KEY = 'daily-timer';
@@ -243,7 +243,7 @@ function removeMember(idx) {
 function renderMembers() {
   const list = document.getElementById('member-list');
   list.innerHTML = members.map((m, i) =>
-    `<li><span class="name">${m}</span><button class="remove" onclick="removeMember(${i})">x</button></li>`
+    `<li><span class="idx">${String(i + 1).padStart(2, '0')}</span><span class="name">${m}</span><button class="remove" onclick="removeMember(${i})" aria-label="Retirer ${m}">&times;</button></li>`
   ).join('');
   document.getElementById('start-btn').disabled = members.length === 0;
   saveSession();
@@ -350,8 +350,8 @@ function endStandup() {
 
   const tm = Math.floor(totalSeconds / 60);
   const ts = totalSeconds % 60;
-  const color = totalSeconds > 900 ? 'var(--red)' : 'var(--green)';
-  document.getElementById('total-time-summary').innerHTML = `<span style="color:${color}">Total : ${tm}:${ts.toString().padStart(2, '0')}</span>`;
+  const cls = totalSeconds > 900 ? 'ko' : 'ok';
+  document.getElementById('total-time-summary').innerHTML = `<span>Total</span><span class="value ${cls}">${tm}:${ts.toString().padStart(2, '0')}</span>`;
 }
 
 function resetApp() {

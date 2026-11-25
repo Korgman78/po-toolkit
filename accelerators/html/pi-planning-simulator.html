@@ -4,141 +4,136 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PI Planning Simulator - PO Toolkit</title>
+<link rel="stylesheet" href="app-kit.css">
+<script src="app-kit.js"></script>
 <style>
-  :root {
-    --bg: #0f1117;
-    --card: #1a1c2b;
-    --card2: #202338;
-    --text: #e8eaf0;
-    --heading: #f8fafc;
-    --muted: #8a90ab;
-    --border: #2a2d3e;
-    --blue: #6366f1;
-    --violet: #8b5cf6;
-    --green: #10b981;
-    --yellow: #f59e0b;
-    --red: #ef4444;
-    --cyan: #06b6d4;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-  .page { padding: 1.5rem; display: grid; gap: 1rem; }
-  .header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-  .header h1 { font-size: 1.65rem; font-weight: 800; color: var(--heading); letter-spacing: -0.03em; }
-  .header p { color: var(--muted); font-size: 0.92rem; line-height: 1.6; }
-  .header-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-  button { font-family: inherit; font-size: 0.84rem; font-weight: 700; border: none; border-radius: 10px; padding: 0.6rem 0.95rem; cursor: pointer; transition: all 0.2s; }
-  .btn-primary { background: var(--blue); color: white; }
-  .btn-primary:hover { background: #4f46e5; }
-  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
-  .btn-secondary:hover { border-color: var(--blue); }
-  .btn-danger { background: transparent; color: var(--red); border: 1px solid rgba(239,68,68,0.5); }
-  .btn-danger:hover { background: rgba(239,68,68,0.12); }
-  .btn-small { padding: 0.34rem 0.58rem; font-size: 0.73rem; border-radius: 8px; }
+  :root { --card: var(--surface); --card2: var(--surface-2); --heading: var(--text); --muted: var(--text-3); --blue: var(--accent); --red: var(--danger); --green: var(--success); --yellow: var(--warn); }
+  .page { max-width: 1440px; margin: 0 auto; padding: 32px 24px 64px; display: grid; gap: 16px; }
+  .header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 4px; }
+  .header-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
-  .config-grid, .summary-grid, .board-grid, .item-grid { display: grid; gap: 1rem; }
-  .config-grid { grid-template-columns: 1.15fr 0.85fr; }
-  .summary-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-  .item-grid { grid-template-columns: 1fr; margin-top: 1rem; }
-  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-  .panel-header { padding: 1rem 1.1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-  .panel-header h2, .panel-header h3 { font-size: 1.02rem; font-weight: 800; color: var(--heading); letter-spacing: -0.02em; }
-  .panel-body { padding: 1rem 1.1rem; }
+  .config-grid, .summary-grid, .board-grid, .item-grid { display: grid; gap: 16px; }
+  .config-grid { grid-template-columns: 1.15fr 0.85fr; align-items: start; }
+  .item-grid { grid-template-columns: 1fr 1fr; margin-top: 18px; gap: 14px; }
 
-  .form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; }
-  .field { display: flex; flex-direction: column; gap: 0.35rem; }
-  .field label { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
-  .field input, .field select { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 0.72rem 0.8rem; outline: none; font-family: inherit; font-size: 0.9rem; }
-  .field input:focus, .field select:focus { border-color: var(--blue); }
-  .hint { color: var(--muted); font-size: 0.75rem; }
+  .panel { border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 18px 20px 0; }
+  .panel-header h2, .panel-header h3 { font-family: var(--font-serif); font-size: 21px; font-weight: 500; }
+  .panel-header .tools { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .panel-body { padding: 16px 20px 20px; }
+  .hint { font-size: 12.5px; color: var(--text-3); }
 
-  .item-section { background: var(--card2); border: 1px solid var(--border); border-radius: 14px; padding: 1rem; display: grid; gap: 0.9rem; }
-  .item-section-head { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; }
-  .item-section-head h3 { font-size: 0.96rem; font-weight: 800; color: var(--heading); }
-  .item-section-head span { color: var(--muted); font-size: 0.78rem; }
-  .item-composer { display: grid; grid-template-columns: 1fr auto; gap: 0.6rem; }
-  .item-composer input { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 0.72rem 0.8rem; outline: none; font-family: inherit; font-size: 0.88rem; }
-  .item-composer input:focus { border-color: var(--blue); }
-  .item-list { display: grid; gap: 0.55rem; }
-  .item-row { display: grid; grid-template-columns: auto 1fr auto; gap: 0.6rem; align-items: center; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 0.7rem; }
-  .item-index { width: 28px; height: 28px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.74rem; font-weight: 800; background: rgba(99,102,241,0.14); color: #c7cdf9; }
-  .item-row input { width: 100%; background: transparent; color: var(--text); border: none; outline: none; font-family: inherit; font-size: 0.88rem; line-height: 1.5; }
-  .item-empty { color: var(--muted); font-size: 0.82rem; line-height: 1.6; border: 1px dashed var(--border); border-radius: 12px; padding: 0.85rem 0.9rem; }
+  .form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12.5px; font-weight: 500; color: var(--text-2); }
+  .field input, .field select { width: 100%; height: 36px; padding: 0 11px; }
 
-  .summary-card { background: var(--card2); border: 1px solid var(--border); border-radius: 14px; padding: 0.95rem 1rem; }
-  .summary-card .label { color: var(--muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; }
-  .summary-card .value { display: block; margin-top: 0.3rem; font-size: 1.25rem; font-weight: 800; color: var(--heading); }
-  .summary-card .sub { display: block; margin-top: 0.2rem; color: var(--muted); font-size: 0.76rem; }
+  .item-section { display: grid; gap: 10px; align-content: start; }
+  .item-section-head h3 { font-size: 14px; font-weight: 600; }
+  .item-section-head span { display: block; margin-top: 2px; font-size: 12.5px; color: var(--text-3); }
+  .item-composer { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
+  .item-composer input { height: 34px; padding: 0 11px; min-width: 0; }
+  .item-list { display: grid; }
+  .item-row { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-soft); }
+  .item-row:last-child { border-bottom: 0; }
+  .item-index { width: 20px; font-family: var(--font-mono); font-size: 11.5px; color: var(--text-4); }
+  .item-row input { width: 100%; height: 30px; padding: 0 6px; border-color: transparent; background: transparent; font-size: 13.5px; }
+  .item-row input:hover { border-color: var(--border); }
+  .item-empty { padding: 12px; border: 1px dashed var(--border-strong); border-radius: 8px; font-size: 13px; line-height: 1.5; color: var(--text-3); }
 
-  .warning-list { display: grid; gap: 0.65rem; }
-  .warning-item { border: 1px solid rgba(245,158,11,0.35); background: rgba(245,158,11,0.08); color: #ffd69b; border-radius: 12px; padding: 0.8rem 0.9rem; font-size: 0.82rem; line-height: 1.55; }
-  .warning-item.red { border-color: rgba(239,68,68,0.35); background: rgba(239,68,68,0.08); color: #ffb3b3; }
-  .warning-empty { color: #b7f3dc; border: 1px solid rgba(16,185,129,0.35); background: rgba(16,185,129,0.08); border-radius: 12px; padding: 0.8rem 0.9rem; font-size: 0.82rem; }
+  /* Indicateurs */
+  .summary-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .summary-card { padding: 14px 18px; border-left: 1px solid var(--border-soft); }
+  .summary-card:first-child { border-left: 0; }
+  .summary-card .label { font-size: 12px; color: var(--text-3); }
+  .summary-card .value { display: block; margin-top: 2px; font-family: var(--font-serif); font-size: 28px; font-weight: 500; line-height: 1.15; color: var(--text); }
+  .summary-card .sub { display: block; margin-top: 2px; font-size: 12px; color: var(--text-3); }
 
-  .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.85rem; }
-  .toolbar .meta { color: var(--muted); font-size: 0.78rem; }
+  /* Alertes */
+  .warning-list { display: grid; gap: 8px; }
+  .warning-item, .warning-empty { position: relative; padding: 10px 12px 10px 30px; border-radius: 8px; font-size: 13px; line-height: 1.5; }
+  .warning-item::before, .warning-empty::before { content: ''; position: absolute; left: 12px; top: 16px; width: 7px; height: 7px; border-radius: 50%; }
+  .warning-item { background: var(--warn-soft); color: var(--warn-text); }
+  .warning-item::before { background: var(--warn); }
+  .warning-item.red { background: var(--danger-soft); color: color-mix(in oklch, var(--danger) 80%, var(--text)); }
+  .warning-item.red::before { background: var(--danger); }
+  .warning-empty { background: var(--success-soft); color: color-mix(in oklch, var(--success) 80%, var(--text)); }
+  .warning-empty::before { background: var(--success); }
 
-  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; }
-  table { width: 100%; border-collapse: collapse; }
-  th, td { padding: 0.65rem 0.7rem; border-bottom: 1px solid var(--border); vertical-align: top; }
-  th { background: var(--card2); color: #d6daeb; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; text-align: left; }
-  td { font-size: 0.84rem; }
-  tr:last-child td { border-bottom: none; }
-  td input[type="text"], td input[type="number"], td select { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 0.45rem 0.55rem; outline: none; font-family: inherit; font-size: 0.82rem; }
-  td input:focus, td select:focus { border-color: var(--blue); }
+  .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .toolbar .meta { font-size: 12.5px; color: var(--text-3); }
 
-  .chip { display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 999px; padding: 0.28rem 0.6rem; font-size: 0.72rem; font-weight: 800; }
-  .chip.must { background: rgba(239,68,68,0.12); color: #ffb3b3; }
-  .chip.should { background: rgba(245,158,11,0.12); color: #ffd69b; }
-  .chip.ip { background: rgba(6,182,212,0.12); color: #b9f3ff; }
+  /* Tableau backlog */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border-soft); border-radius: var(--radius); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { padding: 7px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
+  th { padding: 10px; text-align: left; white-space: nowrap; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+  th.w-id { width: 80px; } th.w-sp { width: 84px; } th.w-prio { width: 110px; } th.w-squad { width: 130px; } th.w-dep { width: 150px; } th.w-sprint { width: 150px; } th.w-act { width: 44px; }
+  tr:last-child td { border-bottom: 0; }
+  td input[type="text"], td input[type="number"], td select { width: 100%; height: 32px; padding: 0 8px; font-size: 13px; }
+  td input[type="number"] { font-family: var(--font-mono); }
+  td .id-input { font-family: var(--font-mono); font-size: 12px; }
+  .row-del { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--text-4); font-size: 16px; cursor: pointer; }
+  .row-del:hover { background: var(--danger-soft); color: var(--danger); }
+  .file-btn input { display: none; }
 
-  .board-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); align-items: start; }
-  .lane { background: var(--card); border: 1px solid var(--border); border-radius: 16px; min-height: 260px; display: flex; flex-direction: column; }
-  .lane.ip-lane { border-color: rgba(6,182,212,0.5); box-shadow: 0 0 0 1px rgba(6,182,212,0.16) inset; }
-  .lane-header { padding: 0.95rem 1rem; border-bottom: 1px solid var(--border); }
-  .lane-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.55rem; }
-  .lane-title { font-size: 0.98rem; font-weight: 800; color: var(--heading); }
-  .lane-stats { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 0.78rem; color: var(--muted); }
-  .lane-capacity input { width: 76px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.5rem; font-family: inherit; font-size: 0.8rem; }
-  .lane-progress { height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden; margin-top: 0.55rem; }
-  .lane-progress-bar { height: 100%; background: linear-gradient(90deg, var(--blue), var(--violet)); }
-  .lane-progress-bar.over { background: linear-gradient(90deg, var(--yellow), var(--red)); }
-  .lane-body { padding: 0.8rem; display: grid; gap: 0.75rem; min-height: 180px; }
-  .lane-drop { min-height: 36px; border: 1px dashed transparent; border-radius: 12px; }
-  .lane.drag-over .lane-drop { border-color: var(--blue); background: rgba(99,102,241,0.08); }
+  /* Pastilles */
+  .chip { display: inline-flex; align-items: center; height: 21px; padding: 0 7px; border-radius: 999px; background: var(--surface-3); color: var(--text-2); font-size: 11.5px; font-weight: 500; white-space: nowrap; }
+  .chip.must { background: var(--danger-soft); color: var(--danger); }
+  .chip.should { background: var(--warn-soft); color: var(--warn-text); }
+  .chip.ip { background: var(--t4-bg); color: var(--t4-fg); }
 
-  .story-card { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 0.85rem; display: grid; gap: 0.55rem; cursor: grab; }
+  /* Board */
+  .board-grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; align-items: start; }
+  .lane { display: flex; flex-direction: column; min-height: 260px; border: 1px solid var(--border-soft); border-radius: var(--radius); background: var(--surface-2); }
+  .lane.ip-lane { background: color-mix(in oklch, var(--t4-bg) 45%, var(--surface-2)); }
+  .lane-header { padding: 12px 12px 10px; }
+  .lane-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .lane-title { font-size: 14px; font-weight: 600; }
+  .lane-stats { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); }
+  .lane-capacity { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-sans); }
+  .lane-capacity input { width: 58px; height: 26px; padding: 0 6px; font-family: var(--font-mono); font-size: 12px; }
+  .lane-progress { height: 4px; margin-top: 8px; border-radius: 2px; background: var(--surface-3); overflow: hidden; }
+  .lane-progress-bar { height: 100%; background: var(--accent); }
+  .lane-progress-bar.over { background: var(--danger); }
+  .lane-body { display: grid; gap: 8px; min-height: 180px; padding: 2px 8px 8px; }
+  .lane-drop { display: grid; gap: 8px; min-height: 36px; border: 1px dashed transparent; border-radius: 9px; }
+  .lane.drag-over .lane-drop { border-color: var(--accent); background: var(--accent-soft); }
+
+  .story-card { display: grid; gap: 7px; padding: 10px 12px; border: 1px solid var(--border-soft); border-radius: 9px; background: var(--surface); box-shadow: var(--shadow-sm); cursor: grab; }
   .story-card:active { cursor: grabbing; }
-  .story-card .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.6rem; }
-  .story-card h4 { font-size: 0.86rem; font-weight: 800; color: var(--heading); line-height: 1.45; }
-  .story-card .meta { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-  .story-card .small { font-size: 0.74rem; color: var(--muted); line-height: 1.5; }
-  .story-card .deps { color: #c7cdf9; }
-  .story-card .small strong { color: var(--heading); }
-  .empty-lane { color: var(--muted); font-size: 0.8rem; padding: 0.8rem; border: 1px dashed var(--border); border-radius: 12px; text-align: center; line-height: 1.6; }
+  .story-card .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .story-card h4 { font-size: 13.5px; font-weight: 500; line-height: 1.4; }
+  .story-card .meta { display: flex; gap: 4px; flex-wrap: wrap; }
+  .story-card .small { font-size: 12px; line-height: 1.45; color: var(--text-3); }
+  .story-card .deps { color: var(--accent-text); }
+  .story-card .small strong { color: var(--text-2); font-weight: 600; }
+  .empty-lane { padding: 14px 10px; border: 1px dashed var(--border-strong); border-radius: 8px; text-align: center; font-size: 12.5px; line-height: 1.5; color: var(--text-3); }
 
   @media (max-width: 1180px) {
     .config-grid { grid-template-columns: 1fr; }
-    .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .summary-card:nth-child(4) { border-left: 0; }
+    .summary-card:nth-child(n+4) { border-top: 1px solid var(--border-soft); }
   }
-
   @media (max-width: 760px) {
-    .summary-grid, .form-grid, .item-composer { grid-template-columns: 1fr; }
-    .item-row { grid-template-columns: auto 1fr; }
-    .item-row button { grid-column: 1 / -1; }
+    .page { padding: 24px 16px 48px; }
+    .form-grid, .item-composer, .item-grid { grid-template-columns: 1fr; }
+    .summary-grid { grid-template-columns: 1fr 1fr; }
+    .summary-card { border-left: 0; border-top: 1px solid var(--border-soft); }
   }
 </style>
 </head>
-<body>
+<body data-app="PI Planning Simulator">
 <div class="page">
   <div class="header">
-    <div>
+    <div class="kit-head">
       <h1>PI Planning Simulator</h1>
-      <p>Planifiez les US par sprint, gardez un œil sur la capacité, les priorités Must/Should, les dépendances et les risques du PI.</p>
+      <p>Planifiez les US par sprint en gardant un œil sur la capacité, les priorités Must/Should, les dépendances et les risques.</p>
     </div>
     <div class="header-actions">
+      <button class="btn-ghost" id="reset-btn">Réinitialiser</button>
       <button class="btn-secondary" id="export-btn">Exporter CSV</button>
-      <button class="btn-danger" id="reset-btn">Réinitialiser</button>
     </div>
   </div>
 
@@ -151,8 +146,8 @@
       <div class="panel-body">
         <div class="form-grid">
           <div class="field">
-            <label for="pi-name">PI name</label>
-            <input id="pi-name" type="text" placeholder="Ex: PI Q3 - Growth">
+            <label for="pi-name">Nom du PI</label>
+            <input id="pi-name" type="text" placeholder="Ex. : PI Q3 – Growth">
           </div>
           <div class="field">
             <label for="sprint-count">Nombre de sprints</label>
@@ -171,8 +166,8 @@
               <span>Des outcomes clairs, pas un bloc fourre-tout.</span>
             </div>
             <div class="item-composer">
-              <input id="objective-input" type="text" placeholder="Ex: Livrer le reporting manager avec export CSV et telemetry de bout en bout.">
-              <button class="btn-primary" id="add-objective-btn">+ Ajouter</button>
+              <input id="objective-input" type="text" placeholder="Ex. : Livrer le reporting manager avec export CSV et telemetry de bout en bout.">
+              <button class="btn-secondary" id="add-objective-btn">Ajouter</button>
             </div>
             <div class="item-list" id="objective-list"></div>
           </div>
@@ -184,7 +179,7 @@
             </div>
             <div class="item-composer">
               <input id="risk-input" type="text" placeholder="Ex : Dépendance équipe data sur le schéma d'export et le contrat de colonnes.">
-              <button class="btn-primary" id="add-risk-btn">+ Ajouter</button>
+              <button class="btn-secondary" id="add-risk-btn">Ajouter</button>
             </div>
             <div class="item-list" id="risk-list"></div>
           </div>
@@ -208,13 +203,13 @@
   <section class="panel">
     <div class="panel-header">
       <h3>Backlog PI</h3>
-      <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+      <div class="tools">
         <span class="hint" id="backlog-meta"></span>
-        <button class="btn-primary" id="add-story-btn">+ Ajouter une US</button>
-        <label class="btn-secondary" style="cursor:pointer;display:inline-flex;align-items:center;gap:0.35rem;" id="import-csv-label">
+        <label class="btn-secondary file-btn" id="import-csv-label">
           Importer CSV
-          <input type="file" accept=".csv" id="import-csv-input" style="display:none;">
+          <input type="file" accept=".csv" id="import-csv-input">
         </label>
+        <button class="btn-primary" id="add-story-btn">Ajouter une US</button>
       </div>
     </div>
     <div class="panel-body">
@@ -222,14 +217,14 @@
         <table>
           <thead>
             <tr>
-              <th style="width:72px;">ID</th>
+              <th class="w-id">ID</th>
               <th>Titre US</th>
-              <th style="width:92px;">SP</th>
-              <th style="width:110px;">Priorité</th>
-              <th style="width:120px;">Squad</th>
-              <th style="width:140px;">Dépendances</th>
-              <th style="width:140px;">Sprint cible</th>
-              <th style="width:48px;"></th>
+              <th class="w-sp">SP</th>
+              <th class="w-prio">Priorité</th>
+              <th class="w-squad">Squad</th>
+              <th class="w-dep">Dépendances</th>
+              <th class="w-sprint">Sprint cible</th>
+              <th class="w-act"></th>
             </tr>
           </thead>
           <tbody id="backlog-body"></tbody>
@@ -467,7 +462,7 @@ function renderItemList(kind, containerId) {
   const items = kind === 'objectives' ? state.config.objectives : state.config.risks;
   const emptyText = kind === 'objectives'
     ? 'Ajoutez les outcomes attendus du PI pour garder le board orienté valeur.'
-    : 'Ajoutez les principaux risques ou points d'attention pour faciliter les arbitrages.';
+    : "Ajoutez les principaux risques ou points d'attention pour faciliter les arbitrages.";
 
   document.getElementById(containerId).innerHTML = items.length === 0
     ? `<div class="item-empty">${emptyText}</div>`
@@ -475,7 +470,7 @@ function renderItemList(kind, containerId) {
         <div class="item-row" data-item-kind="${kind}" data-item-index="${index}">
           <span class="item-index">${index + 1}</span>
           <input type="text" value="${escapeHtml(item)}" data-item-input="true">
-          <button class="btn-danger btn-small" data-remove-item="${kind}:${index}">Supprimer</button>
+          <button class="row-del" data-remove-item="${kind}:${index}" aria-label="Supprimer">&times;</button>
         </div>
       `).join('');
 }
@@ -485,7 +480,7 @@ function renderBacklog() {
 
   document.getElementById('backlog-body').innerHTML = state.stories.map(story => `
     <tr data-story-id="${story.id}">
-      <td><strong>${story.id}</strong></td>
+      <td class="id-input">${story.id}</td>
       <td><input type="text" data-field="title" value="${escapeHtml(story.title)}"></td>
       <td><input type="number" data-field="points" min="1" max="100" step="1" value="${story.points}"></td>
       <td>
@@ -502,7 +497,7 @@ function renderBacklog() {
           ${getSprintOptions().map(sprintNumber => `<option value="${sprintNumber}" ${story.sprint === sprintNumber ? 'selected' : ''}>${getSprintLabel(sprintNumber)}</option>`).join('')}
         </select>
       </td>
-      <td><button class="btn-danger btn-small" data-remove-story="${story.id}">x</button></td>
+      <td><button class="row-del" data-remove-story="${story.id}" aria-label="Supprimer ${story.id}">&times;</button></td>
     </tr>
   `).join('');
 }
@@ -556,7 +551,7 @@ function renderStoryCard(story) {
   return `
     <article class="story-card" draggable="true" data-story-card="${story.id}">
       <div class="top">
-        <h4>${story.id} - ${escapeHtml(story.title)}</h4>
+        <h4>${story.id} · ${escapeHtml(story.title)}</h4>
         <span class="chip ${story.priority === 'Must' ? 'must' : 'should'}">${story.priority}</span>
       </div>
       <div class="meta">
@@ -564,7 +559,7 @@ function renderStoryCard(story) {
         <span class="chip">${escapeHtml(story.squad || 'Core')}</span>
       </div>
       <div class="small ${deps.length > 0 ? 'deps' : ''}">
-        <strong>Depends on:</strong> ${deps.length > 0 ? deps.join(', ') : 'none'}
+        <strong>Dépend de :</strong> ${deps.length > 0 ? deps.join(', ') : 'aucune'}
       </div>
     </article>
   `;

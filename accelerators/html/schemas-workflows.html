@@ -4,270 +4,187 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Schémas & Workflows - PO Toolkit</title>
+<link rel="stylesheet" href="app-kit.css">
+<script src="app-kit.js"></script>
 <style>
   :root {
-    --bg: #0f1117;
-    --card: #1a1c2b;
-    --card2: #202338;
-    --text: #e8eaf0;
-    --heading: #f8fafc;
-    --muted: #8a90ab;
-    --border: #2a2d3e;
-    --blue: #6366f1;
-    --teal: #14b8a6;
-    --green: #22c55e;
-    --orange: #f59e0b;
-    --red: #ef4444;
-    --cyan: #06b6d4;
-    --purple: #8b5cf6;
-    --slate: #64748b;
-    --pink: #ec4899;
+    --card: var(--surface);
+    --card2: var(--surface-2);
+    --heading: var(--text);
+    --muted: var(--text-3);
+    /* Palette des modules : tons moyens lisibles en clair comme en sombre */
+    --slate: #8a7f75;
+    --blue: #5b6fc0;
+    --teal: #3f9a94;
+    --green: #4a9a6a;
+    --orange: #c98a2b;
+    --purple: #8a6bb8;
+    --pink: #c0577f;
+    --red: #c4553f;
+    --cyan: #3f93a8;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-  button, input, textarea, select { font-family: inherit; }
-  .app { min-height: 100vh; display: grid; grid-template-columns: 300px 1fr 24px 300px; }
-  .sidebar, .inspector { background: var(--card); border-right: 1px solid var(--border); padding: 1.1rem; display: grid; gap: 1rem; align-content: start; }
-  .inspector { border-right: none; border-left: 1px solid var(--border); }
-  .sidebar h1 { font-size: 1.45rem; font-weight: 800; color: var(--heading); letter-spacing: -0.03em; }
-  .sidebar p, .inspector p, .hint { color: var(--muted); font-size: 0.82rem; line-height: 1.6; }
-  .panel { background: var(--card2); border: 1px solid var(--border); border-radius: 16px; padding: 1rem; display: grid; gap: 0.8rem; }
-  .panel h2 { font-size: 1rem; font-weight: 800; color: var(--heading); }
-  .session-row, .toolbar { display: flex; gap: 0.55rem; flex-wrap: wrap; align-items: center; }
-  input[type="text"], textarea, select {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    padding: 0.72rem 0.8rem;
-    outline: none;
-    font-size: 0.9rem;
-  }
-  textarea { min-height: 92px; resize: vertical; }
-  input:focus, textarea:focus, select:focus { border-color: var(--blue); }
-  button {
-    border: none;
-    border-radius: 10px;
-    padding: 0.62rem 0.9rem;
-    cursor: pointer;
-    font-size: 0.83rem;
-    font-weight: 700;
-    transition: all 0.2s;
-  }
-  .btn-primary { background: var(--blue); color: white; }
-  .btn-primary:hover { background: #4f46e5; }
-  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
-  .btn-secondary:hover { border-color: var(--blue); }
-  .btn-danger { background: transparent; color: var(--red); border: 1px solid rgba(239,68,68,0.45); }
-  .btn-danger:hover { background: rgba(239,68,68,0.1); }
-  .btn-small { padding: 0.36rem 0.65rem; font-size: 0.74rem; }
-  .template-grid { display: grid; gap: 0.65rem; }
-  .category-chips { display: flex; gap: 0.45rem; flex-wrap: wrap; }
-  .category-chip {
-    border-radius: 999px;
-    padding: 0.45rem 0.72rem;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-size: 0.75rem;
-    font-weight: 800;
-  }
-  .category-chip.active { color: #f8fafc; border-color: var(--blue); background: rgba(99,102,241,0.14); }
-  .template-card { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 0.82rem; cursor: pointer; transition: all 0.2s; display: grid; gap: 0.35rem; }
-  .template-card:hover { transform: translateY(-1px); border-color: var(--blue); }
-  .template-card strong { font-size: 0.88rem; color: var(--heading); }
-  .template-card span { font-size: 0.76rem; color: var(--muted); line-height: 1.5; }
-  .template-badge { display: inline-flex; width: fit-content; align-items: center; gap: 0.35rem; border-radius: 999px; padding: 0.26rem 0.56rem; font-size: 0.7rem; font-weight: 800; background: rgba(255,255,255,0.08); }
-  .pseudo-row { display: grid; grid-template-columns: 42px 1fr; gap: 0.6rem; align-items: center; }
-  .pseudo-avatar { width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(135deg, var(--blue), var(--teal)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.95rem; }
+  button { border: 0; cursor: pointer; background: none; }
 
-  .workspace { display: grid; grid-template-rows: auto 1fr; min-width: 0; }
-  .workspace-top { padding: 1rem 1.1rem; border-bottom: 1px solid var(--border); background: rgba(15,17,23,0.95); position: sticky; top: 0; z-index: 2; }
-  .workspace-top h2 { font-size: 1.18rem; font-weight: 800; color: var(--heading); }
-  .workspace-top .sub { color: var(--muted); font-size: 0.8rem; }
-  .board-wrap { padding: 0; overflow: hidden; position: relative; }
-  .canvas-shell { width: 4000px; height: 3000px; position: relative; cursor: grab; border: 1px solid var(--border); border-radius: 20px; background:
-      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px),
-      radial-gradient(circle at top left, rgba(99,102,241,0.18), transparent 34%),
-      radial-gradient(circle at bottom right, rgba(20,184,166,0.12), transparent 32%),
-      #101521;
-    background-size: 28px 28px, 28px 28px, auto, auto, auto;
-    overflow: hidden;
+  .app { height: calc(100vh - var(--kit-bar-h)); display: grid; grid-template-columns: 290px minmax(0, 1fr) 20px 290px; }
+  .sidebar, .inspector { display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow-y: auto; padding: 20px 14px 24px; background: var(--bg); }
+  .sidebar { border-right: 1px solid var(--border); }
+  .inspector { border-left: 1px solid var(--border); }
+  .sidebar h1 { font-family: var(--font-serif); font-size: 26px; font-weight: 500; line-height: 1.15; letter-spacing: -0.015em; }
+  .sidebar .intro p { margin-top: 6px; }
+  .sidebar p, .inspector p, .hint { font-size: 12.5px; line-height: 1.55; color: var(--text-3); }
+  .panel { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--border-soft); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-sm); }
+  .panel h2 { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+  .session-row, .toolbar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .session-row input { flex: 1; min-width: 0; font-family: var(--font-mono); }
+  input[type="text"], textarea, select { width: 100%; }
+  input[type="text"], select { height: 34px; padding: 0 10px; }
+  textarea { min-height: 84px; padding: 8px 10px; resize: vertical; line-height: 1.5; }
+  .session-row input { width: auto; }
+
+  /* Palette */
+  .category-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+  .category-chip { height: 26px; padding: 0 9px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text-3); font-size: 12px; font-weight: 500; transition: background 0.12s, border-color 0.12s, color 0.12s; }
+  .category-chip:hover { color: var(--text); border-color: var(--border-strong); }
+  .category-chip.active { border-color: var(--accent-border); background: var(--accent-soft); color: var(--accent-text); }
+  .template-grid { display: grid; gap: 6px; }
+  .template-card { display: grid; gap: 2px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); text-align: left; cursor: pointer; transition: border-color 0.12s, background 0.12s; }
+  .template-card:hover { border-color: var(--border-strong); background: var(--surface-2); }
+  .template-card strong { font-size: 13.5px; font-weight: 500; color: var(--text); }
+  .template-card span { font-size: 12px; line-height: 1.45; color: var(--text-3); }
+  .template-badge { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 2px; font-size: 11px !important; font-weight: 500; color: var(--text-3) !important; }
+  .template-badge::before { content: ''; width: 7px; height: 7px; border-radius: 2px; background: var(--c); }
+  .pseudo-row { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: center; }
+  .pseudo-avatar { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); font-size: 11.5px; font-weight: 600; }
+
+  /* Zone de travail */
+  .workspace { display: grid; grid-template-rows: auto 1fr; min-width: 0; min-height: 0; }
+  .workspace-top { position: relative; z-index: 2; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg); }
+  .workspace-top .bar { justify-content: space-between; }
+  .workspace-top h2 { font-size: 15px; font-weight: 600; }
+  .workspace-top .sub { font-size: 12.5px; color: var(--text-3); }
+  .board-wrap { position: relative; overflow: hidden; padding: 0; background: var(--surface-2); }
+  .canvas-shell {
+    position: relative; width: 4000px; height: 3000px; overflow: hidden; cursor: grab;
+    background-color: var(--surface-2);
+    background-image: radial-gradient(circle, color-mix(in oklch, var(--text-4) 45%, transparent) 1px, transparent 1.2px);
+    background-size: 24px 24px;
   }
   #links-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
   #link-label-layer { position: absolute; inset: 0; pointer-events: none; }
   #canvas { position: absolute; inset: 0; pointer-events: none; }
-  .node { pointer-events: auto; cursor: grab; }
-  .empty-state {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 2rem;
-    color: var(--muted);
-    line-height: 1.7;
-    pointer-events: none;
-  }
+  .empty-state { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 32px; text-align: center; font-size: 14px; line-height: 1.6; color: var(--text-3); pointer-events: none; }
 
+  /* Modules */
   .node {
-    position: absolute;
-    width: 190px;
-    min-height: 116px;
-    background: linear-gradient(180deg, rgba(22,27,40,0.98), rgba(16,20,31,0.98));
-    border: 1px solid rgba(148,163,184,0.18);
-    border-radius: 18px;
-    box-shadow: 0 14px 30px rgba(0,0,0,0.18);
-    padding: 0.9rem;
-    display: grid;
-    gap: 0.6rem;
-    cursor: grab;
-    user-select: none;
+    --cat: var(--slate);
+    position: absolute; display: grid; gap: 6px; width: 190px; min-height: 116px; padding: 12px;
+    border: 1px solid color-mix(in oklch, var(--cat) 30%, var(--border));
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    cursor: grab; user-select: none; pointer-events: auto;
+    transition: box-shadow 0.15s, border-color 0.15s;
   }
-  .node.selected { box-shadow: 0 0 0 2px rgba(99,102,241,0.5), 0 18px 35px rgba(0,0,0,0.24); border-color: rgba(99,102,241,0.55); }
-  .node.connecting { box-shadow: 0 0 0 2px rgba(20,184,166,0.5), 0 18px 35px rgba(0,0,0,0.24); border-color: rgba(20,184,166,0.6); }
+  .node:hover { box-shadow: var(--shadow-md); }
+  .node.selected { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 20%, transparent), var(--shadow-md); }
+  .node.connecting { border-color: var(--success); box-shadow: 0 0 0 3px color-mix(in oklch, var(--success) 22%, transparent), var(--shadow-md); }
   .node .top, .node .label, .node .subtitle, .node .footer, .node-actions { position: relative; z-index: 1; }
-  .node .top { display: grid; grid-template-columns: 38px 1fr; align-items: center; gap: 0.65rem; }
-  .node .icon { width: 38px; height: 38px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.05)); color: #f8fafc; box-shadow: inset 0 1px 0 rgba(255,255,255,0.08); }
-  .node .icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-  .node .icon svg.fill-icon { fill: currentColor; stroke: none; }
-  .node .type { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #d7dcf9; line-height: 1.25; }
-  .node .label { font-size: 0.95rem; font-weight: 800; color: var(--heading); line-height: 1.35; }
-  .node .subtitle { font-size: 0.74rem; color: var(--muted); line-height: 1.5; }
-  .node .footer { display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; font-size: 0.7rem; color: var(--muted); }
-  .node .meta-tag { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 999px; padding: 0.2rem 0.45rem; }
-  .node-actions { display: flex; align-items: center; gap: 0.45rem; margin-top: 0.1rem; flex-wrap: wrap; }
-  .node-action-btn {
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.14);
-    background: rgba(255,255,255,0.06);
-    color: #f8fafc;
-    padding: 0.3rem 0.65rem;
-    font-size: 0.7rem;
-    font-weight: 800;
-  }
-  .node-action-btn:hover { transform: translateY(-1px); border-color: rgba(99,102,241,0.45); }
-  .node[data-cat="fronts"] { background: linear-gradient(180deg, rgba(99,102,241,0.14), rgba(99,102,241,0.04)); border-color: rgba(99,102,241,0.35); }
-  .node[data-cat="edge_access"] { background: linear-gradient(180deg, rgba(239,68,68,0.12), rgba(239,68,68,0.04)); border-color: rgba(239,68,68,0.3); }
-  .node[data-cat="services"] { background: linear-gradient(180deg, rgba(34,197,94,0.12), rgba(34,197,94,0.04)); border-color: rgba(34,197,94,0.3); }
-  .node[data-cat="integration"] { background: linear-gradient(180deg, rgba(245,158,11,0.12), rgba(245,158,11,0.04)); border-color: rgba(245,158,11,0.3); }
-  .node[data-cat="data"] { background: linear-gradient(180deg, rgba(6,182,212,0.12), rgba(6,182,212,0.04)); border-color: rgba(6,182,212,0.3); }
-  .node[data-cat="platform"] { background: linear-gradient(180deg, rgba(139,92,246,0.12), rgba(139,92,246,0.04)); border-color: rgba(139,92,246,0.3); }
-  .node[data-cat="external"] { background: linear-gradient(180deg, rgba(100,116,139,0.12), rgba(100,116,139,0.05)); border-color: rgba(100,116,139,0.35); }
-  .node[data-cat="custom"] { background: linear-gradient(180deg, rgba(100,116,139,0.1), rgba(100,116,139,0.04)); border-color: rgba(100,116,139,0.25); }
+  .node .top { display: grid; grid-template-columns: 30px 1fr; align-items: center; gap: 9px; }
+  .node .icon { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: color-mix(in oklch, var(--c, var(--cat)) 15%, var(--surface)); color: var(--c, var(--cat)); }
+  .node .icon svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .node .icon svg.fill-icon, .node .icon .fill-icon { fill: currentColor; stroke: none; }
+  .node .type { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.25; color: var(--text-3); }
+  .node .label { font-size: 14.5px; font-weight: 600; line-height: 1.3; color: var(--text); }
+  .node .subtitle { font-size: 12px; line-height: 1.45; color: var(--text-3); }
+  .node .footer { display: flex; align-items: center; justify-content: flex-end; gap: 6px; font-size: 11px; color: var(--text-3); }
+  .node .meta-tag { padding: 1px 7px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border-soft); }
+  .node-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .node-action-btn { height: 24px; padding: 0 9px; border: 1px solid var(--accent-border); border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); font-size: 12px; font-weight: 500; }
+  .node-action-btn:hover { background: color-mix(in oklch, var(--accent) 22%, var(--surface)); }
+  .node[data-cat="fronts"] { --cat: var(--blue); }
+  .node[data-cat="edge_access"] { --cat: var(--red); }
+  .node[data-cat="services"] { --cat: var(--green); }
+  .node[data-cat="integration"] { --cat: var(--orange); }
+  .node[data-cat="data"] { --cat: var(--cyan); }
+  .node[data-cat="platform"] { --cat: var(--purple); }
+  .node[data-cat="external"], .node[data-cat="custom"] { --cat: var(--slate); }
 
-  .inspector .field { display: grid; gap: 0.35rem; }
-  .inspector label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
-  .pill { display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 999px; padding: 0.28rem 0.55rem; background: rgba(99,102,241,0.12); color: #c7cdf9; font-size: 0.72rem; font-weight: 800; }
-  .link-list { display: grid; gap: 0.5rem; }
-  .link-chip { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.55rem 0.65rem; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); font-size: 0.76rem; }
-  .link-chip-main { display: grid; gap: 0.3rem; }
-  .link-badge { display: inline-flex; width: fit-content; align-items: center; gap: 0.35rem; border-radius: 999px; padding: 0.22rem 0.5rem; font-size: 0.68rem; font-weight: 800; }
+  /* Inspecteur */
+  .inspector .field { display: grid; gap: 6px; }
+  .inspector label, .modal label { font-size: 12.5px; font-weight: 500; color: var(--text-2); }
+  .pill { display: inline-flex; width: fit-content; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); font-size: 12px; font-weight: 500; }
+  .link-list { display: grid; gap: 6px; }
+  .link-chip { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); font-size: 12.5px; }
+  .link-chip.active { border-color: var(--accent-border); background: var(--accent-soft); }
+  .link-chip-main { display: grid; gap: 4px; }
+  .link-badge { display: inline-flex; width: fit-content; align-items: center; height: 20px; padding: 0 7px; border-radius: 999px; font-size: 11px; font-weight: 500; }
   .link-label {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    background: rgba(10,14,24,0.92);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 0.2rem 0.5rem;
-    font-size: 0.68rem;
-    font-weight: 800;
-    white-space: nowrap;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.18);
-    cursor: pointer;
-    pointer-events: auto;
+    position: absolute; transform: translate(-50%, -50%);
+    padding: 2px 8px; border: 1px solid var(--border); border-radius: 999px;
+    background: var(--surface); box-shadow: var(--shadow-sm);
+    font-size: 11px; font-weight: 600; white-space: nowrap;
+    cursor: pointer; pointer-events: auto;
   }
-  .link-label.active { border-color: rgba(99,102,241,0.55); box-shadow: 0 0 0 2px rgba(99,102,241,0.2), 0 8px 16px rgba(0,0,0,0.18); }
+  .link-label.active { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 18%, transparent); }
   .link-hit { fill: none; stroke: transparent; stroke-width: 16; cursor: pointer; pointer-events: all; }
   .link-type-popup {
-    position: fixed;
-    z-index: 100;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 0.4rem;
-    display: none;
-    gap: 0.15rem;
-    box-shadow: 0 12px 32px rgba(0,0,0,0.5);
-    min-width: 155px;
+    position: fixed; z-index: 1000; display: none; gap: 2px; min-width: 160px; padding: 4px;
+    border: 1px solid var(--border); border-radius: 10px; background: var(--surface); box-shadow: var(--shadow-lg);
   }
-  .link-type-popup button {
-    display: flex; align-items: center; gap: 0.5rem;
-    padding: 0.4rem 0.65rem; border-radius: 8px;
-    background: transparent; color: var(--text);
-    font-size: 0.78rem; text-align: left;
-  }
-  .link-type-popup button:hover { background: rgba(255,255,255,0.08); }
-  .link-type-popup button.active { background: rgba(99,102,241,0.15); color: var(--heading); }
-  .type-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .inspector .panel h2 { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-  .inspector .panel h2::after { content: '\25BE'; font-size: 0.85rem; color: var(--muted); transition: transform 0.2s; }
-  .inspector .panel.collapsed h2::after { transform: rotate(-90deg); }
+  .link-type-popup button { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 6px; background: transparent; color: var(--text); font-size: 13px; text-align: left; }
+  .link-type-popup button:hover { background: var(--surface-2); }
+  .link-type-popup button.active { background: var(--accent-soft); color: var(--accent-text); }
+  .type-dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+  .inspector .panel h2 { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .inspector .panel h2::after { content: ''; width: 6px; height: 6px; margin-right: 3px; border-right: 1.5px solid var(--text-3); border-bottom: 1.5px solid var(--text-3); transform: rotate(45deg); transition: transform 0.2s; }
+  .inspector .panel.collapsed h2::after { transform: rotate(-45deg); }
   .inspector .panel.collapsed > *:not(h2) { display: none !important; }
-  .help-list { display: grid; gap: 0.55rem; }
-  .help-list div { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem; font-size: 0.78rem; line-height: 1.55; color: var(--muted); }
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.72); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
-  .modal-overlay.hidden { display: none; }
-  .modal { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 2rem; width: min(94vw, 420px); display: grid; gap: 1rem; }
-  .modal h2 { font-size: 1.3rem; font-weight: 800; color: var(--heading); }
-  .modal p { color: var(--muted); font-size: 0.84rem; line-height: 1.6; }
-  .modal .field { display: grid; gap: 0.35rem; }
-  .modal label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .help-list { display: grid; gap: 8px; margin: 0; padding-left: 16px; font-size: 12.5px; line-height: 1.55; color: var(--text-2); }
+
+  /* Modale de session */
+  .modal { display: grid; gap: 14px; width: min(94vw, 420px); }
+  .modal h2, .modal p { margin: 0; }
+  .modal .field { display: grid; gap: 6px; }
+  .modal input.is-invalid { border-color: var(--danger); }
+  .modal .btn-primary { height: 40px; }
 
   .inspector.hidden { display: none; }
-  .inspector-handle {
-    background: var(--card2);
-    border: none;
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: var(--muted);
-    font-size: 0.85rem;
-    user-select: none;
-    padding: 0;
-    width: 24px;
-    min-width: 24px;
-  }
-  .inspector-handle:hover { color: var(--heading); background: var(--card); }
-  .app.inspector-off { grid-template-columns: 300px 1fr 24px; }
-  .zoom-group { display: flex; gap: 0.3rem; align-items: center; }
-  .zoom-group .btn-secondary { min-width: 32px; text-align: center; padding: 0.4rem 0.5rem; }
+  .inspector-handle { display: grid; place-items: center; width: 20px; min-width: 20px; padding: 0; border-left: 1px solid var(--border); background: var(--bg); color: var(--text-4); font-size: 10px; cursor: pointer; user-select: none; }
+  .inspector-handle:hover { background: var(--surface-2); color: var(--text); }
+  .app.inspector-off { grid-template-columns: 290px minmax(0, 1fr) 20px; }
+  .zoom-group { display: flex; align-items: center; gap: 2px; padding: 2px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); }
+  .zoom-group button { width: 28px; height: 28px; border-radius: 5px; color: var(--text-2); font-size: 15px; }
+  .zoom-group button:hover { background: var(--surface-2); color: var(--text); }
+  .zoom-group .sub { min-width: 42px; text-align: center; font-family: var(--font-mono); font-size: 11.5px; }
+
   @media (max-width: 1400px) {
-    .app { grid-template-columns: 260px 1fr 24px 260px; }
-    .app.inspector-off { grid-template-columns: 260px 1fr 24px; }
+    .app { grid-template-columns: 260px minmax(0, 1fr) 20px 260px; }
+    .app.inspector-off { grid-template-columns: 260px minmax(0, 1fr) 20px; }
   }
   @media (max-width: 1080px) {
-    .app { grid-template-columns: 240px 1fr 24px; }
-    .app.inspector-off { grid-template-columns: 240px 1fr 24px; }
+    .app, .app.inspector-off { grid-template-columns: 240px minmax(0, 1fr) 20px; }
     .inspector { display: none; }
-    .sidebar { max-height: 100vh; overflow-y: auto; }
   }
   @media (max-width: 768px) {
-    .app, .app.inspector-off { grid-template-columns: 1fr; }
-    .sidebar { border: none; border-bottom: 1px solid var(--border); max-height: 45vh; overflow-y: auto; }
-    .inspector-handle { display: none; }
-    .inspector { display: none; }
+    .app, .app.inspector-off { height: auto; grid-template-columns: 1fr; }
+    .sidebar { max-height: 45vh; border-right: 0; border-bottom: 1px solid var(--border); }
+    .workspace { height: 70vh; }
+    .inspector-handle, .inspector { display: none; }
   }
 </style>
 </head>
-<body>
+<body data-app="Schémas & Workflows">
 <div class="modal-overlay hidden" id="session-modal">
   <div class="modal">
     <h2>Rejoindre une session</h2>
     <p>Choisissez un pseudo et une session pour garder un contexte d'atelier propre, partageable et persistant localement.</p>
     <div class="field">
       <label for="modal-pseudo">Pseudo</label>
-      <input id="modal-pseudo" type="text" placeholder="Ex: Raphael">
+      <input id="modal-pseudo" type="text" placeholder="Votre pseudo">
     </div>
     <div class="field">
       <label for="modal-session">Session</label>
-      <input id="modal-session" type="text" placeholder="Ex: pi-planning-reporting">
+      <input id="modal-session" type="text" placeholder="Ex. : pi-planning-reporting">
     </div>
     <button class="btn-primary" id="join-session-btn">Entrer dans la session</button>
   </div>
@@ -275,9 +192,9 @@
 
 <div class="app">
   <aside class="sidebar">
-    <div>
-      <h1>Schémas & Workflows</h1>
-      <p>Modélisez rapidement une petite archi ou un workflow produit avec une palette de modules propres, pensée pour des ateliers PO / delivery.</p>
+    <div class="intro">
+      <h1>Schémas &amp; Workflows</h1>
+      <p>Modélisez une petite archi ou un workflow produit en atelier PO / delivery.</p>
     </div>
 
     <section class="panel">
@@ -300,7 +217,7 @@
     </section>
 
     <section class="panel">
-      <h2>Palette PO / archi</h2>
+      <h2>Modules</h2>
       <div class="category-chips" id="category-chips"></div>
       <div class="template-grid" id="template-grid"></div>
     </section>
@@ -313,22 +230,22 @@
 
   <main class="workspace">
     <div class="workspace-top">
-      <div class="toolbar" style="justify-content: space-between;">
+      <div class="toolbar bar">
         <div>
           <h2>Canvas de session</h2>
           <div class="sub" id="session-status">Sélectionnez un module puis posez-le sur le canvas.</div>
         </div>
         <div class="toolbar">
-          <div class="zoom-group">
-            <button class="btn-secondary" id="zoom-out-btn" title="Zoom -">-</button>
-            <span class="sub" id="zoom-label">100%</span>
-            <button class="btn-secondary" id="zoom-in-btn" title="Zoom +">+</button>
-          </div>
           <button class="btn-secondary" id="connect-btn">Annuler la liaison</button>
-          <button class="btn-secondary" id="export-png-btn">Export PNG</button>
-          <button class="btn-secondary" id="export-svg-btn">Export SVG</button>
-          <button class="btn-secondary" id="seed-btn">Exemple</button>
-          <button class="btn-danger" id="clear-btn">Vider le canvas</button>
+          <button class="btn-ghost" id="clear-btn">Vider</button>
+          <button class="btn-ghost" id="seed-btn">Exemple</button>
+          <button class="btn-secondary" id="export-svg-btn">SVG</button>
+          <button class="btn-secondary" id="export-png-btn">PNG</button>
+          <div class="zoom-group">
+            <button id="zoom-out-btn" title="Dézoomer" aria-label="Dézoomer">&minus;</button>
+            <span class="sub" id="zoom-label">100%</span>
+            <button id="zoom-in-btn" title="Zoomer" aria-label="Zoomer">+</button>
+          </div>
         </div>
       </div>
     </div>
@@ -351,7 +268,7 @@
         <div class="pill" id="selection-type"></div>
         <div class="field" id="custom-type-field" style="display:none;">
           <label for="node-type-text">Titre haut</label>
-          <input id="node-type-text" type="text" placeholder="Ex: Bloc custom">
+          <input id="node-type-text" type="text" placeholder="Ex. : Bloc custom">
         </div>
         <div class="field">
           <label for="node-label">Label</label>
@@ -401,11 +318,11 @@
 
     <section class="panel">
       <h2>Bonnes pratiques</h2>
-      <div class="help-list">
-        <div>Gardez le front, les APIs, les topics et la data lisibles au premier coup d'œil.</div>
-        <div>Utilisez les liaisons pour montrer les dépendances, pas pour dessiner tous les détails techniques.</div>
-        <div>Une session = un schéma partageable. Exportez le JSON pour le rejouer ou l'amender en atelier.</div>
-      </div>
+      <ul class="help-list">
+        <li>Gardez le front, les APIs, les topics et la data lisibles au premier coup d'œil.</li>
+        <li>Utilisez les liaisons pour montrer les dépendances, pas pour dessiner tous les détails techniques.</li>
+        <li>Une session = un schéma partageable. Exportez le JSON pour le rejouer ou l'amender en atelier.</li>
+      </ul>
     </section>
   </aside>
 </div>
@@ -430,54 +347,54 @@ const CATEGORY_LABELS = {
   custom: 'Custom'
 };
 const LINK_TYPES = [
-  { id: 'none', label: '', color: '#64748b', dash: '', width: 1.8 },
-  { id: 'http', label: 'HTTP / API', color: '#6366f1', dash: '', width: 2.4 },
-  { id: 'event', label: 'Event / Kafka', color: '#f59e0b', dash: '7 6', width: 2.4 },
-  { id: 'read', label: 'Lecture', color: '#06b6d4', dash: '10 6', width: 2.2 },
-  { id: 'write', label: 'Écriture', color: '#22c55e', dash: '', width: 2.4 },
-  { id: 'auth', label: 'Auth / IAM', color: '#ef4444', dash: '3 5', width: 2.2 },
-  { id: 'batch', label: 'Batch / ETL', color: '#8b5cf6', dash: '2 6', width: 2.2 },
-  { id: 'webhook', label: 'Webhook', color: '#fb923c', dash: '7 6', width: 2.2 },
-  { id: 'notif', label: 'Notification', color: '#ec4899', dash: '9 4 2 4', width: 2.2 }
+  { id: 'none', label: '', color: '#8a7f75', dash: '', width: 1.8 },
+  { id: 'http', label: 'HTTP / API', color: '#5b6fc0', dash: '', width: 2.4 },
+  { id: 'event', label: 'Event / Kafka', color: '#c98a2b', dash: '7 6', width: 2.4 },
+  { id: 'read', label: 'Lecture', color: '#3f93a8', dash: '10 6', width: 2.2 },
+  { id: 'write', label: 'Écriture', color: '#4a9a6a', dash: '', width: 2.4 },
+  { id: 'auth', label: 'Auth / IAM', color: '#c4553f', dash: '3 5', width: 2.2 },
+  { id: 'batch', label: 'Batch / ETL', color: '#8a6bb8', dash: '2 6', width: 2.2 },
+  { id: 'webhook', label: 'Webhook', color: '#d07a3e', dash: '7 6', width: 2.2 },
+  { id: 'notif', label: 'Notification', color: '#c0577f', dash: '9 4 2 4', width: 2.2 }
 ];
 const TEMPLATES = [
-  { type: 'front_manager', category: 'fronts', icon: '&#128188;', name: 'Front gestionnaire', desc: 'Back-office, portail ops ou BO manager.', color: 'var(--blue)', subtitle: 'UI interne / admin', shape: 'browser' },
-  { type: 'front_client', category: 'fronts', icon: '&#128100;', name: 'Front client', desc: 'App client, portail selfcare ou espace utilisateur.', color: 'var(--teal)', subtitle: 'Web app client', shape: 'browser' },
-  { type: 'mobile_app', category: 'fronts', icon: '&#128241;', name: 'App mobile', desc: 'Application mobile iOS / Android.', color: 'var(--teal)', subtitle: 'Mobile experience', shape: 'mobile' },
-  { type: 'partner_portal', category: 'fronts', icon: '&#129309;', name: 'Portail partenaire', desc: 'Espace partenaires, marchands ou brokers.', color: 'var(--blue)', subtitle: 'Portal / B2B', shape: 'browser' },
-  { type: 'public_site', category: 'fronts', icon: '&#127760;', name: 'Site public', desc: 'Landing, CMS ou portail vitrine.', color: 'var(--teal)', subtitle: 'Public website', shape: 'browser' },
-  { type: 'api_gateway', category: 'edge_access', icon: '&#128682;', name: 'API Gateway', desc: 'Point d\'entrée sécurisé pour les APIs.', color: 'var(--red)', subtitle: 'Ingress / gateway', shape: 'edge' },
-  { type: 'bff', category: 'edge_access', icon: '&#129518;', name: 'BFF', desc: 'Backend for frontend dédié à une expérience.', color: 'var(--blue)', subtitle: 'Backend for frontend', shape: 'service' },
-  { type: 'auth_service', category: 'edge_access', icon: '&#128274;', name: 'Auth / IAM', desc: 'SSO, tokens, RBAC, fédération.', color: 'var(--red)', subtitle: 'Identity / auth', shape: 'service' },
-  { type: 'feature_flags', category: 'edge_access', icon: '&#127987;', name: 'Feature flags', desc: 'Flags, rollout, toggles et expérimentation.', color: 'var(--purple)', subtitle: 'Rollout / flags', shape: 'service' },
-  { type: 'cdn_edge', category: 'edge_access', icon: '&#9729;', name: 'CDN / Edge', desc: 'Caching, edge delivery, WAF.', color: 'var(--slate)', subtitle: 'Edge platform', shape: 'edge' },
-  { type: 'java_service', category: 'services', icon: '&#9881;', name: 'Microservice Java', desc: 'Service métier type Spring Boot.', color: 'var(--green)', subtitle: 'Business service', shape: 'service' },
-  { type: 'node_service', category: 'services', icon: '&#11036;', name: 'Service Node.js', desc: 'API ou orchestration JavaScript / TypeScript.', color: 'var(--green)', subtitle: 'Node / TS service', shape: 'service' },
-  { type: 'python_service', category: 'services', icon: '&#128013;', name: 'Service Python', desc: 'ML, automation ou service data.', color: 'var(--green)', subtitle: 'Python service', shape: 'service' },
-  { type: 'worker', category: 'services', icon: '&#9203;', name: 'Worker', desc: 'Consommateur asynchrone ou traitement de fond.', color: 'var(--purple)', subtitle: 'Async worker', shape: 'service' },
-  { type: 'batch_job', category: 'services', icon: '&#128197;', name: 'Batch job', desc: 'Job planifié ou recalcul périodique.', color: 'var(--purple)', subtitle: 'Scheduled batch', shape: 'service' },
-  { type: 'serverless_fn', category: 'services', icon: '&#9889;', name: 'Function', desc: 'Lambda, cloud function ou traitement éphémère.', color: 'var(--purple)', subtitle: 'Serverless', shape: 'service' },
-  { type: 'notification_service', category: 'services', icon: '&#128276;', name: 'Notification service', desc: 'Emails, SMS, push ou inbox.', color: 'var(--pink)', subtitle: 'Messaging service', shape: 'service' },
-  { type: 'search_service', category: 'services', icon: '&#128269;', name: 'Search service', desc: 'Recherche, indexation, suggestion.', color: 'var(--green)', subtitle: 'Search / query', shape: 'service' },
-  { type: 'scheduler', category: 'services', icon: '&#9200;', name: 'Scheduler / orchestrateur', desc: 'Pilotage des jobs et des workflows.', color: 'var(--purple)', subtitle: 'Orchestration', shape: 'service' },
-  { type: 'kafka_topic', category: 'integration', icon: '&#128250;', name: 'Topic Kafka', desc: 'Événements ou intégration découplée.', color: 'var(--orange)', subtitle: 'Event stream', shape: 'cylinder' },
-  { type: 'event_bus', category: 'integration', icon: '&#128257;', name: 'Event bus', desc: 'Bus d\'événements ou backbone d\'intégration.', color: 'var(--orange)', subtitle: 'Event backbone', shape: 'cylinder' },
-  { type: 'queue', category: 'integration', icon: '&#128228;', name: 'Queue', desc: 'File de messages ou commandes asynchrones.', color: 'var(--orange)', subtitle: 'Message queue', shape: 'queue' },
-  { type: 'webhook', category: 'integration', icon: '&#129513;', name: 'Webhook', desc: 'Callback entrant ou sortant.', color: 'var(--orange)', subtitle: 'Webhook integration', shape: 'service' },
-  { type: 'external_api', category: 'external', icon: '&#127760;', name: 'API externe', desc: 'Provider tiers, CRM, ERP, PSP, etc.', color: 'var(--slate)', subtitle: 'Third-party API', shape: 'service' },
-  { type: 'payment_provider', category: 'external', icon: '&#128179;', name: 'PSP / paiement', desc: 'Prestataire de paiement ou facturation.', color: 'var(--slate)', subtitle: 'Payment provider', shape: 'service' },
-  { type: 'email_provider', category: 'external', icon: '&#9993;', name: 'Email provider', desc: 'Service d\'envoi email / marketing.', color: 'var(--slate)', subtitle: 'Email provider', shape: 'service' },
-  { type: 'legacy_system', category: 'external', icon: '&#128187;', name: 'Legacy system', desc: 'SI historique ou monolithe externe.', color: 'var(--slate)', subtitle: 'Legacy / core', shape: 'service' },
-  { type: 'postgres_db', category: 'data', icon: '&#128190;', name: 'Base Postgres', desc: 'Stockage relationnel transactionnel.', color: 'var(--cyan)', subtitle: 'Transactional DB', shape: 'cylinder' },
-  { type: 'mysql_db', category: 'data', icon: '&#128190;', name: 'Base MySQL', desc: 'Base relationnelle alternative.', color: 'var(--cyan)', subtitle: 'Relational DB', shape: 'cylinder' },
-  { type: 'redis_cache', category: 'data', icon: '&#9889;', name: 'Redis / cache', desc: 'Cache, session store ou read cache.', color: 'var(--pink)', subtitle: 'Cache / KV', shape: 'cylinder' },
-  { type: 'object_storage', category: 'data', icon: '&#128193;', name: 'Object storage', desc: 'S3, GCS, blobs et fichiers.', color: 'var(--cyan)', subtitle: 'Blob storage', shape: 'cylinder' },
-  { type: 'data_warehouse', category: 'data', icon: '&#128202;', name: 'Data warehouse', desc: 'Tables analytiques ou BI.', color: 'var(--cyan)', subtitle: 'Analytics storage', shape: 'cylinder' },
-  { type: 'search_index', category: 'data', icon: '&#128270;', name: 'Search index', desc: 'Index Elastic / OpenSearch.', color: 'var(--cyan)', subtitle: 'Index / query', shape: 'cylinder' },
-  { type: 'monitoring', category: 'platform', icon: '&#128200;', name: 'Observability', desc: 'Logs, traces, metrics et alertes.', color: 'var(--purple)', subtitle: 'Logs / traces / metrics', shape: 'service' },
-  { type: 'config_service', category: 'platform', icon: '&#9881;', name: 'Config service', desc: 'Configuration centralisée et secrets non sensibles.', color: 'var(--purple)', subtitle: 'Runtime config', shape: 'service' },
-  { type: 'vault', category: 'platform', icon: '&#128273;', name: 'Secrets vault', desc: 'Coffre à secrets ou KMS.', color: 'var(--purple)', subtitle: 'Secrets / KMS', shape: 'service' },
-  { type: 'custom_block', category: 'custom', icon: '&#10022;', name: 'Bloc custom', desc: 'Bloc libre à renommer pour vos composants spécifiques.', color: 'var(--slate)', subtitle: 'Custom module', shape: 'service' }
+  { type: 'front_manager', category: 'fronts', name: 'Front gestionnaire', desc: 'Back-office, portail ops ou BO manager.', color: 'var(--blue)', subtitle: 'UI interne / admin', shape: 'browser' },
+  { type: 'front_client', category: 'fronts', name: 'Front client', desc: 'App client, portail selfcare ou espace utilisateur.', color: 'var(--teal)', subtitle: 'Web app client', shape: 'browser' },
+  { type: 'mobile_app', category: 'fronts', name: 'App mobile', desc: 'Application mobile iOS / Android.', color: 'var(--teal)', subtitle: 'Mobile experience', shape: 'mobile' },
+  { type: 'partner_portal', category: 'fronts', name: 'Portail partenaire', desc: 'Espace partenaires, marchands ou brokers.', color: 'var(--blue)', subtitle: 'Portal / B2B', shape: 'browser' },
+  { type: 'public_site', category: 'fronts', name: 'Site public', desc: 'Landing, CMS ou portail vitrine.', color: 'var(--teal)', subtitle: 'Public website', shape: 'browser' },
+  { type: 'api_gateway', category: 'edge_access', name: 'API Gateway', desc: 'Point d\'entrée sécurisé pour les APIs.', color: 'var(--red)', subtitle: 'Ingress / gateway', shape: 'edge' },
+  { type: 'bff', category: 'edge_access', name: 'BFF', desc: 'Backend for frontend dédié à une expérience.', color: 'var(--blue)', subtitle: 'Backend for frontend', shape: 'service' },
+  { type: 'auth_service', category: 'edge_access', name: 'Auth / IAM', desc: 'SSO, tokens, RBAC, fédération.', color: 'var(--red)', subtitle: 'Identity / auth', shape: 'service' },
+  { type: 'feature_flags', category: 'edge_access', name: 'Feature flags', desc: 'Flags, rollout, toggles et expérimentation.', color: 'var(--purple)', subtitle: 'Rollout / flags', shape: 'service' },
+  { type: 'cdn_edge', category: 'edge_access', name: 'CDN / Edge', desc: 'Caching, edge delivery, WAF.', color: 'var(--slate)', subtitle: 'Edge platform', shape: 'edge' },
+  { type: 'java_service', category: 'services', name: 'Microservice Java', desc: 'Service métier type Spring Boot.', color: 'var(--green)', subtitle: 'Business service', shape: 'service' },
+  { type: 'node_service', category: 'services', name: 'Service Node.js', desc: 'API ou orchestration JavaScript / TypeScript.', color: 'var(--green)', subtitle: 'Node / TS service', shape: 'service' },
+  { type: 'python_service', category: 'services', name: 'Service Python', desc: 'ML, automation ou service data.', color: 'var(--green)', subtitle: 'Python service', shape: 'service' },
+  { type: 'worker', category: 'services', name: 'Worker', desc: 'Consommateur asynchrone ou traitement de fond.', color: 'var(--purple)', subtitle: 'Async worker', shape: 'service' },
+  { type: 'batch_job', category: 'services', name: 'Batch job', desc: 'Job planifié ou recalcul périodique.', color: 'var(--purple)', subtitle: 'Scheduled batch', shape: 'service' },
+  { type: 'serverless_fn', category: 'services', name: 'Function', desc: 'Lambda, cloud function ou traitement éphémère.', color: 'var(--purple)', subtitle: 'Serverless', shape: 'service' },
+  { type: 'notification_service', category: 'services', name: 'Notification service', desc: 'Emails, SMS, push ou inbox.', color: 'var(--pink)', subtitle: 'Messaging service', shape: 'service' },
+  { type: 'search_service', category: 'services', name: 'Search service', desc: 'Recherche, indexation, suggestion.', color: 'var(--green)', subtitle: 'Search / query', shape: 'service' },
+  { type: 'scheduler', category: 'services', name: 'Scheduler / orchestrateur', desc: 'Pilotage des jobs et des workflows.', color: 'var(--purple)', subtitle: 'Orchestration', shape: 'service' },
+  { type: 'kafka_topic', category: 'integration', name: 'Topic Kafka', desc: 'Événements ou intégration découplée.', color: 'var(--orange)', subtitle: 'Event stream', shape: 'cylinder' },
+  { type: 'event_bus', category: 'integration', name: 'Event bus', desc: 'Bus d\'événements ou backbone d\'intégration.', color: 'var(--orange)', subtitle: 'Event backbone', shape: 'cylinder' },
+  { type: 'queue', category: 'integration', name: 'Queue', desc: 'File de messages ou commandes asynchrones.', color: 'var(--orange)', subtitle: 'Message queue', shape: 'queue' },
+  { type: 'webhook', category: 'integration', name: 'Webhook', desc: 'Callback entrant ou sortant.', color: 'var(--orange)', subtitle: 'Webhook integration', shape: 'service' },
+  { type: 'external_api', category: 'external', name: 'API externe', desc: 'Provider tiers, CRM, ERP, PSP, etc.', color: 'var(--slate)', subtitle: 'Third-party API', shape: 'service' },
+  { type: 'payment_provider', category: 'external', name: 'PSP / paiement', desc: 'Prestataire de paiement ou facturation.', color: 'var(--slate)', subtitle: 'Payment provider', shape: 'service' },
+  { type: 'email_provider', category: 'external', name: 'Email provider', desc: 'Service d\'envoi email / marketing.', color: 'var(--slate)', subtitle: 'Email provider', shape: 'service' },
+  { type: 'legacy_system', category: 'external', name: 'Legacy system', desc: 'SI historique ou monolithe externe.', color: 'var(--slate)', subtitle: 'Legacy / core', shape: 'service' },
+  { type: 'postgres_db', category: 'data', name: 'Base Postgres', desc: 'Stockage relationnel transactionnel.', color: 'var(--cyan)', subtitle: 'Transactional DB', shape: 'cylinder' },
+  { type: 'mysql_db', category: 'data', name: 'Base MySQL', desc: 'Base relationnelle alternative.', color: 'var(--cyan)', subtitle: 'Relational DB', shape: 'cylinder' },
+  { type: 'redis_cache', category: 'data', name: 'Redis / cache', desc: 'Cache, session store ou read cache.', color: 'var(--pink)', subtitle: 'Cache / KV', shape: 'cylinder' },
+  { type: 'object_storage', category: 'data', name: 'Object storage', desc: 'S3, GCS, blobs et fichiers.', color: 'var(--cyan)', subtitle: 'Blob storage', shape: 'cylinder' },
+  { type: 'data_warehouse', category: 'data', name: 'Data warehouse', desc: 'Tables analytiques ou BI.', color: 'var(--cyan)', subtitle: 'Analytics storage', shape: 'cylinder' },
+  { type: 'search_index', category: 'data', name: 'Search index', desc: 'Index Elastic / OpenSearch.', color: 'var(--cyan)', subtitle: 'Index / query', shape: 'cylinder' },
+  { type: 'monitoring', category: 'platform', name: 'Observability', desc: 'Logs, traces, metrics et alertes.', color: 'var(--purple)', subtitle: 'Logs / traces / metrics', shape: 'service' },
+  { type: 'config_service', category: 'platform', name: 'Config service', desc: 'Configuration centralisée et secrets non sensibles.', color: 'var(--purple)', subtitle: 'Runtime config', shape: 'service' },
+  { type: 'vault', category: 'platform', name: 'Secrets vault', desc: 'Coffre à secrets ou KMS.', color: 'var(--purple)', subtitle: 'Secrets / KMS', shape: 'service' },
+  { type: 'custom_block', category: 'custom', name: 'Bloc custom', desc: 'Bloc libre à renommer pour vos composants spécifiques.', color: 'var(--slate)', subtitle: 'Custom module', shape: 'service' }
 ];
 
 const state = {
@@ -653,7 +570,7 @@ function confirmIdentity() {
   const pseudo = document.getElementById('modal-pseudo').value.trim();
   const session = slugify(document.getElementById('modal-session').value.trim() || state.sessionId || 'atelier-archi');
   if (!pseudo) {
-    document.getElementById('modal-pseudo').style.borderColor = '#ef4444';
+    document.getElementById('modal-pseudo').classList.add('is-invalid');
     return;
   }
   state.pseudo = pseudo;
@@ -827,8 +744,8 @@ function renderTemplates() {
     ? TEMPLATES
     : TEMPLATES.filter(template => template.category === state.activeCategory);
   document.getElementById('template-grid').innerHTML = visible.map(template => `
-    <button class="template-card" data-template="${template.type}" style="text-align:left;">
-      <span class="template-badge" style="color:${template.color};">${template.icon} ${CATEGORY_LABELS[template.category]}</span>
+    <button class="template-card" data-template="${template.type}">
+      <span class="template-badge" style="--c:${template.color};">${CATEGORY_LABELS[template.category]}</span>
       <strong>${template.name}</strong>
       <span>${template.desc}</span>
     </button>
@@ -1007,7 +924,7 @@ function renderCanvas() {
       <div class="node ${isSelected ? 'selected' : ''} ${isConnecting ? 'connecting' : ''}"
         data-cat="${category}" data-node-id="${node.id}" style="left:${node.x}px; top:${node.y}px; width:${node.width}px; min-height:${node.height}px;">
         <div class="top">
-          <div class="icon" style="background:${accent};">${renderNodeIcon(node.type)}</div>
+          <div class="icon" style="--c:${accent};">${renderNodeIcon(node.type)}</div>
           <div class="type">${escapeHtml(typeText)}</div>
         </div>
         <div class="label">${escapeHtml(node.label)}</div>
@@ -1048,7 +965,7 @@ function renderInspector() {
     const template = getTemplate(node.type);
     empty.style.display = 'none';
     form.style.display = 'grid';
-    document.getElementById('selection-type').innerHTML = `${template.icon} ${template.name}`;
+    document.getElementById('selection-type').textContent = template.name;
     document.getElementById('node-type-text').value = node.typeLabel || template.name;
     document.getElementById('node-label').value = node.label;
     document.getElementById('node-subtitle').value = node.subtitle || '';
@@ -1082,13 +999,13 @@ function renderInspector() {
         const from = getNode(link.from);
         const to = getNode(link.to);
         const linkType = getLinkType(link.type);
-        const active = state.selectedLinkId === link.id ? 'style="border-color: rgba(99,102,241,0.45); background: rgba(99,102,241,0.08);"' : '';
-        return `<div class="link-chip" ${active} data-select-link="${link.id}">
+        const active = state.selectedLinkId === link.id ? 'active' : '';
+        return `<div class="link-chip ${active}" data-select-link="${link.id}">
           <div class="link-chip-main">
             ${linkType.label ? `<span class="link-badge" style="background:${linkType.color}22; color:${linkType.color};">${linkType.label}</span>` : ''}
             <span>${escapeHtml(from?.label || link.from)} &#8594; ${escapeHtml(to?.label || link.to)}</span>
           </div>
-          <button class="btn-danger btn-small" data-delete-link="${link.id}">x</button>
+          <button class="btn-ghost btn-small" data-delete-link="${link.id}" aria-label="Supprimer la liaison">&times;</button>
         </div>`;
       }).join('');
 }
@@ -1457,10 +1374,11 @@ function buildExportSvg() {
   const oy = -minY + PAD;
 
   const CAT_COLORS = {
-    fronts: '#6366f1', edge_access: '#ef4444', services: '#22c55e',
-    integration: '#f59e0b', data: '#06b6d4', platform: '#8b5cf6',
-    external: '#64748b', custom: '#64748b'
+    fronts: PALETTE_HEX.blue, edge_access: PALETTE_HEX.red, services: PALETTE_HEX.green,
+    integration: PALETTE_HEX.orange, data: PALETTE_HEX.cyan, platform: PALETTE_HEX.purple,
+    external: PALETTE_HEX.slate, custom: PALETTE_HEX.slate
   };
+  const FONT = 'Geist, Segoe UI, system-ui, sans-serif';
 
   let defs = LINK_TYPES.map(lt => `
     <marker id="exp-arrow-${lt.id}" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
@@ -1495,7 +1413,7 @@ function buildExportSvg() {
     const ly = (from.y + to.y) / 2 + oy + labelOffset;
     let labelSvg = '';
     if (link.type !== 'none') {
-      labelSvg = `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="${lt.color}" font-family="Segoe UI, system-ui, sans-serif">${lt.label}</text>`;
+      labelSvg = `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="600" fill="${lt.color}" font-family="${FONT}">${lt.label}</text>`;
     }
     return `<path d="${path}" stroke="${lt.color}" stroke-width="${lt.width}" stroke-dasharray="${lt.dash}" fill="none" ${markerStart} marker-end="url(#exp-arrow-${link.type})"/>` + labelSvg;
   }).join('\n');
@@ -1506,28 +1424,34 @@ function buildExportSvg() {
     const x = n.x + ox, y = n.y + oy;
     const bw = box.width, bh = box.height;
     const cat = template?.category || 'custom';
-    const accent = n.type === 'custom_block' ? (n.customColor || '#64748b') : (CAT_COLORS[cat] || '#64748b');
-    const bgFill = accent + '18';
+    const accent = n.type === 'custom_block' ? resolvePaletteColor(n.customColor) : (CAT_COLORS[cat] || PALETTE_HEX.slate);
     const typeText = n.type === 'custom_block' ? (n.typeLabel || 'Bloc custom') : template.name;
     const footerText = n.type === 'custom_block' ? (n.footerLabel || 'Custom') : (CATEGORY_LABELS[cat] || 'Custom');
 
     return `<g>
-      <rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="18" fill="#101521" stroke="${accent}" stroke-opacity="0.55" stroke-width="1"/>
-      <rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="18" fill="${bgFill}"/>
-      <text x="${x + 14}" y="${y + 22}" font-size="10" font-weight="800" fill="${accent}" text-transform="uppercase" letter-spacing="0.08em" font-family="Segoe UI, system-ui, sans-serif">${escapeHtml(typeText)}</text>
-      <text x="${x + 14}" y="${y + 42}" font-size="14" font-weight="800" fill="#f8fafc" font-family="Segoe UI, system-ui, sans-serif">${escapeHtml(n.label)}</text>
-      <text x="${x + 14}" y="${y + 60}" font-size="10" fill="#8a90ab" font-family="Segoe UI, system-ui, sans-serif">${escapeHtml(n.subtitle || '')}</text>
-      <rect x="${x + bw - 14 - footerText.length * 5.5}" y="${y + bh - 24}" width="${footerText.length * 5.5 + 12}" height="18" rx="9" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-      <text x="${x + bw - 8}" y="${y + bh - 12}" text-anchor="end" font-size="9" fill="#8a90ab" font-family="Segoe UI, system-ui, sans-serif">${escapeHtml(footerText)}</text>
+      <rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="12" fill="#fffdfa" stroke="${accent}" stroke-opacity="0.45" stroke-width="1"/>
+      <rect x="${x + 12}" y="${y + 12}" width="4" height="14" rx="2" fill="${accent}"/>
+      <text x="${x + 22}" y="${y + 23}" font-size="10" font-weight="600" fill="#8b7f74" letter-spacing="0.04em" font-family="${FONT}">${escapeHtml(typeText.toUpperCase())}</text>
+      <text x="${x + 12}" y="${y + 46}" font-size="14" font-weight="600" fill="#3a2e27" font-family="${FONT}">${escapeHtml(n.label)}</text>
+      <text x="${x + 12}" y="${y + 64}" font-size="11" fill="#8b7f74" font-family="${FONT}">${escapeHtml(n.subtitle || '')}</text>
+      <rect x="${x + bw - 14 - footerText.length * 5.5}" y="${y + bh - 24}" width="${footerText.length * 5.5 + 12}" height="18" rx="9" fill="#f5f0e9" stroke="#e7dfd4" stroke-width="1"/>
+      <text x="${x + bw - 8}" y="${y + bh - 12}" text-anchor="end" font-size="9" fill="#8b7f74" font-family="${FONT}">${escapeHtml(footerText)}</text>
     </g>`;
   }).join('\n');
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
-  <rect width="${w}" height="${h}" fill="#101521" rx="20"/>
+  <rect width="${w}" height="${h}" fill="#faf7f2"/>
   <defs>${defs}</defs>
   ${linksMarkup}
   ${nodesMarkup}
 </svg>`;
+}
+
+const PALETTE_HEX = { slate: '#8a7f75', blue: '#5b6fc0', teal: '#3f9a94', green: '#4a9a6a', orange: '#c98a2b', purple: '#8a6bb8', pink: '#c0577f', red: '#c4553f', cyan: '#3f93a8' };
+function resolvePaletteColor(value) {
+  const m = /var\(--(\w+)\)/.exec(value || '');
+  if (m && PALETTE_HEX[m[1]]) return PALETTE_HEX[m[1]];
+  return /^#[0-9a-f]{3,8}$/i.test(value || '') ? value : PALETTE_HEX.slate;
 }
 
 function exportAsSvg() {

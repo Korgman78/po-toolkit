@@ -4,82 +4,102 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JSON Validator & UUID Generator</title>
+<link rel="stylesheet" href="app-kit.css">
+<script src="app-kit.js"></script>
 <style>
-  :root { --accent: #6366f1; --accent2: #a855f7; --bg: #0f1117; --card: #1a1c2b; --text: #e8eaf0; --muted: #6b7089; --border: #2a2d3e; --green: #10b981; --red: #ef4444; --yellow: #f59e0b; }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+  :root { --card: var(--surface); --muted: var(--text-3); --green: var(--success); --red: var(--danger); }
+  body { min-height: 100vh; display: flex; flex-direction: column; }
 
-  /* Layout */
-  .header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); }
-  .header h1 { font-size: 1.28rem; letter-spacing: -0.03em; font-weight: 800; color: #f8fafc; }
-  .tabs { display: flex; gap: 0.25rem; }
-  .tab { padding: 0.5rem 1.2rem; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
-  .tab:hover { border-color: var(--accent); color: var(--text); }
-  .tab.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .page { flex: 1; width: 100%; max-width: 1280px; margin: 0 auto; padding: 32px 24px 40px; display: flex; flex-direction: column; gap: 20px; }
+  .header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+  /* Onglets segmentés */
+  .tabs { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); }
+  .tab { height: 30px; padding: 0 14px; border: 0; border-radius: 6px; background: transparent; color: var(--text-3); font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.12s, color 0.12s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
 
   .panels { flex: 1; display: flex; flex-direction: column; }
-  .panel { flex: 1; display: none; flex-direction: column; padding: 1rem 1.5rem; }
+  .panel { flex: 1; display: none; flex-direction: column; gap: 14px; }
   .panel.active { display: flex; }
 
-  /* JSON Validator */
-  .json-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1; }
-  .json-col { display: flex; flex-direction: column; }
-  .json-col h3 { font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; color: #f8fafc; font-weight: 800; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between; }
-  textarea { flex: 1; width: 100%; padding: 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: 'Consolas', 'Fira Code', monospace; font-size: 0.85rem; line-height: 1.6; resize: none; outline: none; min-height: 300px; tab-size: 2; }
-  textarea:focus { border-color: var(--accent); }
-  textarea::placeholder { color: var(--muted); }
-  textarea.valid { border-color: var(--green); }
-  textarea.invalid { border-color: var(--red); }
-  .output-area { flex: 1; width: 100%; padding: 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: 'Consolas', 'Fira Code', monospace; font-size: 0.85rem; line-height: 1.6; overflow: auto; min-height: 300px; white-space: pre-wrap; word-break: break-all; }
+  /* Barre d'outils */
+  .toolbar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .toolbar .spacer { flex: 1; }
+  .toolbar label { font-size: 13px; color: var(--text-3); }
+  .toolbar select { height: 34px; padding: 0 8px; }
+  .separator { width: 1px; height: 20px; margin: 0 6px; background: var(--border); }
 
-  .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
-  button { font-family: inherit; font-size: 0.8rem; font-weight: 600; padding: 0.45rem 0.9rem; border-radius: 7px; border: none; cursor: pointer; transition: all 0.2s; }
-  .btn { background: var(--card); color: var(--text); border: 1px solid var(--border); }
-  .btn:hover { border-color: var(--accent); color: var(--accent); }
-  .btn.active { background: var(--accent); border-color: var(--accent); color: white; }
-  .btn-accent { background: var(--accent); color: white; }
-  .btn-accent:hover { background: #4f46e5; }
+  /* Validateur JSON */
+  .json-layout { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .json-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .json-col h3 { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 28px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+  textarea, .output-area {
+    flex: 1; width: 100%; min-height: 360px; padding: 14px 16px;
+    border: 1px solid var(--border-strong); border-radius: var(--radius);
+    background: var(--surface); color: var(--text);
+    font-family: var(--font-mono); font-size: 13px; line-height: 1.65; tab-size: 2;
+  }
+  textarea { resize: none; }
+  textarea.valid { border-color: color-mix(in oklch, var(--success) 60%, var(--border)); }
+  textarea.invalid { border-color: color-mix(in oklch, var(--danger) 60%, var(--border)); }
+  .output-area { overflow: auto; white-space: pre-wrap; word-break: break-all; background: var(--surface-2); border-color: var(--border); }
+  .output-area .err { color: var(--danger); }
+  .output-area .hint { color: var(--text-3); }
 
-  .status-bar { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; font-size: 0.8rem; }
-  .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .status-dot.ok { background: var(--green); }
-  .status-dot.err { background: var(--red); }
-  .status-dot.idle { background: var(--muted); }
-  .status-text { color: var(--muted); }
-  .status-text.ok { color: var(--green); }
-  .status-text.err { color: var(--red); }
+  .status-bar { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .status-dot.ok { background: var(--success); }
+  .status-dot.err { background: var(--danger); }
+  .status-dot.idle { background: var(--text-4); }
+  .status-text { color: var(--text-3); }
+  .status-text.ok { color: var(--success); }
+  .status-text.err { color: var(--danger); }
 
-  .json-stats { display: flex; gap: 1.5rem; font-size: 0.75rem; color: var(--muted); margin-left: auto; }
-  .json-stats span { font-variant-numeric: tabular-nums; }
+  .json-stats { display: flex; gap: 14px; font-family: var(--font-mono); font-size: 11.5px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--text-3); }
+  .json-stats strong { color: var(--text); font-weight: 500; }
 
-  /* UUID Generator */
-  .uuid-section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
-  .uuid-section h3 { font-size: 1rem; margin-bottom: 1rem; font-weight: 800; color: #f8fafc; }
-  .uuid-controls { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 1rem; }
-  .uuid-controls label { font-size: 0.8rem; color: var(--muted); }
-  .uuid-controls select, .uuid-controls input[type="number"] { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; color: var(--text); font-family: inherit; font-size: 0.85rem; outline: none; }
-  .uuid-controls select:focus, .uuid-controls input[type="number"]:focus { border-color: var(--accent); }
-  .uuid-display { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; font-family: 'Consolas', 'Fira Code', monospace; font-size: 0.9rem; line-height: 1.8; max-height: 400px; overflow-y: auto; user-select: all; }
-  .uuid-line { display: flex; align-items: center; gap: 0.75rem; padding: 0.2rem 0; }
-  .uuid-line .uuid-text { flex: 1; color: var(--accent); font-weight: 500; letter-spacing: 0.02em; }
-  .uuid-line .copy-one { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.85rem; padding: 0.2rem 0.4rem; border-radius: 4px; }
-  .uuid-line .copy-one:hover { color: var(--accent); background: rgba(99,102,241,0.1); }
-  .uuid-count { font-size: 0.75rem; color: var(--muted); margin-top: 0.5rem; }
-  .separator { width: 1px; height: 20px; background: var(--border); margin: 0 0.25rem; }
+  /* Générateur d'UUID */
+  .uuid-section { padding: 22px 24px; border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
+  .uuid-section h3 { font-family: var(--font-serif); font-size: 21px; font-weight: 500; margin-bottom: 16px; }
+  .uuid-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .uuid-controls label { font-size: 13px; color: var(--text-3); margin-left: 6px; }
+  .uuid-controls label:first-child { margin-left: 0; }
+  .uuid-controls select, .uuid-controls input { height: 34px; padding: 0 10px; }
+  .uuid-controls input[type="number"] { width: 70px; font-family: var(--font-mono); }
+  .uuid-controls .grow { flex: 1; font-family: var(--font-mono); }
+  .uuid-controls .btn-primary { margin-left: auto; }
+  .uuid-display { max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); font-family: var(--font-mono); font-size: 13.5px; }
+  .uuid-line { display: flex; align-items: center; gap: 12px; padding: 7px 8px 7px 16px; border-bottom: 1px solid var(--border-soft); }
+  .uuid-line:last-child { border-bottom: 0; }
+  .uuid-line .uuid-text { flex: 1; color: var(--text); letter-spacing: 0.01em; user-select: all; }
+  .uuid-line .copy-one { height: 26px; padding: 0 9px; border: 0; border-radius: 5px; background: none; color: var(--text-3); font-family: var(--font-sans); font-size: 12px; cursor: pointer; }
+  .uuid-line .copy-one:hover { background: var(--surface-3); color: var(--text); }
+  .uuid-empty { padding: 32px; text-align: center; font-family: var(--font-sans); color: var(--text-3); }
+  .uuid-count { margin-top: 8px; font-size: 12.5px; color: var(--text-3); }
+  .uuid-analysis { font-size: 13.5px; color: var(--text-3); }
+  .uuid-analysis .grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 20px; }
+  .uuid-analysis strong { color: var(--text); font-weight: 500; }
+  .uuid-analysis .mono { font-family: var(--font-mono); }
+  .uuid-analysis .err { color: var(--danger); }
 
   @media (max-width: 768px) {
+    .page { padding: 24px 16px 32px; }
     .json-layout { grid-template-columns: 1fr; }
-    .header { flex-direction: column; gap: 0.75rem; align-items: flex-start; }
+    textarea, .output-area { min-height: 240px; }
   }
 </style>
 </head>
-<body>
-
+<body data-app="JSON & UUID Tools">
+<main class="page">
 <div class="header">
-  <h1>JSON & UUID Tools</h1>
+  <div class="kit-head">
+    <h1>JSON &amp; UUID Tools</h1>
+    <p>Valider, formater et minifier du JSON, générer et analyser des identifiants.</p>
+  </div>
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('json', this)">JSON Validator</button>
-    <button class="tab" onclick="switchTab('uuid', this)">UUID Generator</button>
+    <button class="tab active" onclick="switchTab('json', this)">Validateur JSON</button>
+    <button class="tab" onclick="switchTab('uuid', this)">Générateur d'UUID</button>
   </div>
 </div>
 
@@ -87,36 +107,36 @@
   <!-- JSON Panel -->
   <div class="panel active" id="panel-json">
     <div class="toolbar">
-      <button class="btn-accent" onclick="validateJSON()">Valider</button>
-      <button class="btn" onclick="formatJSON()">Formater (Pretty)</button>
-      <button class="btn" onclick="minifyJSON()">Minifier (1 ligne)</button>
+      <button class="btn-primary" onclick="validateJSON()">Valider</button>
+      <button class="btn" onclick="formatJSON()">Formater</button>
+      <button class="btn" onclick="minifyJSON()">Minifier</button>
       <button class="btn" onclick="sortKeys()">Trier les clés</button>
       <div class="separator"></div>
-      <button class="btn" onclick="copyOutput()">Copier le résultat</button>
-      <button class="btn" onclick="clearJSON()">Effacer</button>
-      <div class="separator"></div>
-      <label style="font-size:0.8rem; color:var(--muted);">Indentation :</label>
-      <select id="indent-size" onchange="formatJSON()" style="background:var(--card); border:1px solid var(--border); border-radius:5px; padding:0.2rem 0.4rem; color:var(--text); font-size:0.8rem;">
+      <label for="indent-size">Indentation</label>
+      <select id="indent-size" onchange="formatJSON()">
         <option value="2" selected>2 espaces</option>
         <option value="4">4 espaces</option>
         <option value="tab">Tab</option>
       </select>
+      <span class="spacer"></span>
+      <button class="btn-ghost" onclick="clearJSON()">Effacer</button>
+      <button class="btn" onclick="copyOutput()">Copier le résultat</button>
     </div>
 
     <div class="json-layout">
       <div class="json-col">
         <h3>
           <span>Entrée</span>
-          <button class="btn" style="font-size:0.7rem; padding:0.2rem 0.5rem;" onclick="pasteJSON()">Coller</button>
+          <button class="btn-ghost btn-small" onclick="pasteJSON()">Coller</button>
         </h3>
-        <textarea id="json-input" placeholder='Collez votre JSON ici...&#10;&#10;{&#10;  "name": "Mon projet",&#10;  "version": "1.0.0"&#10;}' oninput="liveValidate()"></textarea>
+        <textarea id="json-input" placeholder='Collez votre JSON ici&#10;&#10;{&#10;  "name": "Mon projet",&#10;  "version": "1.0.0"&#10;}' oninput="liveValidate()"></textarea>
       </div>
       <div class="json-col">
         <h3>
           <span>Résultat</span>
           <div class="json-stats" id="json-stats"></div>
         </h3>
-        <div class="output-area" id="json-output">Le résultat formaté apparaîtra ici...</div>
+        <div class="output-area" id="json-output"><span class="hint">Le résultat formaté apparaîtra ici.</span></div>
       </div>
     </div>
 
@@ -131,27 +151,27 @@
     <div class="uuid-section">
       <h3>Générer des UUIDs</h3>
       <div class="uuid-controls">
-        <label>Version :</label>
+        <label for="uuid-version">Version</label>
         <select id="uuid-version">
           <option value="v4" selected>v4 (aléatoire)</option>
           <option value="v7">v7 (timestamp + aléatoire)</option>
           <option value="nano">Nano ID (court)</option>
           <option value="short">Short ID (8 chars)</option>
         </select>
-        <label>Quantité :</label>
-        <input type="number" id="uuid-count" value="5" min="1" max="100" style="width:60px;">
-        <label>Format :</label>
+        <label for="uuid-count">Quantité</label>
+        <input type="number" id="uuid-count" value="5" min="1" max="100">
+        <label for="uuid-format">Format</label>
         <select id="uuid-format">
           <option value="lower" selected>minuscules</option>
           <option value="upper">MAJUSCULES</option>
           <option value="braces">{avec accolades}</option>
           <option value="bare">sans tirets</option>
         </select>
-        <button class="btn-accent" onclick="generateUUIDs()">Générer</button>
+        <button class="btn-primary" onclick="generateUUIDs()">Générer</button>
         <button class="btn" onclick="copyAllUUIDs()">Tout copier</button>
       </div>
       <div class="uuid-display" id="uuid-display">
-        <div style="color: var(--muted); text-align: center; padding: 2rem;">Cliquez sur Générer pour créer des UUIDs</div>
+        <div class="uuid-empty">Cliquez sur Générer pour créer des UUID.</div>
       </div>
       <div class="uuid-count" id="uuid-count-label"></div>
     </div>
@@ -159,12 +179,13 @@
     <div class="uuid-section">
       <h3>Analyser un UUID</h3>
       <div class="uuid-controls">
-        <input type="text" id="uuid-analyze-input" placeholder="Collez un UUID pour l'analyser..." style="flex:1; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:0.5rem 0.75rem; color:var(--text); font-family:'Consolas',monospace; font-size:0.9rem; outline:none;" oninput="analyzeUUID(this.value)">
+        <input type="text" id="uuid-analyze-input" class="grow" placeholder="Collez un UUID pour l'analyser" oninput="analyzeUUID(this.value)">
       </div>
-      <div id="uuid-analysis" style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--muted);"></div>
+      <div id="uuid-analysis" class="uuid-analysis"></div>
     </div>
   </div>
 </div>
+</main>
 
 <script>
 // ============ Tab switching ============
@@ -221,7 +242,7 @@ function validateJSON() {
     updateStats(parsed, formatted);
     setStatus('ok', 'JSON valide — formaté avec succès');
   } catch (e) {
-    document.getElementById('json-output').innerHTML = `<span style="color:var(--red)">Erreur de syntaxe :\n\n${escapeHtml(e.message)}</span>\n\n<span style="color:var(--muted)">Vérifiez :\n• Virgules manquantes ou en trop\n• Guillemets doubles (pas simples)\n• Accolades/crochets non fermés\n• Trailing commas</span>`;
+    document.getElementById('json-output').innerHTML = `<span class="err">Erreur de syntaxe :\n\n${escapeHtml(e.message)}</span>\n\n<span class="hint">Vérifiez :\n• Virgules manquantes ou en trop\n• Guillemets doubles (pas simples)\n• Accolades/crochets non fermés\n• Trailing commas</span>`;
     setStatus('err', e.message);
   }
 }
@@ -289,9 +310,9 @@ function updateStats(parsed, str) {
   const keys = typeof parsed === 'object' && parsed ? Object.keys(parsed).length : 0;
   const depth = getDepth(parsed);
   stats.innerHTML = `
-    <span>Type: <strong style="color:var(--text)">${type}</strong></span>
+    <span>Type <strong>${type}</strong></span>
     <span>${Array.isArray(parsed) ? `${parsed.length} éléments` : `${keys} clés`}</span>
-    <span>Profondeur: ${depth}</span>
+    <span>Profondeur ${depth}</span>
     <span>${str.length} chars</span>
   `;
 }
@@ -308,7 +329,7 @@ function copyOutput() {
 
 function clearJSON() {
   document.getElementById('json-input').value = '';
-  document.getElementById('json-output').textContent = 'Le résultat formaté apparaîtra ici...';
+  document.getElementById('json-output').innerHTML = '<span class="hint">Le résultat formaté apparaîtra ici.</span>';
   document.getElementById('json-input').classList.remove('valid', 'invalid');
   document.getElementById('json-stats').innerHTML = '';
   setStatus('idle', 'Entrez du JSON pour commencer');
@@ -382,7 +403,7 @@ function generateUUIDs() {
   }
 
   display.innerHTML = uuids.map(u =>
-    `<div class="uuid-line"><span class="uuid-text">${u}</span><button class="copy-one" onclick="copyOne('${u}')">copier</button></div>`
+    `<div class="uuid-line"><span class="uuid-text">${u}</span><button class="copy-one" onclick="copyOne('${u}')">Copier</button></div>`
   ).join('');
 
   document.getElementById('uuid-count-label').textContent = `${uuids.length} ${version === 'nano' ? 'Nano IDs' : version === 'short' ? 'Short IDs' : 'UUIDs'} générés`;
@@ -391,8 +412,8 @@ function generateUUIDs() {
 function copyOne(uuid) {
   navigator.clipboard.writeText(uuid).then(() => {
     const btn = event.target;
-    btn.textContent = '✓';
-    setTimeout(() => btn.textContent = 'copier', 1500);
+    btn.textContent = 'Copié';
+    setTimeout(() => btn.textContent = 'Copier', 1500);
   });
 }
 
@@ -417,7 +438,7 @@ function analyzeUUID(input) {
   // Check format
   const uuidRegex = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
   if (!uuidRegex.test(clean)) {
-    el.innerHTML = `<span style="color:var(--red)">Format invalide.</span> Un UUID v4 ressemble à : <code style="color:var(--accent)">550e8400-e29b-41d4-a716-446655440000</code>`;
+    el.innerHTML = `<span class="err">Format invalide.</span> Un UUID v4 ressemble à : <code class="mono">550e8400-e29b-41d4-a716-446655440000</code>`;
     return;
   }
 
@@ -441,16 +462,17 @@ function analyzeUUID(input) {
   if (versionChar === '7') {
     const tsHex = normalized.slice(0, 12);
     const ts = parseInt(tsHex, 16);
-    timestamp = `<br>Timestamp : <strong style="color:var(--text)">${new Date(ts).toISOString()}</strong>`;
+    timestamp = `<span>Timestamp</span><strong class="mono">${new Date(ts).toISOString()}</strong>`;
   }
 
   el.innerHTML = `
-    <div style="display:grid; grid-template-columns: auto 1fr; gap: 0.3rem 1rem;">
-      <span>Normalisé :</span><strong style="color:var(--accent); font-family:monospace;">${withDashes}</strong>
-      <span>Version :</span><strong style="color:var(--text)">${version}</strong>
-      <span>Variant :</span><strong style="color:var(--text)">${variant}</strong>
-      <span>Bits :</span><strong style="color:var(--text)">${normalized.length * 4} bits (${normalized.length} hex chars)</strong>
-    </div>${timestamp}
+    <div class="grid">
+      <span>Normalisé</span><strong class="mono">${withDashes}</strong>
+      <span>Version</span><strong>${version}</strong>
+      <span>Variant</span><strong>${variant}</strong>
+      <span>Bits</span><strong>${normalized.length * 4} bits (${normalized.length} caractères hex)</strong>
+      ${timestamp}
+    </div>
   `;
 }
 
