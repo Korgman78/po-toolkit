@@ -111,6 +111,60 @@
     .sprint-input input { width: 100%; }
     .sprint-input { flex: 1; }
   }
+  /* ===== Speed Boat : scène illustrée ===== */
+  .sb-scene {
+    --sky-1: #e8f3f6; --sky-2: #cde6ee; --sea-1: #74b4c4; --sea-2: #2f7d92; --cloud: #ffffff; --sun: #f4c15d;
+    position: relative; width: 100%; min-height: 720px; overflow: hidden;
+    border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+    background: linear-gradient(180deg, var(--sky-1) 0%, var(--sky-2) 45%, var(--sea-1) 45%, var(--sea-2) 100%);
+  }
+  [data-theme="dark"] .sb-scene { --sky-1: #0e1b2c; --sky-2: #1a3550; --sea-1: #17496b; --sea-2: #0a1e33; --cloud: #c9d6e3; --sun: #efe6cf; }
+  .sb-sun { position: absolute; top: 6%; left: 60%; width: 64px; height: 64px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 12px color-mix(in oklab, var(--sun) 25%, transparent), 0 0 60px 10px color-mix(in oklab, var(--sun) 35%, transparent); pointer-events: none; }
+  .sb-cloud { position: absolute; pointer-events: none; color: var(--cloud); animation: sbDrift 70s ease-in-out infinite alternate; }
+  .sb-cloud svg { display: block; fill: currentColor; }
+  @keyframes sbDrift { from { transform: translateX(0); } to { transform: translateX(60px); } }
+
+  .sb-water { position: absolute; top: calc(45% - 10px); left: 0; right: 0; height: 22px; overflow: hidden; pointer-events: none; }
+  .sb-water svg { width: 200%; height: 22px; display: block; animation: sbWave 9s linear infinite; }
+  .sb-water.back { top: calc(45% - 4px); opacity: 0.6; }
+  .sb-water.back svg { animation-duration: 14s; animation-direction: reverse; }
+  @keyframes sbWave { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  .sb-boat-container { position: absolute; top: 45%; left: 50%; z-index: 5; transform: translate(-50%, -86%); text-align: center; pointer-events: none; }
+  .sb-boat-container svg { display: block; animation: sbBob 4.5s ease-in-out infinite; transform-origin: 50% 85%; }
+  @keyframes sbBob { 0%, 100% { transform: translateY(0) rotate(-1.2deg); } 50% { transform: translateY(5px) rotate(1.2deg); } }
+  .sb-boat-label { position: absolute; top: calc(100% + 26px); left: 50%; transform: translateX(-50%); white-space: nowrap; padding: 3px 12px; border-radius: 999px; background: color-mix(in oklab, var(--surface) 85%, transparent); color: var(--text); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; box-shadow: var(--shadow-sm); }
+
+  .sb-zone { position: absolute; z-index: 10; display: flex; flex-direction: column; gap: 8px; width: 29%; }
+  .sb-zone-wind { top: 4%; left: 3%; }
+  .sb-zone-island { top: 4%; right: 3%; }
+  .sb-zone-anchor { bottom: 4%; left: 3%; }
+  .sb-zone-rock { bottom: 4%; right: 3%; }
+  .sb-zone-head { display: flex; align-items: center; gap: 10px; }
+  .sb-zone-head svg { flex-shrink: 0; }
+  .sb-zone-label { display: inline-flex; align-items: center; gap: 8px; padding: 5px 6px 5px 12px; border: 1px solid color-mix(in oklab, var(--tone) 45%, transparent); border-radius: 999px; background: color-mix(in oklab, var(--surface) 92%, transparent); color: var(--tone); font-size: 13px; font-weight: 600; box-shadow: var(--shadow-sm); }
+  .sb-zone-label .count { min-width: 22px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--tone); color: var(--surface); font-family: var(--font-mono); font-size: 11px; line-height: 20px; text-align: center; }
+  .sb-zone-label small { display: block; font-size: 11.5px; font-weight: 400; color: var(--text-3); }
+  .sb-zone .cards-container { display: flex; flex-direction: column; gap: 6px; max-height: 210px; overflow-y: auto; padding: 2px; }
+  .sb-zone .add-mini { height: 30px; border: 1px dashed color-mix(in oklab, var(--tone) 55%, var(--border)); border-radius: 8px; background: color-mix(in oklab, var(--surface) 78%, transparent); color: var(--tone); font-size: 12.5px; font-weight: 500; cursor: pointer; transition: background 0.12s; }
+  .sb-zone .add-mini:hover { background: var(--surface); }
+
+  /* Modale d'ajout */
+  .sb-input-modal { position: fixed; inset: 0; z-index: 1000; display: none; align-items: center; justify-content: center; padding: 16px; background: var(--overlay); }
+  .sb-input-modal.open { display: flex; }
+  .sb-input-box { width: 100%; max-width: 420px; padding: 22px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-lg); }
+  .sb-input-box h3 { margin-bottom: 12px; font-family: var(--font-serif); font-size: 22px; font-weight: 500; color: var(--tone, var(--text)); }
+  .sb-input-box textarea { display: block; width: 100%; min-height: 90px; margin-bottom: 12px; padding: 10px 12px; resize: vertical; line-height: 1.5; }
+  .sb-input-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sb-water svg, .sb-boat-container svg, .sb-cloud { animation: none; }
+  }
+  @media (max-width: 900px) {
+    .sb-scene { min-height: 0; display: flex; flex-direction: column; gap: 14px; padding: 14px; background: linear-gradient(180deg, var(--sky-1), var(--sea-2)); }
+    .sb-zone { position: relative; inset: auto !important; width: 100%; }
+    .sb-boat-container, .sb-water, .sb-sun, .sb-cloud { display: none; }
+  }
 </style>
 <script src="https://cdn.ably.com/lib/ably.min-2.js"></script>
 <script src="ably-config.js"></script>
@@ -125,6 +179,18 @@
     <p>Entrez votre pseudo pour rejoindre la rétrospective.</p>
     <input type="text" id="pseudo-input" placeholder="Votre pseudo" autofocus onkeydown="if(event.key==='Enter')confirmPseudo()">
     <button class="btn-primary mbtn" onclick="confirmPseudo()">Rejoindre</button>
+  </div>
+</div>
+
+<!-- Speed Boat : ajout d'un item -->
+<div class="sb-input-modal" id="sb-input-modal" onclick="if(event.target === this) sbAddCancel()">
+  <div class="sb-input-box">
+    <h3 id="sb-input-title">Ajouter un item</h3>
+    <textarea id="sb-input-text" placeholder="Votre item (Ctrl+Entrée pour valider)" onkeydown="if(event.ctrlKey && event.key==='Enter')sbAddConfirm(); if(event.key==='Escape')sbAddCancel();"></textarea>
+    <div class="sb-input-actions">
+      <button class="btn-secondary" onclick="sbAddCancel()">Annuler</button>
+      <button class="btn-primary" onclick="sbAddConfirm()">Ajouter</button>
+    </div>
   </div>
 </div>
 
@@ -328,6 +394,7 @@ function colMeta(col) {
 
 // ---- RENDER ----
 function render() {
+  if (currentTpl === 'speedboat') return renderSpeedBoat();
   const container = document.getElementById('board-container');
   const cols = Object.values(columns);
   container.innerHTML = `<div class="board" style="--cols:${cols.length}">${cols.map(col => {
@@ -345,6 +412,133 @@ function render() {
       </div>
     </div>`;
   }).join('')}</div>`;
+}
+
+// ---- SPEED BOAT (scène illustrée) ----
+const SB_WAVE = '<svg viewBox="0 0 1200 22" preserveAspectRatio="none" aria-hidden="true"><path d="M0,11 Q30,1 60,11 T120,11 T180,11 T240,11 T300,11 T360,11 T420,11 T480,11 T540,11 T600,11 T660,11 T720,11 T780,11 T840,11 T900,11 T960,11 T1020,11 T1080,11 T1140,11 T1200,11" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="2"/></svg>';
+const SB_CLOUD = (w) => `<svg width="${w}" height="${Math.round(w * 0.42)}" viewBox="0 0 120 50" aria-hidden="true"><path d="M22 44a16 16 0 0 1 2-32 22 22 0 0 1 41-6 18 18 0 0 1 30 10 14 14 0 0 1 3 28z"/></svg>`;
+
+const SB_ART = {
+  wind: `<svg width="84" height="64" viewBox="0 0 90 70" aria-hidden="true">
+    <path d="M5,15 Q20,5 40,15 Q60,25 80,12" fill="none" stroke="#2f8ba3" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M80,12 Q85,10 88,6" fill="none" stroke="#2f8ba3" stroke-opacity="0.7" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M10,30 Q28,20 50,30 Q68,40 85,28" fill="none" stroke="#2f8ba3" stroke-opacity="0.75" stroke-width="3" stroke-linecap="round"/>
+    <path d="M5,45 Q22,35 42,45 Q62,55 78,43" fill="none" stroke="#2f8ba3" stroke-opacity="0.5" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M15,58 Q32,50 50,58 Q65,64 75,56" fill="none" stroke="#2f8ba3" stroke-opacity="0.35" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="82" cy="8" r="4" fill="none" stroke="#2f8ba3" stroke-opacity="0.6" stroke-width="1.5"/>
+  </svg>`,
+  island: `<svg width="92" height="82" viewBox="0 0 100 90" aria-hidden="true">
+    <ellipse cx="50" cy="75" rx="45" ry="12" fill="#d9ad7c"/>
+    <ellipse cx="50" cy="73" rx="40" ry="9" fill="#ecd2a6"/>
+    <path d="M50,72 Q48,50 52,20" fill="none" stroke="#8a4b1f" stroke-width="4" stroke-linecap="round"/>
+    <path d="M52,22 Q72,10 85,18" fill="none" stroke="#3f9a5f" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M52,22 Q75,15 82,30" fill="none" stroke="#2f7d4b" stroke-width="3" stroke-linecap="round"/>
+    <path d="M52,22 Q35,5 18,14" fill="none" stroke="#3f9a5f" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M52,22 Q30,10 15,25" fill="none" stroke="#2f7d4b" stroke-width="3" stroke-linecap="round"/>
+    <path d="M52,22 Q62,12 78,8" fill="none" stroke="#5fb87d" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="50" cy="25" r="3" fill="#8a4b1f"/>
+    <circle cx="30" cy="68" r="6" fill="#3f9a5f" opacity="0.6"/>
+    <line x1="66" y1="72" x2="66" y2="54" stroke="#7b8794" stroke-width="1.5"/>
+    <path d="M66,54 L79,59 L66,64" fill="#d95f36"/>
+  </svg>`,
+  anchor: `<svg width="64" height="76" viewBox="0 0 80 95" aria-hidden="true">
+    <ellipse cx="40" cy="6" rx="6" ry="4" fill="none" stroke="#e7a25a" stroke-width="2"/>
+    <ellipse cx="40" cy="14" rx="5" ry="4" fill="none" stroke="#e7a25a" stroke-width="2"/>
+    <circle cx="40" cy="26" r="10" fill="none" stroke="#f0b06a" stroke-width="3"/>
+    <line x1="18" y1="50" x2="62" y2="50" stroke="#f0b06a" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="40" y1="36" x2="40" y2="78" stroke="#f0b06a" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M12,62 Q12,88 40,90 Q68,88 68,62" fill="none" stroke="#f0b06a" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M12,62 L4,55 L18,58" fill="#f0b06a" stroke="#f0b06a" stroke-width="1.5"/>
+    <path d="M68,62 L76,55 L62,58" fill="#f0b06a" stroke="#f0b06a" stroke-width="1.5"/>
+  </svg>`,
+  rock: `<svg width="90" height="72" viewBox="0 0 100 80" aria-hidden="true">
+    <path d="M55,75 L62,35 L70,50 L78,22 L88,42 L95,75 Z" fill="#7d5a55" stroke="#a7726a" stroke-width="1.5"/>
+    <path d="M5,75 L15,32 L28,52 L38,15 L52,38 L62,28 L72,48 L80,75 Z" fill="#8f625b" stroke="#c07a6e" stroke-width="2"/>
+    <path d="M15,32 L22,48 L28,52 M38,15 L42,35 L52,38" fill="none" stroke="#c07a6e" stroke-opacity="0.6" stroke-width="1"/>
+    <line x1="38" y1="15" x2="38" y2="5" stroke="#f3e9e2" stroke-width="1.5"/>
+    <polygon points="38,1 43,9 33,9" fill="#e2553b"/>
+    <path d="M2,75 Q5,72 10,75 M75,75 Q80,72 85,75" fill="none" stroke="#ffffff" stroke-opacity="0.5" stroke-width="1"/>
+  </svg>`
+};
+
+const SB_BOAT = `<svg width="280" height="205" viewBox="0 0 300 220" aria-hidden="true">
+  <defs>
+    <linearGradient id="sb-hull" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5d6877"/><stop offset="100%" stop-color="#363f4c"/></linearGradient>
+    <linearGradient id="sb-sail1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f3ebe0"/><stop offset="100%" stop-color="#e0d2bf"/></linearGradient>
+    <linearGradient id="sb-sail2" x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e2754b"/><stop offset="100%" stop-color="#c85a34"/></linearGradient>
+  </defs>
+  <ellipse cx="150" cy="192" rx="128" ry="10" fill="#ffffff" fill-opacity="0.12"/>
+  <path d="M40,140 Q45,180 150,185 Q255,180 260,140 Z" fill="url(#sb-hull)" stroke="#7a8594" stroke-width="2"/>
+  <path d="M55,155 Q60,175 150,178 Q240,175 245,155" fill="none" stroke="#d95f36" stroke-width="3"/>
+  <rect x="70" y="128" width="160" height="18" rx="5" fill="#3b4451" stroke="#56606e" stroke-width="1"/>
+  <rect x="95" y="110" width="60" height="22" rx="4" fill="#3b4451" stroke="#56606e" stroke-width="1"/>
+  <rect x="100" y="114" width="12" height="10" rx="2" fill="#f4c15d" fill-opacity="0.75"/>
+  <rect x="118" y="114" width="12" height="10" rx="2" fill="#f4c15d" fill-opacity="0.75"/>
+  <rect x="136" y="114" width="12" height="10" rx="2" fill="#f4c15d" fill-opacity="0.75"/>
+  <line x1="150" y1="20" x2="150" y2="128" stroke="#9aa5b1" stroke-width="3.5"/>
+  <path d="M154,32 L230,110 L154,115 Z" fill="url(#sb-sail1)" stroke="#cbbba5" stroke-width="1.5"/>
+  <line x1="154" y1="55" x2="205" y2="88" stroke="#cbbba5" stroke-width="0.8"/>
+  <line x1="154" y1="78" x2="190" y2="100" stroke="#cbbba5" stroke-width="0.8"/>
+  <path d="M146,38 L75,110 L146,115 Z" fill="url(#sb-sail2)" stroke="#b44f2c" stroke-width="1.5"/>
+  <path d="M150,20 L172,12 L150,4" fill="#3f9a5f"/>
+  <line x1="260" y1="140" x2="285" y2="132" stroke="#9aa5b1" stroke-width="2"/>
+  <circle cx="100" cy="150" r="5" fill="#f4c15d" fill-opacity="0.6" stroke="#7a8594"/>
+  <circle cx="125" cy="152" r="5" fill="#f4c15d" fill-opacity="0.6" stroke="#7a8594"/>
+  <circle cx="150" cy="153" r="5" fill="#f4c15d" fill-opacity="0.6" stroke="#7a8594"/>
+  <circle cx="175" cy="152" r="5" fill="#f4c15d" fill-opacity="0.6" stroke="#7a8594"/>
+  <circle cx="200" cy="150" r="5" fill="#f4c15d" fill-opacity="0.6" stroke="#7a8594"/>
+  <line x1="75" y1="128" x2="230" y2="128" stroke="#7a8594" stroke-width="1" opacity="0.6"/>
+</svg>`;
+
+const SB_ADD_LABEL = { island: 'Ajouter un objectif', wind: 'Ajouter un vent', anchor: 'Ajouter une ancre', rock: 'Ajouter un risque' };
+
+function renderSpeedBoat() {
+  const container = document.getElementById('board-container');
+  const zone = (id) => {
+    const col = columns[id];
+    if (!col) return '';
+    const m = colMeta(col);
+    return `
+    <div class="sb-zone sb-zone-${id} tone-${m.tone}">
+      <div class="sb-zone-head">
+        ${SB_ART[id]}
+        <span class="sb-zone-label"><span>${m.title}<small>${m.desc}</small></span><span class="count">${col.cards.length}</span></span>
+      </div>
+      <div class="cards-container">${col.cards.sort((a, b) => b.votes - a.votes).map((c, i) => cardHTML(id, c, i)).join('')}</div>
+      <button class="add-mini" onclick="sbAddOpen('${id}')">+ ${SB_ADD_LABEL[id]}</button>
+    </div>`;
+  };
+  container.innerHTML = `
+  <div class="sb-scene">
+    <div class="sb-sun"></div>
+    <div class="sb-cloud" style="top:10%;left:33%;opacity:0.9">${SB_CLOUD(110)}</div>
+    <div class="sb-cloud" style="top:3%;left:46%;opacity:0.6;animation-duration:90s">${SB_CLOUD(80)}</div>
+    <div class="sb-cloud" style="top:17%;left:40%;opacity:0.75;animation-duration:55s">${SB_CLOUD(64)}</div>
+    <div class="sb-water back">${SB_WAVE}</div>
+    <div class="sb-water">${SB_WAVE}</div>
+    <div class="sb-boat-container">${SB_BOAT}<div class="sb-boat-label">Notre équipe</div></div>
+    ${zone('wind')}${zone('island')}${zone('anchor')}${zone('rock')}
+  </div>`;
+}
+
+let sbAddTarget = null;
+function sbAddOpen(colId) {
+  sbAddTarget = colId;
+  const m = colMeta(columns[colId]);
+  const box = document.querySelector('.sb-input-box');
+  box.className = `sb-input-box tone-${m.tone}`;
+  document.getElementById('sb-input-title').textContent = m.title;
+  document.getElementById('sb-input-text').value = '';
+  document.getElementById('sb-input-modal').classList.add('open');
+  setTimeout(() => document.getElementById('sb-input-text').focus(), 50);
+}
+function sbAddCancel() { document.getElementById('sb-input-modal').classList.remove('open'); sbAddTarget = null; }
+function sbAddConfirm() {
+  const txt = document.getElementById('sb-input-text').value.trim();
+  if (!txt || !sbAddTarget) return;
+  columns[sbAddTarget].cards.push({ text: txt, votes: 0, voted: false, author: myPseudo || 'Anonyme' });
+  sbAddCancel();
+  render(); save();
 }
 
 // ---- Card actions ----
